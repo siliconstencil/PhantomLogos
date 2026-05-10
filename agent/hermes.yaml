@@ -1,0 +1,30 @@
+# Hermes Bridge Configuration
+# Phase 11.18.15 Sovereign Baseline
+
+agent:
+  id: hermes
+  role: bridge
+  version: 1.0.0
+
+bridge:
+  active: true
+  port: 36931
+  timeout: 60
+  retry_count: 3
+
+# Skills configuration
+skills:
+  - id: hermes-bridge
+    path: agent/skills/hermes-bridge
+    enabled: true
+
+# Monitoring
+monitoring:
+  enabled: true
+  interval: 30
+  log_level: INFO
+
+# Security
+security:
+  token_required: true
+  l0_override: true

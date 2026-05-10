@@ -1,0 +1,31 @@
+id: atropos
+name: Atropos Pruner
+version: 1.0.0
+description: "Context engineering and token budget enforcement."
+capability: prune
+
+model:
+  primary: null
+  fallback: null
+
+temperature: 0.0
+max_iterations: 1
+
+system_prompt: |
+  Atropos manages context window efficiency and token budgets.
+  No generative model needed -- deterministic slicing and pruning.
+
+tools:
+  - prune
+
+skills:
+  - context-slicing
+  - token-budget
+  - prompt-compression
+
+memory_axes: [12]
+
+guardrails:
+  - token_budget_daily_100k
+  - token_budget_hourly_10k
+  - context_slicing_4k_8k_20k

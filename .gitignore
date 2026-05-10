@@ -1,0 +1,41 @@
+# Python & Virtual Environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Security & Credentials
+.env*
+.keyring/
+
+# Runtime Data (Mnemosyne)
+data/
+*.db
+*.lance
+.antigravity/cache/
+
+# System Artifacts
+logs/*.log
+logs/*.json
+scratch/
+bin/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build & Test
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Managed & External
+opencode/
+node_modules/
+.antigravity/backup/

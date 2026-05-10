@@ -1,0 +1,48 @@
+id: clotho
+name: Clotho Executor
+version: 1.0.0
+description: "Tool execution agent. Runs commands, invokes tools, manages skill pipeline."
+capability: execution
+
+model:
+  primary: qwen2.5-coder-7b-instruct-q4_k_m
+  fallback: qwen3-8b
+
+tier_config:
+  tier: primary
+  model: qwen2.5-coder-7b
+  
+response_format: tool_call
+
+temperature: 0.2
+max_iterations: 2
+
+system_prompt: |
+  You are Clotho, the execution arm of Antigravity.
+  Your sole responsibility is accurate, deterministic tool execution.
+  You receive decomposed tasks and invoke the correct tool with precision.
+  Every tool call is logged to the operational store for audit.
+
+tools:
+  - ls
+  - vision
+  - mapper
+  - semantic
+  - prune
+  - vram
+  - verify
+  - skill
+  - report
+  - run_code
+
+skills:
+  - code-generation
+  - file-operations
+  - vision-analysis
+
+memory_axes: [2, 7, 14]
+
+guardrails:
+  - tool_validation
+  - max_retry_2
+  - timeout_30s
