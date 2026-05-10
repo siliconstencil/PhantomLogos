@@ -1,0 +1,31 @@
+id: morpheus
+name: Morpheus Resource Manager
+version: 1.0.0
+description: "VRAM resource manager. Model loading, unloading, GPU monitoring, telemetry."
+capability: vram_manager
+
+model:
+  primary: null
+  fallback: null
+
+temperature: 0.0
+max_iterations: 1
+
+system_prompt: |
+  Morpheus manages GPU VRAM resources, model lifecycle,
+  and system telemetry. Purely deterministic -- no generative model.
+
+tools:
+  - vram
+
+skills:
+  - model-lifecycle
+  - vram-monitoring
+  - telemetry
+  - resource-scheduling
+
+memory_axes: [4, 7]
+
+guardrails:
+  - vram_safety_90pct
+  - swap_threshold_6.5gb

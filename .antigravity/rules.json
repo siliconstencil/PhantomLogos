@@ -1,0 +1,177 @@
+{
+  "project": "Antigravity - Phantom Logos",
+  "last_updated": "2026-05-10",
+  "governance_rules": [
+    {
+      "id": "BA-01",
+      "severity": "HIGH",
+      "description": "Bilingual Protocol: English for system internals/code, Turkish for L0 interaction."
+    },
+    {
+      "id": "DB_FIRST",
+      "severity": "HIGH",
+      "description": "All system state must be persisted to SQLite/LanceDB. No file-based logging for operational data."
+    },
+    {
+      "id": "EMOJI_BAN",
+      "severity": "CRITICAL",
+      "description": "Emoji usage is strictly prohibited in all agent outputs."
+    },
+    {
+      "id": "TIMESTAMP_RULE",
+      "severity": "HIGH",
+      "description": "All actions must include timestamps in [HH:MM AM/PM PT] format."
+    },
+    {
+      "id": "SOCRATIC_INQUIRY",
+      "severity": "HIGH",
+      "description": "At least 3 questions must be asked for every complex task."
+    },
+    {
+      "id": "VRAM_HYGIENE",
+      "severity": "CRITICAL",
+      "description": "7.0 GB usable VRAM limit enforced. 1.0 GB strictly reserved for Windows/System."
+    },
+    {
+      "id": "SEQUENTIAL_LOADING",
+      "severity": "CRITICAL",
+      "description": "Concurrent loading of multiple heavy models (>3GB) is prohibited. Force Morpheus.flush() before tier transitions."
+    },
+    {
+      "id": "DYNAMIC_OFFLOADING",
+      "severity": "HIGH",
+      "description": "LocalRuntime must calculate -ngl layers dynamically based on current VRAM budget to avoid OOM."
+    },
+    {
+      "id": "VISION_SMART_ROUTING",
+      "severity": "HIGH",
+      "description": "MiMo-VL-7B-RL is the single vision powerhouse (5.7GB). OCR uses Qwen2-VL (1.1GB, fast). Light fallback uses Qwen2.5-VL (Ollama)."
+    },
+    {
+      "id": "AGENT_PENALTY",
+      "severity": "CRITICAL",
+      "description": "Rule violations reduce agent reliability score (Axis 8). Below 0.3 triggers L0 approval lock."
+    },
+    {
+      "id": "CPU_AFFINITY_E_CORE",
+      "severity": "MEDIUM",
+      "description": "All background/daemon tasks must be pinned to E-cores (12-15) to preserve P-core performance."
+    },
+    {
+      "id": "PRIME_DIRECTIVE",
+      "severity": "CRITICAL",
+      "description": "System integrity and memory persistence above all else. Actions risking environmental drift or memory loss must be audited by L3 (Lachesis)."
+    },
+    {
+      "id": "ABSOLUTE_AGNOSTICISM",
+      "severity": "CRITICAL",
+      "description": "No core logic dependent on specific cloud providers or proprietary proxies. All traffic through Sovereign Gateway."
+    },
+    {
+      "id": "MEMORY_CONTINUITY",
+      "severity": "CRITICAL",
+      "description": "All reasoning steps, tool results, evaluations persisted to 14-Axis Mnemosyne. Mnemosyne is the sole source of truth for agentic context."
+    },
+    {
+      "id": "BACKUP_BEFORE_DELETE",
+      "severity": "CRITICAL",
+      "description": "No file deletion or overwrite without verified copy in .antigravity/backup/. Violation triggers safety lock."
+    },
+    {
+      "id": "FAILURES_MEMORY",
+      "severity": "HIGH",
+      "description": "Every logic failure or runtime error converted to persistent prevention rule in Axis 8."
+    },
+    {
+      "id": "VENV_ISOLATION",
+      "severity": "CRITICAL",
+      "description": "Direct system Python usage prohibited. All operations within .venv."
+    },
+    {
+      "id": "OLLAMA_SELF_HEALING",
+      "severity": "HIGH",
+      "description": "Morpheus mandated to monitor and restart unresponsive LLM services."
+    },
+    {
+      "id": "COMMAND_SOVEREIGNTY",
+      "severity": "CRITICAL",
+      "description": "Direct unmonitored shell execution prohibited. All actions through verified ToolBridge or defined system nodes."
+    },
+    {
+      "id": "SOVEREIGN_DELETION_GATE",
+      "severity": "CRITICAL",
+      "description": "No file deletion without formal Deletion Justification Report to L0. Report must include: (1) dependency analysis, (2) recovery plan, (3) structural impact."
+    },
+    {
+      "id": "SECRET_ISOLATION",
+      "severity": "CRITICAL",
+      "description": "No credentials or keys hardcoded. Use environment variables or system-level secret managers."
+    },
+    {
+      "id": "RESOURCE_HYGIENE",
+      "severity": "HIGH",
+      "description": "VRAM and RAM monitored and optimized by management layer. Inactive models or processes must be evicted."
+    },
+    {
+      "id": "LATENCY_GUARD",
+      "severity": "HIGH",
+      "description": "Agentic loops must be non-blocking with deterministic timeout and fallback logic."
+    },
+    {
+      "id": "CITATION_MANDATE",
+      "severity": "CRITICAL",
+      "description": "Every strategic claim or memory recall must cite source via [SRC:axis_N] format."
+    }
+  ],
+  "db_maintenance": {
+    "retention_days": 30,
+    "row_limit": 1000,
+    "short_retention_days": 15,
+    "lancedb_max_items": 500,
+    "audit_log_keep": 5,
+    "exclude_tables": [],
+    "governance_config_path": ".antigravity/rules.json"
+  },
+  "agent_roles": {
+    "sophia": {
+      "description": "L1 Strategist / Expert Reasoning",
+      "model": "antigravity-strategic-gateway",
+      "local_alt": "qwen3-5-9b-ud-q4_k_xl:latest"
+    },
+    "clotho": {
+      "description": "L2 Executor / Tools / Orchestration",
+      "model": "qwen2-5-coder-7b-instruct-q4_k_m:latest",
+      "alt_model": "hermes-3-llama-3-1-8b-q4_k_m:latest"
+    },
+    "lachesis": {
+      "description": "L3 Auditor / Verification",
+      "model": "phi-4-mini-reasoning-ud-q5_k_xl:latest"
+    },
+    "vision_flagship": {
+      "model": "mimo-vl:latest",
+      "runtime": "LocalRuntime",
+      "temperature": 0.3,
+      "top_p": 0.95,
+      "note": "MiMo-VL-7B-RL by Xiaomi. Qwen2.5-VL arch. Replaces Qwen3-VL Thinking + Gemma4 Creative + Qwen2.5-VL General. temp=0.3, top_p=0.95. MMMU 70.6."
+    },
+    "r1_reasoning": {
+      "model": "deepseek-r1:7b",
+      "temperature": 0.6,
+      "top_p": 0.95,
+      "note": "R1 chain-of-thought reasoning. Requires <think> prefix. No system prompt. (Phase 11.20)"
+    },
+    "math_verifier_alt": {
+      "model": "deepseek-math:7b",
+      "temperature": 0.0,
+      "context": 4096,
+      "note": "DeepSeekMath alternative. Requires \\boxed{} in prompt. No system prompt. (Phase 11.20)"
+    },
+    "oom_recovery": {
+      "model": "tinyllama:latest",
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "top_k": 50,
+      "note": "0.7GB emergency fallback for OOM scenarios. Llama2 template. (Phase 11.20)"
+    }
+  }
+}

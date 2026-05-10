@@ -1,0 +1,277 @@
+================================================================================
+ PHANTOM LOGOS AUDIT LOG — Phase 11.14 Sovereign Hardening
+================================================================================
+ Date:      2026-05-05 [16:50 PM PT]
+ Status:    PHASE 11.14 SEALED
+ Prev:      Phase 11.13 RC2 (walkthrough.md)
+ Coverage:  5 Faz, 30+ alt gorev, dokuman guncellemeleri dahil
+
+================================================================================
+ FAZ 1: SWEEPER TIME FORMAT FIX + PATH CONFIGURASYONU
+================================================================================
+
+ [G1/G2] cognition/morpheus/sweeper.py
+   - Hedef: 4 farkli DB'deki zaman format uyumsuzlugu (TEXT ISO vs INTEGER ms vs REAL)
+   - Problemi: SQLite TEXT ISO tarih ("2026-05-05 16:11:28") ile INTEGER unix timestamp
+     (1743860000) karsilastirmasi yanlis calisiyordu. SQLite TEXT'i sayiya ceviriyor,
+     "2026-05-05..." → 2026.0, 2026 < 1743860000 her zaman TRUE donuyordu.
+   - Cozum: _cutoff_val(time_type) fonksiyonu eklendi
+     - "text_iso"  → datetime.fromtimestamp().isoformat() (TEXT-TEXT karsilastirma)
+     - "int_ms"    → cutoff * 1000 (INTEGER-INTEGER karsilastirma)
+     - "float"     → cutoff (REAL-REAL karsilastirma)
+   - is_ms: bool → time_type: str (3'lu tip sistemine gecildi)
+   - OPENCODE_HOME env degiskeni ile hardcoded D:/opencode yollari degistirildi
+   - Gecici tablo adlari duzeltildi:
+     - operational_logs → operational_logs_v2
+     - modules → spatial_modules
+     - dependencies → spatial_edges
+     - metrics/failures → agent_reliability
+     - sessions/messages/search_history (opencode) → session/message
+
+================================================================================
+ FAZ 2: LOGGING/ORM TABLO BIRLESTIRMESI
+================================================================================
+
+ [G12] src/utils/logging_config.py
+   - Problemi: Python logging.handler 'operational_logs' tablosuna yaziyor,
+     ORM (OperationalStore) ise 'operational_logs_v2' tablosunu kullaniyordu.
+     Iki ayri tablo → audit trail kopuk.
+   - Cozum:
+     - Tablo adi: operational_logs → operational_logs_v2
+     - Yeni kolonlar: agent_id TEXT DEFAULT 'system', tool_name TEXT
+     - emit(): record.__dict__'tan agent_id/tool_name aliyor
+
+ [G12a] cognition/morpheus/sweeper.py (ek)
+   - Eski operational_logs tablosu da pruning listesine eklendi
+     (transition doneminde biriken veri temizligi icin)
+
+================================================================================
+ FAZ 3: SILENT EXCEPT BLOKLARI
+================================================================================
+
+ 8 adet sessiz hata kapatma duzeltildi:
+
+ [G13] cognition/morpheus/scheduler.py:114
+   - except Exception: pass
+   → logger.warning("MorpheusScheduler: TemporalStore tick record failed")
+
+ [G14] cognition/mnemosyne/semantic_store.py:147
+   - except Exception: pass
+   → logger.warning("SemanticStore: Operational event recording failed")
+
+ [G15] src/lachesis/sympy_verifier.py:77
+   - except Exception: return None
+   → logger.debug("SympyVerifier: QWED verify_code failed") + return None
+
+ [G16] src/lachesis/codebase_mapper.py:91
+   - except Exception: return {"lines": 0, ...}
+   → logger.debug("CodebaseMapper: file read error") + return
+
+ [G17] src/atropos/observability.py:29
+   - except Exception: pass (TemporalStore init)
+   → logger.warning("AtroposMonitor: TemporalStore init failed")
+
+ [G17] src/atropos/observability.py:109
+   - except Exception: tokens = 500
+   → logger.warning("AtroposMonitor: tiktoken failed, fallback 500")
+
+ [G15] src/lachesis/sympy_verifier.py:205
+   - except Exception: continue (cozum parse loop)
+   → logger.debug("SympyVerifier: Solution parse loop skip") + continue
+
+ [G12] src/utils/logging_config.py:47
+   - except Exception: pass (connection close)
+   → print("SQLiteHandler close error:")
+
+================================================================================
+ FAZ 4: YAML STANDARDIZASYONU + PATH YONETIMI
+================================================================================
+
+ [G18] agent/hermes.yaml
+   - Eksik standart alanlar eklendi:
+     - model: { primary: null, fallback: null }
+     - tier_config: { tier: 2, model: null, temperature: 0.0 }
+     - response_format: text
+     - temperature: 0.0
+     - max_iterations: 1
+
+ [G6] cognition/morpheus/sweeper.py
+   - 3 adet hardcoded D:/opencode/ yolu env ile degistirildi:
+     - D:/opencode/opencode.db → os.path.join(OPENCODE_HOME, "opencode.db")
+     - D:/opencode/log → os.path.join(OPENCODE_HOME, "log")
+     - D:/opencode/storage/session_diff → os.path.join(OPENCODE_HOME, "storage", "session_diff")
+     - D:/opencode/snapshot → os.path.join(OPENCODE_HOME, "snapshot")
+
+================================================================================
+ FAZ 5: MERGE ATTACK — MORPHEUS VRAM CACHE
+================================================================================
+
+ cognition/morpheus/monitor.py
+   - _cached_gpu_info (dict) + _cached_gpu_time modul degiskenleri
+   - set_cached_gpu_info(info) — Morpheus tick'i tarafindan cagrilir
+   - get_cached_gpu_info(max_age=35.0) — 35sn icinde cache'i dondurur, yoksa None
+
+ cognition/morpheus/scheduler.py
+   - _orchestrate_vram() icinde set_cached_gpu_info(gpu_info) cagrisi eklendi
+   - Morpheus 30sn tick'ten sonra VRAM verisini global cache'e yazar
+
+ cognition/morpheus/__init__.py
+   - set_cached_gpu_info, get_cached_gpu_info export edildi
+
+ src/clotho/bootstrap.py:quick_vram_check()
+   - Once get_cached_gpu_info() dener, varsa nvidia-smi cagirmaz
+   - Cache yoksa live get_gpu_memory_info() cagirir
+
+ src/clotho/orchestrator.py:negotiate_node()
+   - Tier secimi artik VRAM + Reliability override ile:
+     - free_gb < 2.0 veya reliability < 0.3 → Tier 1 (light)
+     - free_gb >= 5.0 → Tier 3 (expert)
+     - free_gb < 3.0 → Tier 2 max
+   - quick_vram_check() Morpheus cache'inden okur (nvidia-smi yok)
+
+ src/clotho/orchestrator.py:get_dynamic_context()
+   - ORM .get() AttributeError hatasi duzeltildi (getattr ile)
+   - Filtre: hermes.fact/hermes.analysis → hermes.* / tool_bridge.*
+   - Axis 7: Operational telemetry, Axis 8: Reliability score, Axis 2: Best tools eklendi
+
+ cognition/sophia/reasoning_nodes.py:get_dynamic_context()
+   - Axis 7 (Operational hermes events) eklendi
+   - Axis 8 (Meta-Cognition reliability score) eklendi
+   - Axis 2 (Procedural best tools) eklendi
+
+================================================================================
+ FAZ 5B: AXIS 13 — OPENTEXT STORE
+================================================================================
+
+ src/architrave/opencode_store.py (YENI DOSYA)
+   - OpenCodeStore class with AXIS_ID = 13
+   - READ-ONLY bridge to D:/opencode/opencode.db
+   - Metodlar:
+     - list_sessions(limit=10) → session listesi
+     - get_session_messages(session_id, limit=50) → mesaj gecmisi
+     - get_cross_session_patterns() → top agents, models, avg msgs
+   - Parameterized SQL (SQL injection safe)
+
+ scripts/hermes_cli.py
+   - _query_opencode_sessions → OpenCodeStore.list_sessions ile degistirildi
+   - Ham sqlite3 baglantisi yerine Axis 13 uzerinden okuma
+
+ cognition/sophia/reasoning_nodes.py
+   - get_dynamic_context() icinde Axis 13 cagrisi eklendi
+   - Cross-session pattern'ler context'e enjekte ediliyor
+
+================================================================================
+ FAZ 5C: AXIS 4 — LANCEDB'DEN SQLITE'A MIGRASYON
+================================================================================
+
+ cognition/mnemosyne/temporal_store.py (YENIDEN YAZILDI)
+   - lancedb + numpy import'lari kaldirildi
+   - sqlite3 eklendi
+   - _ensure_table(): CREATE TABLE temporal_metrics SQLite
+   - record(): INSERT INTO temporal_metrics (parameterized)
+   - query(): SELECT ... WHERE session_id = ? (ORDER BY timestamp DESC)
+   - optimize(): SQLite VACUUM + legacy LanceDB directory cleanup
+   - Tum arayuz ayni kaldı (record/query/optimize)
+
+ .antigravity/schema.sql
+   - LanceDB temporal_metrics referansi kaldirildi
+   - SQLite temporal_metrics CREATE TABLE semasi eklendi (yorum olarak)
+   - Axis 13 OpenCode schema dokumantasyonu eklendi
+
+ cognition/morpheus/sweeper.py
+   - temporal_metrics mnemosyne.db pruning listesine eklendi (time_type="float")
+   - TemporalStore.optimize() LanceDB bolumunden kaldirildi
+   - Ayri bir optimize bloku olarak SQLite temporal store'a yonlendirildi
+   - SemanticStore LanceDB pruning korundu (Axis 6 hala LanceDB)
+
+================================================================================
+ DOKUMAN GUNCELLEMELERI
+================================================================================
+
+ .antigravity/topography.md
+   - 12-Axis → 13-Axis
+   - Axis 4: LanceDB → SQLite (migrated from LanceDB)
+   - Axis 13: OpenCode row eklendi
+   - Hermes: Axis 10 (Rational) → Axis 13 (OpenCode)
+   - Versiyon: Phase 11.13 RC2 → Phase 11.14
+
+ .antigravity/AGENTS.md
+   - "The 12-Axis Memory" → "The 13-Axis Memory"
+   - Axis 13 row eklendi (OpenCode | Cross-session bridge)
+   - Axis 4: LanceDB → SQLite (migrated from LanceDB)
+   - Hermes: Axis 7/10 → Axis 7/13
+
+ AGENTS.md (root)
+   - Versiyon: 11.9 → 11.14
+   - "12-axis memory" → "13-axis memory"
+   - Hermes: Axis 8/10 → Axis 7/13
+
+================================================================================
+ TEST SONUCLARI
+================================================================================
+
+ [pytest] tests/test_axis_stability.py + tests/test_tool_bridge.py
+   8/8 PASSED (son kosu: 10.82s)
+
+ [bootstrap --check]
+   VRAM: {'total_gb': 8.0, 'used_gb': 1.28, 'free_gb': 6.48, 'fragmentation': 0.19, 'morpheus_status': 'idle'}
+
+ [Axis 4 Firmitas]
+   TemporalStore SQLite: record + query + optimize OK, AXIS_ID=4
+
+ [Axis 13 Firmitas]
+   OpenCodeStore: 93 session, 1 agent (sophia)
+
+ [Merge Attack]
+   set_cached_gpu_info → get_cached_gpu_info (35s TTL): DOGRULANDI
+
+================================================================================
+ LEFTOVER / FUTURE WORK
+================================================================================
+
+ - LanceDB hala Axis 6 (SemanticStore) icin kullaniliyor — dogru, vektor ANN index
+ - Axis 4 migration sirasinda lancedb/ dizini optimize() cagrisinda temizleniyor
+ - test_phase_11_9_integrity.py ve diger test dosyalarinda D:/Hank hardcoded
+   yollari var — bunlar test dosyasi oldugu icin Phase 11.15'e birakildi
+ - docker-compose.yml D:/Google path'leri — harici konteyner dosyasi
+
+================================================================================
+ FAZ 6: AXIS 11 TOOL + GOVERNANCE + MISSING TABLES (Sokratik Gap'ler)
+================================================================================
+
+ [A1] src/clotho/tool_bridge.py
+   - verify handler'i _dispatch()'e eklendi (SympyVerifier'a yonlendirir)
+   - Desteklenen: math expression, solve equation, code audit
+
+ [A2/A3] agent/sophia.yaml + agent/clotho.yaml
+   - verify tool her iki whitelist'e eklendi
+
+ [B1] .antigravity/rules.json
+   - db_maintenance bolumu eklendi:
+     - retention_days: 30, row_limit: 1000, short_retention_days: 15
+     - lancedb_max_items: 500, audit_log_keep: 5
+     - exclude_tables: [] (governance ile tablo koruma)
+   - DP_RETENTION governance rule eklendi
+
+ [B2] cognition/morpheus/sweeper.py
+   - _load_governance_config() metodu eklendi (rules.json okur)
+   - Tum retention/limit parametreleri GOVERNANCE_CONFIG'ten okunuyor
+   - Fallback: rules.json yoksa varsayilan 30/1000
+
+ [B3] cognition/morpheus/sweeper.py
+   - Eksik tablolar eklendi: episodes (Axis 1), meta_cognition (Axis 8)
+   - exclude_tables destegi eklendi: governance ile belirtilen tablolar atlanir
+
+ topography.md footer: Phase 11.13 -> 11.14 duzeltildi
+
+================================================================================
+ FAZ 7: TEST SONUCLARI
+================================================================================
+
+ [pytest] 8/8 PASSED (11.02s)
+ [verify tool] SympyVerifier math expression: OK
+ [gov config] retention_days=30 row_limit=1000: OK
+
+================================================================================
+ END OF AUDIT 011
+================================================================================

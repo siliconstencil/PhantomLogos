@@ -1,0 +1,3 @@
+[2026-05-09 21:39:51] VIOLATION: cognition/sophia/sophia.py | Size dropped from 11084 to 9705. Rollback executed.
+[2026-05-09 21:54:45] VIOLATION: src/architrave/model_registry.py | Size dropped from 6678 to 5035. Rollback executed.
+[2026-05-09 21:55:36] VIOLATION: src/lachesis/codebase_mapper.py | Size dropped from 11260 to 1477. Rollback executed.

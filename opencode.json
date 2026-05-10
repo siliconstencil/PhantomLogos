@@ -1,0 +1,34 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "opencode-wakatime",
+    "@tarquinen/opencode-dcp",
+    "opencode-mem",
+    "cc-safety-net",
+    "envsitter-guard",
+    "opencode-notify"
+  ],
+  "model": "deepseek-v4-pro",
+  "lsp": {
+    "pyright": {
+      "command": [".venv/Scripts/python", "-m", "pyright"],
+      "extensions": [".py"]
+    }
+  },
+  "skills": {
+    "paths": [
+      "agent/skills"
+    ],
+    "permission": {
+      "skill": {
+        "*": "allow"
+      }
+    }
+  },
+  "instructions": [
+    "AGENTS.md",
+    ".antigravity/topography.md",
+    ".antigravity/tools.md",
+    "DEEPSEEK_CMD.md"
+  ]
+}
