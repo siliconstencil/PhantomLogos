@@ -1,6 +1,7 @@
 import unittest
-import os
+
 from src.lachesis.verifiers import SympyVerifier
+
 
 class TestAxis11Logic(unittest.TestCase):
     """
@@ -19,16 +20,16 @@ class TestAxis11Logic(unittest.TestCase):
         ApprovedL1
         Check: CanExecuteL2 is Satisfiable.
         """
-        # Logic problem strings for Z3
+        # SMT-LIB2 format logic problem
         problem = """
-        # Rule: L1 approval implies L2 can execute
-        Implies(Bool('ApprovedL1'), Bool('CanExecuteL2'))
-        # Fact: L1 has approved
-        Bool('ApprovedL1')
+        (declare-fun ApprovedL1 () Bool)
+        (declare-fun CanExecuteL2 () Bool)
+        (assert (=> ApprovedL1 CanExecuteL2))
+        (assert ApprovedL1)
         """
         result = self.verifier.verify_logic(problem)
-        
-        self.assertTrue(result["valid"], f"Logic verification failed: {result.get('error')}")
+
+        self.assertTrue(result.get("is_valid"), f"Logic verification failed: {result.get('error')}")
         self.assertEqual(result["result"], "Satisfiable")
         self.assertIn("CanExecuteL2 = True", result["model"])
         print(f"\n[Axis 11] Hierarchy Logic Verified: {result['model']}")
@@ -40,13 +41,21 @@ class TestAxis11Logic(unittest.TestCase):
         """
         problem = "4.7 + 2.8 <= 8.0 - 0.5"
         result = self.verifier.verify_math(problem)
-        
-        self.assertTrue(result["valid"])
+
+        self.assertTrue(result.get("is_valid"))
         # SymPy solve for inequality returns True or False
         # Here we just evaluate the expression
-        from sympy import sympify
-        val = bool(sympify(problem))
-        self.assertTrue(val, "VRAM feasibility check failed: 7.5GB does not fit in 7.5GB margin? Check floats.")
+        from sympy.parsing.sympy_parser import (
+            implicit_multiplication,
+            parse_expr,
+            standard_transformations,
+        )
+
+        transformations = standard_transformations + (implicit_multiplication,)
+        val = bool(parse_expr(problem, transformations=transformations))
+        self.assertTrue(
+            val, "VRAM feasibility check failed: 7.5GB does not fit in 7.5GB margin? Check floats."
+        )
         print(f"[Axis 11] VRAM Resource Feasibility: {problem} -> {val}")
 
     def test_code_logic_audit_local(self):
@@ -64,6 +73,7 @@ def process():
         result = self.verifier.audit_code_logic(code_with_contradiction)
         self.assertIn("is_valid", result)
         print(f"[Axis 11] Code Logic Audit Result: {result}")
+
 
 if __name__ == "__main__":
     unittest.main()

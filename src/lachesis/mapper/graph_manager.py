@@ -2,23 +2,38 @@ import os
 import re
 import threading
 from collections import defaultdict
-from typing import List, Optional, Any
+
 from src.utils.logging_config import setup_logger
+
 from .ast_parser import ASTParser
 
 logger = setup_logger(__name__)
 
-EXCLUDE_DIRS = {".venv", "__pycache__", ".git", ".antigravity", "logs", "data", "scratch"}
+EXCLUDE_DIRS = {
+    ".venv",
+    "__pycache__",
+    ".git",
+    ".antigravity",
+    "logs",
+    "data",
+    "scratch",
+    "opencode_BAK",
+    "opencode",
+    "hermes-agent",
+}
 
 # Shared caches
 _mtime_cache = {}
 _scanned_patterns = set()
 
+
 class CodebaseMapper:
     _lock = threading.Lock()
 
-    def __init__(self, project_path: Optional[str] = None, spatial_store=None):
-        self.project_path = project_path or os.getcwd()
+    def __init__(self, project_path: str | None = None, spatial_store=None):
+        from src.utils.project_path import get_project_root
+
+        self.project_path = project_path or str(get_project_root())
         self._store = spatial_store
         # [SRC:axis_5] Context hardening attributes for RAG alignment.
         self.chunk_size = int(os.getenv("MAPPER_CHUNK_SIZE", "1024"))
@@ -36,7 +51,7 @@ class CodebaseMapper:
             current_mtime = os.path.getmtime(file_path)
         except OSError:
             return
-            
+
         cached_mtime = _mtime_cache.get(file_path)
         if not force and cached_mtime is not None and abs(current_mtime - cached_mtime) < 0.1:
             return
@@ -56,7 +71,8 @@ class CodebaseMapper:
         _mtime_cache[file_path] = current_mtime
 
     def remap_file(self, file_path: str):
-        if not self._store: return
+        if not self._store:
+            return
         with self._lock:
             module_name = self._to_module_name(file_path)
             if not os.path.exists(file_path):
@@ -68,12 +84,19 @@ class CodebaseMapper:
                 logger.info(f"CodebaseMapper: Incremental remap for {file_path}")
 
     def map_codebase(self, deep: bool = False) -> bool:
-        if not self._store: return False
+        if not self._store:
+            return False
         with self._lock:
             py_files = []
             for root, dirs, files in os.walk(self.project_path):
                 dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
-                if not deep and root != self.project_path and "src" not in root and "cognition" not in root:
+                if (
+                    not deep
+                    and root != self.project_path
+                    and not any(
+                        k in root for k in ["src", "cognition", "scripts", "tests", "agent"]
+                    )
+                ):
                     continue
                 for f in files:
                     if f.endswith(".py"):
@@ -83,10 +106,12 @@ class CodebaseMapper:
             return True
 
     def suggest_context(self, task_keywords: list) -> list:
-        if not self._store or not task_keywords: return []
+        if not self._store or not task_keywords:
+            return []
         with self._lock:
             matches = self._store.query_by_keywords(task_keywords)
-            if not matches: return []
+            if not matches:
+                return []
             top_matches = [m["name"] for m in matches[:3]]
             expansion = set(top_matches)
             for mod_name in top_matches:
@@ -98,36 +123,38 @@ class CodebaseMapper:
             return list(expansion)
 
     def detect_circular(self) -> list:
-        if not self._store: return []
+        if not self._store:
+            return []
         with self._lock:
             adj = defaultdict(list)
             session = self._store.Session()
             try:
                 from cognition.mnemosyne.spatial_store import DependencyEdge
+
                 edges = session.query(DependencyEdge).all()
                 for e in edges:
                     adj[e.source_module].append(e.target_module)
             finally:
                 session.close()
-            
+
             WHITE, GRAY, BLACK = 0, 1, 2
             color = {k: WHITE for k in adj}
             cycles = []
-            
+
             def dfs(node, path):
                 color[node] = GRAY
                 for neigh in adj.get(node, []):
                     if color.get(neigh) == GRAY:
                         if neigh in path:
-                            cycle = path[path.index(neigh):] + [neigh]
+                            cycle = path[path.index(neigh) :] + [neigh]
                             cycles.append(tuple(cycle))
                     elif color.get(neigh) == WHITE:
                         dfs(neigh, path + [neigh])
                 color[node] = BLACK
-            
+
             for node in list(adj.keys()):
                 if color.get(node) == WHITE:
                     dfs(node, [node])
-            
+
             unique_cycles = sorted(list(set(cycles)))
             return [list(c) for c in unique_cycles]

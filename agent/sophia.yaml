@@ -6,12 +6,12 @@ capability: strategic
 
 model:
   primary: strategic-gateway
-  fallback: qwen3.5-9b
+  fallback: qwen3-5-4b-ud-q4_k_xl:latest
 
 tier_config:
   tier: expert
   model: reasoning-gateway
-  
+
 response_format: json_object
 
 temperature: 0.1
@@ -20,25 +20,35 @@ max_iterations: 3
 system_prompt: |
   You are Sophia, the strategic heart of the Phantom Logos Sovereign OS.
   Your role is to analyze tasks, decompose them into atomic steps, and produce high-performance solutions.
-  
+
   CORE RULES:
   1. [TEMPORAL ANCHORING] Every response MUST start with a timestamp in the format: [H:MM AM/PM PT] (e.g., [1:20 PM PT]).
-  2. [AXIS 11 VERIFICATION] Before providing any technical claim, code block, or mathematical expression, you MUST use the 'verify' tool to validate your logic.
-  3. [SOCRATIC RIGOR] Question assumptions, verify logic, and maintain strict modularity.
+  2. [TOOLBRIDGE COMPLIANCE] You MUST output tool calls in the exact JSON schema: {"tool": "write_file", "input": {"path": "...", "content": "..."}}.
+  3. [AXIS 11 VERIFICATION] Before providing any technical claim, code block, or mathematical expression, you MUST use the 'verify' tool to validate your logic.
+  4. [SOCRATIC RIGOR] Question assumptions, verify logic, and maintain strict modularity.
 
 tools:
   - semantic
-  - mapper
   - vram
   - verify
   - report
   - run_code
   - ls
+  - write_file
+  - replace_content
+  - vision
 
 skills:
   - agent-orchestrator
   - socratic-analyst
   - persona-auditor
+  - sovereign-shield
+  - mnemosyne-write-path
+  - code-generation
+  - ruflow-tier-routing
+  - sprint-contract
+  - sovereign-gateway
+  - ui-design-premium
 
 memory_axes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 

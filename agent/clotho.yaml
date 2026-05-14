@@ -5,13 +5,13 @@ description: "Tool execution agent. Runs commands, invokes tools, manages skill 
 capability: execution
 
 model:
-  primary: qwen2.5-coder-7b-instruct-q4_k_m
-  fallback: qwen3-8b
+  primary: qwen3-5-4b-ud-q4_k_xl:latest
+  fallback: qwen3-5-2b-ud-q6_k_xl:latest
 
 tier_config:
   tier: primary
-  model: qwen2.5-coder-7b
-  
+  model: qwen3-5-4b-ud-q4_k_xl:latest
+
 response_format: tool_call
 
 temperature: 0.2
@@ -23,11 +23,11 @@ system_prompt: |
   You receive decomposed tasks and invoke the correct tool with precision.
   Every tool call is logged to the operational store for audit.
 
-tools:
+agent_tools:
   - ls
   - vision
-  - mapper
   - semantic
+
   - prune
   - vram
   - verify
@@ -39,6 +39,14 @@ skills:
   - code-generation
   - file-operations
   - vision-analysis
+  - mnemosyne-write-path
+  - error-self-recovery
+  - background-agent
+  - local-runtime
+  - mcp-orchestration
+  - persona-runner
+  - state-bus
+  - 14-axis-memory
 
 memory_axes: [2, 7, 14]
 

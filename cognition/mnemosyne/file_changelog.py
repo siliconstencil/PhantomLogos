@@ -1,26 +1,41 @@
-import os
-import time
-import sqlite3
 import hashlib
+import os
+import sqlite3
 import threading
-from typing import List, Dict, Any, Optional
+import time
+from typing import Any
+
 from src.utils.logging_config import setup_logger
+from src.utils.project_path import get_project_root
 
 logger = setup_logger(__name__)
+
+_instance = None
+_instance_lock = threading.Lock()
+
+
+def get_changelog(project_root: str | None = None):
+    """Singleton accessor for FileChangelogStore."""
+    global _instance
+    with _instance_lock:
+        if _instance is None:
+            root = project_root or str(get_project_root())
+            db_path = os.path.join(root, "data", "file_changelog.db")
+            _instance = FileChangelogStore(db_path=db_path, project_root=root)
+        return _instance
 
 
 class FileChangelogStore:
     """
     Append-only file change audit log.
-    Independent of any agent — tracks every byte change on monitored files.
+    Independent of any agent - tracks every byte change on monitored files.
     """
+
     AXIS_ID = 7
 
-    def __init__(self, db_path: Optional[str] = None, project_root: Optional[str] = None):
-        if db_path is None:
-            db_path = os.path.join(os.getcwd(), "data", "file_changelog.db")
-        self.db_path = db_path
-        self.project_root = project_root or os.getcwd()
+    def __init__(self, db_path: str, project_root: str):
+        self.db_path = os.path.abspath(db_path)
+        self.project_root = os.path.abspath(project_root)
         self._lock = threading.Lock()
         self._ensure_table()
 
@@ -80,7 +95,7 @@ class FileChangelogStore:
                 cursor = conn.cursor()
                 cursor.execute(
                     "SELECT post_hash, post_size FROM file_changelog WHERE file_path = ? ORDER BY id DESC LIMIT 1",
-                    (file_path,)
+                    (file_path,),
                 )
                 row = cursor.fetchone()
                 pre_hash = row[0] if row else ""
@@ -94,7 +109,16 @@ class FileChangelogStore:
             try:
                 conn.execute(
                     "INSERT INTO file_changelog (timestamp, file_path, pre_hash, pre_size, post_hash, post_size, delta_bytes, event_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                    (time.time(), file_path, pre_hash, pre_size, post_hash, post_size, delta, event_type)
+                    (
+                        time.time(),
+                        file_path,
+                        pre_hash,
+                        pre_size,
+                        post_hash,
+                        post_size,
+                        delta,
+                        event_type,
+                    ),
                 )
                 conn.commit()
             finally:
@@ -103,64 +127,76 @@ class FileChangelogStore:
             if pre_size > 0 and delta < 0 and abs(delta) > pre_size * 0.5:
                 logger.warning(
                     f"FILE INTEGRITY ALERT: {file_path} shrunk {abs(delta)} bytes "
-                    f"({abs(delta)/pre_size*100:.0f}% reduction) "
+                    f"({abs(delta) / pre_size * 100:.0f}% reduction) "
                     f"via {event_type}"
                 )
             elif delta != 0:
                 logger.info(
-                    f"File change: {file_path} {pre_size} -> {post_size} bytes "
-                    f"(delta: {delta:+d})"
+                    f"File change: {file_path} {pre_size} -> {post_size} bytes (delta: {delta:+d})"
                 )
 
-    def latest(self, file_path: str) -> Optional[Dict[str, Any]]:
+    def latest(self, file_path: str) -> dict[str, Any] | None:
         conn = sqlite3.connect(self.db_path)
         try:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT timestamp, file_path, pre_hash, pre_size, post_hash, post_size, delta_bytes, event_type FROM file_changelog WHERE file_path = ? ORDER BY id DESC LIMIT 1",
-                (file_path,)
+                (file_path,),
             )
             row = cursor.fetchone()
             if row:
                 return {
-                    "timestamp": row[0], "file_path": row[1],
-                    "pre_hash": row[2], "pre_size": row[3],
-                    "post_hash": row[4], "post_size": row[5],
-                    "delta_bytes": row[6], "event_type": row[7],
+                    "timestamp": row[0],
+                    "file_path": row[1],
+                    "pre_hash": row[2],
+                    "pre_size": row[3],
+                    "post_hash": row[4],
+                    "post_size": row[5],
+                    "delta_bytes": row[6],
+                    "event_type": row[7],
                 }
         finally:
             conn.close()
         return None
 
-    def history(self, file_path: str, limit: int = 20) -> List[Dict[str, Any]]:
+    def history(self, file_path: str, limit: int = 20) -> list[dict[str, Any]]:
         conn = sqlite3.connect(self.db_path)
         try:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT timestamp, pre_size, post_size, delta_bytes, event_type FROM file_changelog WHERE file_path = ? ORDER BY id DESC LIMIT ?",
-                (file_path, limit)
+                (file_path, limit),
             )
             return [
-                {"timestamp": r[0], "pre_size": r[1], "post_size": r[2],
-                 "delta": r[3], "event": r[4]} for r in cursor.fetchall()
+                {
+                    "timestamp": r[0],
+                    "pre_size": r[1],
+                    "post_size": r[2],
+                    "delta": r[3],
+                    "event": r[4],
+                }
+                for r in cursor.fetchall()
             ]
         finally:
             conn.close()
 
-    def integrity_report(self, min_delta_pct: float = 30.0) -> List[Dict[str, Any]]:
+    def integrity_report(self, min_delta_pct: float = 30.0) -> list[dict[str, Any]]:
         conn = sqlite3.connect(self.db_path)
         try:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT file_path, pre_size, post_size, delta_bytes, timestamp
                 FROM file_changelog
                 WHERE pre_size > 0 AND delta_bytes < 0
                 AND CAST(ABS(delta_bytes) AS REAL) / pre_size >= ?
                 ORDER BY timestamp DESC LIMIT 50
-            """, (min_delta_pct / 100.0,))
+            """,
+                (min_delta_pct / 100.0,),
+            )
             return [
-                {"file": r[0], "before": r[1], "after": r[2],
-                 "delta": r[3], "time": r[4]} for r in cursor.fetchall()
+                {"file": r[0], "before": r[1], "after": r[2], "delta": r[3], "time": r[4]}
+                for r in cursor.fetchall()
             ]
         finally:
             conn.close()

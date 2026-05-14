@@ -5,7 +5,17 @@
     {
       "id": "BA-01",
       "severity": "HIGH",
-      "description": "Bilingual Protocol: English for system internals/code, Turkish for L0 interaction."
+      "description": "Layered Language: Core (code, logs, DB) + Reasoning = English. Bridge (plan, walkthrough, task, rapor) + Interaction (chat) = Turkish. Laconism Mandate enforced: No filler/acknowledgement."
+    },
+    {
+      "id": "PRE_FLIGHT_AUDIT",
+      "severity": "CRITICAL",
+      "description": "Risk Audit mandatory before any 'write' operation. Identify 2 potential breaking points."
+    },
+    {
+      "id": "LACONISM_MANDATE",
+      "severity": "HIGH",
+      "description": "Strict output efficiency: No filler, direct execution, internal CoT, <4 lines unless technically justified."
     },
     {
       "id": "DB_FIRST",
@@ -45,7 +55,7 @@
     {
       "id": "VISION_SMART_ROUTING",
       "severity": "HIGH",
-      "description": "MiMo-VL-7B-RL is the single vision powerhouse (5.7GB). OCR uses Qwen2-VL (1.1GB, fast). Light fallback uses Qwen2.5-VL (Ollama)."
+      "description": "Qwen2.5-VL:latest is the primary vision model (2.5GB). OCR uses Qwen2-VL (1.1GB, fast)."
     },
     {
       "id": "AGENT_PENALTY",
@@ -75,7 +85,14 @@
     {
       "id": "BACKUP_BEFORE_DELETE",
       "severity": "CRITICAL",
-      "description": "No file deletion or overwrite without verified copy in .antigravity/backup/. Violation triggers safety lock."
+      "enforcement_status": "ACTIVE",
+      "description": "No file deletion without verified copy in .antigravity/backup/. Violation triggers safety lock."
+    },
+    {
+      "id": "BACKUP_BEFORE_WRITE",
+      "severity": "HIGH",
+      "enforcement_status": "ACTIVE",
+      "description": "Automatic pre-write backup and atomic replacement for all ToolBridge file operations."
     },
     {
       "id": "FAILURES_MEMORY",
@@ -121,6 +138,18 @@
       "id": "CITATION_MANDATE",
       "severity": "CRITICAL",
       "description": "Every strategic claim or memory recall must cite source via [SRC:axis_N] format."
+    },
+    {
+      "id": "L0_AUTH_PROTOCOL",
+      "severity": "CRITICAL",
+      "enforcement_status": "ACTIVE",
+      "description": "Any write or system modification requires running 'python scripts/create_l0_token.py' immediately before execution. Authorization window is 60 seconds. Violation triggers Guardian rollback."
+    },
+    {
+      "id": "MANDATORY_FORMAL_AUDIT",
+      "severity": "CRITICAL",
+      "enforcement_status": "ACTIVE",
+      "description": "All system-level code or logic modifications must pass the 4-stage chain audit (AST, QWED Logic, SymPy Math, Z3 SAT) via 'python scripts/sovereign_audit.py' before completion."
     }
   ],
   "db_maintenance": {
@@ -140,7 +169,7 @@
     },
     "clotho": {
       "description": "L2 Executor / Tools / Orchestration",
-      "model": "qwen2-5-coder-7b-instruct-q4_k_m:latest",
+      "model": "qwen3-5-4b-ud-q4_k_xl:latest",
       "alt_model": "hermes-3-llama-3-1-8b-q4_k_m:latest"
     },
     "lachesis": {
@@ -148,11 +177,11 @@
       "model": "phi-4-mini-reasoning-ud-q5_k_xl:latest"
     },
     "vision_flagship": {
-      "model": "mimo-vl:latest",
-      "runtime": "LocalRuntime",
-      "temperature": 0.3,
+      "model": "qwen2.5-vl:latest",
+      "runtime": "ollama",
+      "temperature": 0.1,
       "top_p": 0.95,
-      "note": "MiMo-VL-7B-RL by Xiaomi. Qwen2.5-VL arch. Replaces Qwen3-VL Thinking + Gemma4 Creative + Qwen2.5-VL General. temp=0.3, top_p=0.95. MMMU 70.6."
+      "note": "Qwen2.5-VL replaces MiMo-VL for stability. Fast and efficient 2.5B parameter vision model."
     },
     "r1_reasoning": {
       "model": "deepseek-r1:7b",

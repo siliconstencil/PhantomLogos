@@ -1,6 +1,7 @@
 from ..hephaestus import _get_procedural
 
-def _build_axis_2() -> list:
+
+def _build_axis_2() -> str:
     lines = []
     try:
         proc = _get_procedural()
@@ -12,5 +13,6 @@ def _build_axis_2() -> list:
         if tool_lines:
             lines.append("### MNEMOSYNE AXIS 2 (PROCEDURAL/TOOLS)")
             lines.extend(tool_lines)
-    except Exception: pass
-    return lines
+    except Exception:
+        pass
+    return "\n".join(lines)

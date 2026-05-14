@@ -23,6 +23,7 @@ skills:
   - vram-monitoring
   - telemetry
   - resource-scheduling
+  - system-vram-profiler
 
 memory_axes: [4, 7]
 

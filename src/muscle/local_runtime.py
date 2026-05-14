@@ -1,11 +1,14 @@
-import subprocess
-import os
-import time
-import sys
 import asyncio
+import os
+import subprocess
+import sys
+
+from src.utils.project_path import get_project_root
+
 from ..utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
+
 
 class LocalRuntime:
     """
@@ -13,15 +16,38 @@ class LocalRuntime:
     [SRC:axis_12] Manages local process execution and hardware resource monitoring.
     Handles architecture-specific binary selection (e.g., llama-mtmd-cli for MiMo-VL).
     """
-    
+
     def __init__(self, binary_dir=None, base_model_dir=None):
-        self.binary_dir = binary_dir or os.getenv("LLM_BINARY_DIR") or os.path.join(os.getcwd(), "bin", "llama_bin")
+        root = get_project_root()
+        self.binary_dir = (
+            binary_dir or os.getenv("LLM_BINARY_DIR") or os.path.join(root, "bin", "llama_bin")
+        )
         # Hardened path resolution: LLM_MODEL_DIR is mandatory for deterministic execution
         self.base_model_dir = base_model_dir or os.getenv("LLM_MODEL_DIR")
         if not self.base_model_dir:
-             logger.warning("LocalRuntime: LLM_MODEL_DIR not set, falling back to workspace relative path.")
-             self.base_model_dir = os.path.join(os.getenv("ANTIGRAVITY_ROOT", os.getcwd()), "..", "Google", "AntiGravity", "General Tools")
+            logger.warning(
+                "LocalRuntime: LLM_MODEL_DIR not set, falling back to workspace relative path."
+            )
+            # Safe fallback using root if env vars are missing
+            alt_root = os.getenv("ANTIGRAVITY_ROOT") or str(root)
+            self.base_model_dir = os.path.join(
+                alt_root, "..", "Google", "AntiGravity", "General Tools"
+            )
+
+        self._validate_path(self.binary_dir, "Binary Dir")
+        self._validate_path(self.base_model_dir, "Model Dir")
         self.active_process = None
+
+    def _validate_path(self, path: str, label: str):
+        """Ensures the path is absolute and exists (P3.11)."""
+        if not path:
+            raise ValueError(f"{label} path is empty")
+        # Normalize and check existence
+        norm_path = os.path.abspath(path)
+        if not os.path.exists(norm_path):
+            logger.error(f"LocalRuntime: {label} does not exist: {norm_path}")
+            # We don't raise here in __init__ to avoid early crashes,
+            # but we will check again in run_vision
 
     def _get_binary(self, architecture):
         """Returns the correct binary path based on the architecture."""
@@ -31,7 +57,7 @@ class LocalRuntime:
             "gemma4": f"llama-mtmd-cli{ext}",
             "qwen3vl": f"llama-mtmd-cli{ext}",
             "llava": f"llama-llava-cli{ext}",
-            "generic": f"llama-cli{ext}"
+            "generic": f"llama-cli{ext}",
         }
         bin_name = binaries.get(architecture, f"llama-cli{ext}")
         return os.path.join(self.binary_dir, bin_name)
@@ -42,29 +68,43 @@ class LocalRuntime:
         [SRC:axis_12] VRAM-aware layer offloading logic.
         """
         try:
-            from src.architrave.model_registry import VRAM_CATALOG_GB, GPU_USABLE_VRAM_GB
+            from src.architrave.model_registry import GPU_USABLE_VRAM_GB, VRAM_CATALOG_GB
+
             model_size = VRAM_CATALOG_GB.get(registry_name, 4.0)
-            
+
             # Estimate KV-Cache (rough 0.5-1.5 GB depending on ctx)
-            kv_cache_est = (num_ctx / 32768) * 1.5 
+            kv_cache_est = (num_ctx / 32768) * 1.5
             total_req = model_size + kv_cache_est
-            
+
             if total_req <= GPU_USABLE_VRAM_GB:
-                return 99 # Full offload
-            
+                return 99  # Full offload
+
             # Partial offload: Using actual layers from registry (Pro Restoration)
-            safe_vram = GPU_USABLE_VRAM_GB - kv_cache_est - 0.5 # 0.5 margin
-            if safe_vram <= 0: return 0
-            
+            safe_vram = GPU_USABLE_VRAM_GB - kv_cache_est - 0.5  # 0.5 margin
+            if safe_vram <= 0:
+                return 0
+
             ratio = safe_vram / model_size
             ngl = int(actual_layers * ratio)
-            logger.info(f"LocalRuntime: Partial offload calculated: {ngl}/{actual_layers} layers (ratio: {ratio:.2f})")
+            logger.info(
+                f"LocalRuntime: Partial offload calculated: {ngl}/{actual_layers} layers (ratio: {ratio:.2f})"
+            )
             return ngl
         except Exception as e:
             logger.warning(f"LocalRuntime: ngl calculation failed ({e}), defaulting to 20")
             return 20
 
-    def run_vision(self, architecture, model_rel_path, mmproj_rel_path, prompt, image_path, num_ctx=2048, registry_name: str = "generic", layers: int = 32):
+    def run_vision(
+        self,
+        architecture,
+        model_rel_path,
+        mmproj_rel_path,
+        prompt,
+        image_path,
+        num_ctx=2048,
+        registry_name: str = "generic",
+        layers: int = 32,
+    ):
         """
         Executes Vision models using architecture-specific binaries.
         """
@@ -84,24 +124,36 @@ class LocalRuntime:
 
         cmd = [
             binary_path,
-            "-m", model_path,
-            "--mmproj", mmproj_path,
-            "--image", image_path,
-            "-p", prompt,
-            "--temp", "0.7",
-            "-n", "512",
-            "-ngl", str(ngl),
-            "-c", str(num_ctx)
+            "-m",
+            model_path,
+            "--mmproj",
+            mmproj_path,
+            "--image",
+            image_path,
+            "-p",
+            prompt,
+            "--temp",
+            "0.7",
+            "-n",
+            "512",
+            "-ngl",
+            str(ngl),
+            "-c",
+            str(num_ctx),
         ]
-        
+
         logger.info(f"--- Executing {architecture} Vision ---")
         logger.debug(f"Command: {' '.join(cmd)}")
-        
+
         creationflags = 0x08000000 if sys.platform == "win32" else 0
         try:
             self.active_process = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8',
-                creationflags=creationflags
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                creationflags=creationflags,
             )
             stdout, stderr = self.active_process.communicate()
             if self.active_process.returncode == 0:
@@ -121,19 +173,40 @@ class LocalRuntime:
         """Statically terminates all active llama processes (Sequential Loading Protocol)."""
         try:
             import subprocess
+
             creationflags = 0x08000000 if sys.platform == "win32" else 0
             if sys.platform == "win32":
-                subprocess.run(["taskkill", "/F", "/IM", "llama*", "/T"], capture_output=True, creationflags=creationflags)
+                subprocess.run(
+                    ["taskkill", "/F", "/IM", "llama*", "/T"],
+                    capture_output=True,
+                    creationflags=creationflags,
+                )
             else:
                 subprocess.run(["pkill", "-f", "llama"], capture_output=True)
             logger.info("LocalRuntime: All active llama processes terminated.")
         except Exception as e:
             logger.warning(f"LocalRuntime: Failed to terminate processes ({e})")
 
-    async def run_vision_async(self, architecture, model_rel_path, mmproj_rel_path, prompt, image_path, num_ctx=2048, registry_name: str = "generic", layers: int = 32):
+    async def run_vision_async(
+        self,
+        architecture,
+        model_rel_path,
+        mmproj_rel_path,
+        prompt,
+        image_path,
+        num_ctx=2048,
+        registry_name: str = "generic",
+        layers: int = 32,
+    ):
         """Async wrapper for run_vision to avoid blocking the event loop."""
         return await asyncio.to_thread(
-            self.run_vision, architecture, model_rel_path, mmproj_rel_path, prompt, image_path, num_ctx, registry_name, layers
+            self.run_vision,
+            architecture,
+            model_rel_path,
+            mmproj_rel_path,
+            prompt,
+            image_path,
+            num_ctx,
+            registry_name,
+            layers,
         )
-
-

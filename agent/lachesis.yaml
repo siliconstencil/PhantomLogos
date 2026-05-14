@@ -11,7 +11,7 @@ model:
 tier_config:
   tier: primary
   model: phi-4-mini-reasoning-ud-q5_k_xl:latest
-  
+
 response_format: json_object
 
 temperature: 0.0
@@ -33,6 +33,11 @@ skills:
   - autonomous-qa-evals
   - security-first-guardian
   - socratic-analyst
+  - mnemosyne-high-fidelity-query
+  - codebase-topography-analysis
+  - logic-deadlock-resolver
+  - security-audit
+  - temporal-validity
 
 memory_axes: [5, 8, 10, 14]
 

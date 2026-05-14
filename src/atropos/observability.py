@@ -1,15 +1,14 @@
-import time
-import json
-import os
 import asyncio
 import functools
 import inspect
-import datetime
-from typing import Any, Callable
+import os
+import time
+from collections.abc import Callable
+
 try:
     from .token_budget import TokenBudgetGuard, get_token_guard
 except ImportError:
-    from token_budget import TokenBudgetGuard, get_token_guard
+    from token_budget import get_token_guard
 
 
 class AtroposMonitor:
@@ -17,6 +16,7 @@ class AtroposMonitor:
     Local Observability and Monitoring Layer.
     Logs traces, timing, and status to local JSONL files and TemporalStore.
     """
+
     def __init__(self):
         self.budget_guard = get_token_guard()
         self._temporal = None
@@ -25,6 +25,7 @@ class AtroposMonitor:
         if self._temporal is None:
             try:
                 from cognition.mnemosyne.temporal_store import TemporalStore
+
                 self._temporal = TemporalStore()
             except Exception as e:
                 logger.warning(f"AtroposMonitor: TemporalStore init failed ({e})")
@@ -33,6 +34,7 @@ class AtroposMonitor:
     def trace(self, component: str):
         def decorator(func: Callable):
             if inspect.iscoroutinefunction(func):
+
                 @functools.wraps(func)
                 async def async_wrapper(*args, **kwargs):
                     start_time = time.perf_counter()
@@ -41,18 +43,36 @@ class AtroposMonitor:
                     try:
                         result = await func(*args, **kwargs)
                         duration = time.perf_counter() - start_time
-                        self._log_event(trace_id, component, func.__name__, "SUCCESS", duration=duration, result=result)
+                        self._log_event(
+                            trace_id,
+                            component,
+                            func.__name__,
+                            "SUCCESS",
+                            duration=duration,
+                            result=result,
+                        )
                         return result
                     except asyncio.CancelledError:
                         duration = time.perf_counter() - start_time
-                        self._log_event(trace_id, component, func.__name__, "CANCELLED", duration=duration)
+                        self._log_event(
+                            trace_id, component, func.__name__, "CANCELLED", duration=duration
+                        )
                         raise
                     except Exception as e:
                         duration = time.perf_counter() - start_time
-                        self._log_event(trace_id, component, func.__name__, "FAILURE", duration=duration, error=str(e))
+                        self._log_event(
+                            trace_id,
+                            component,
+                            func.__name__,
+                            "FAILURE",
+                            duration=duration,
+                            error=str(e),
+                        )
                         raise
+
                 return async_wrapper
             else:
+
                 @functools.wraps(func)
                 def sync_wrapper(*args, **kwargs):
                     start_time = time.perf_counter()
@@ -61,28 +81,45 @@ class AtroposMonitor:
                     try:
                         result = func(*args, **kwargs)
                         duration = time.perf_counter() - start_time
-                        self._log_event(trace_id, component, func.__name__, "SUCCESS", duration=duration, result=result)
+                        self._log_event(
+                            trace_id,
+                            component,
+                            func.__name__,
+                            "SUCCESS",
+                            duration=duration,
+                            result=result,
+                        )
                         return result
                     except Exception as e:
                         duration = time.perf_counter() - start_time
-                        self._log_event(trace_id, component, func.__name__, "FAILURE", duration=duration, error=str(e))
+                        self._log_event(
+                            trace_id,
+                            component,
+                            func.__name__,
+                            "FAILURE",
+                            duration=duration,
+                            error=str(e),
+                        )
                         raise
+
                 return sync_wrapper
+
         return decorator
 
     def _log_event(self, trace_id: str, component: str, action: str, status: str, **kwargs):
         # Database-First: No file I/O for traces.
         from src.utils.logging_config import setup_logger
+
         logger = setup_logger(component)
-        
+
         event_msg = f"Trace[{trace_id}] {action} -> {status}"
         if "error" in kwargs:
             event_msg += f" (Error: {kwargs['error']})"
         if "duration" in kwargs:
             event_msg += f" [{kwargs['duration']:.4f}s]"
-            
+
         logger.info(event_msg)
-        
+
         # Axis 4: Temporal - Record trace as time-series metric
         temporal = self._get_temporal()
         if temporal:
@@ -95,7 +132,7 @@ class AtroposMonitor:
                 latency_ms=duration * 1000 if duration else 0.0,
                 extra={"trace_id": trace_id, "status": status},
             )
-        
+
         if status == "SUCCESS":
             tokens = kwargs.get("tokens")
             if tokens is None:
@@ -104,14 +141,15 @@ class AtroposMonitor:
                 if isinstance(result, str):
                     try:
                         import tiktoken
+
                         enc = tiktoken.get_encoding(os.getenv("TOKEN_ENCODING", "cl100k_base"))
                         tokens = len(enc.encode(result))
                     except Exception as e:
                         logger.warning(f"AtroposMonitor: tiktoken failed ({e}), fallback 500")
                         tokens = 500
                 else:
-                    tokens = 500 # Fallback
-            
+                    tokens = 500  # Fallback
+
             allowed = self.budget_guard.consume(tokens)
             if not allowed:
                 remaining = self.budget_guard.remaining_daily()
@@ -120,6 +158,7 @@ class AtroposMonitor:
 
 if __name__ == "__main__":
     import asyncio
+
     monitor = AtroposMonitor()
 
     @monitor.trace("test_component")

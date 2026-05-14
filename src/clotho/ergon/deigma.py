@@ -1,82 +1,132 @@
 import asyncio
 import re
 from typing import Any
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
+
+async def extract_logic_llm(draft: str) -> str:
+    """
+    [SRC:axis_11] Uses Phi-4 Mini to extract logical assertions in SMT-LIB2 format from a draft.
+    [HH:MM AM/PM PT]
+    """
+    try:
+        from src.architrave.model_registry import resolve_local_model
+        from src.utils.ollama_utils import get_ollama_client
+
+        prompt = f"""Analyze the following technical implementation or text.
+Extract any logical claims, constraints, or assertions.
+Convert them into a single valid SMT-LIB2 script for the Z3 solver.
+Draft: {draft}
+
+Rules:
+- Define necessary constants/variables (Bool, Real, or Int).
+- Use (assert ...) for each claim.
+- End with (check-sat).
+- Provide ONLY the SMT-LIB2 code. No markdown tags or explanation.
+SMT-LIB2:"""
+
+        client = get_ollama_client()
+        model = resolve_local_model("critique", "primary")
+        resp = await client.generate(model=model, prompt=prompt)
+        return resp.response.strip().replace("```smt2", "").replace("```", "")
+    except Exception as e:
+        logger.warning(f"deigma: Logic extraction failed ({e})")
+        return ""
+
+
 async def verify_node(state: Any):
     """
-    [SRC:axis_6] Mandatory Post-Draft Verification Hook (Axis 6/11). 
-    Hardened against QWED sync blocking and implements 2-pass L3 logic.
+    [SRC:axis_6/11] Neuro-Symbolic Verification Hook.
+    Implements QWED 2-pass code audit, Qwen Math LLM, and Z3 SAT bridge. [HH:MM AM/PM PT]
     """
+
     def sync_verify(draft, retry_count):
         if not draft or len(draft.strip()) < 10:
             return {"verification_retry": retry_count + 1, "memory_sync": True}
 
-        from src.lachesis.verifiers import SympyVerifier
         from src.lachesis import get_output_guard
-        verifier = SympyVerifier()
-        guard = get_output_guard()
-        
-        def log_rejection(reason):
-            try:
-                from cognition.mnemosyne.operational_store import OperationalStore
-                op_store = OperationalStore()
-                op_store.log_event("verify_node.rejection", reason, {"draft_preview": draft[:200]})
-            except Exception as e:
-                logger.error(f"ergon: log_rejection failed ({e})")
+        from src.lachesis.verifiers import SympyVerifier
+        from src.lachesis.verifiers.llm_engine import LLMMathEngine
+        from src.lachesis.verifiers.qwed_engine import QWEDEngine
 
-        # Check behavioral constraints (Emoji, Prohibited words, BA-01)
+        verifier = SympyVerifier()  # Legacy support
+        qwed = QWEDEngine()
+        math_engine = LLMMathEngine()
+        guard = get_output_guard()
+
+        # Step 1: OutputGuard (BA-01 & Safety)
         guard_result = guard.check(draft, agent_id="verify_node")
         if guard_result.get("action") == "reject":
-            logger.warning(f"ergon: verify_node REJECTED draft via OutputGuard (Attempt {retry_count + 1})")
-            log_rejection("OutputGuard Rule Violation")
             return {"draft": "", "verification_retry": retry_count + 1, "memory_sync": False}
 
-        # Phase 11.18.13: 2-Pass L3 Verification
-        # Pass 1: Phi-4 Mini (Default)
-        audit = verifier.audit_code_logic(draft)
-        
-        # [SRC:axis_11] Pass 2: Two-pass verification — Phi-4 Mini to Qwen-7b fallback on low confidence
-        if audit.get("confidence", 1.0) < 0.6 and audit.get("has_contradiction"):
-            logger.info("ergon: Phi-4 Mini found contradiction with low confidence. Triggering Pass 2 (Qwen-7b)...")
-            from src.architrave.model_registry import resolve_local_model
-            pass2_model = resolve_local_model("code", "primary")
-            verifier_pass2 = SympyVerifier(model=pass2_model)
-            audit_pass2 = verifier_pass2.audit_code_logic(draft)
-            if not audit_pass2.get("has_contradiction"):
-                logger.info("ergon: Qwen-7b cleared the draft. Contradiction overruled.")
-                audit["has_contradiction"] = False
-            else:
-                logger.warning("ergon: Qwen-7b confirmed contradiction.")
-        
-        math_exprs = re.findall(r"(\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+)", draft)
-        math_failed = any(not verifier.verify_math(e).get("valid") for e in math_exprs)
+        # Step 2: QWED 2-Pass Code Audit [TIER 1.1/1.3 FIX]
+        audit = qwed.audit_code_logic(draft)
+        # [SRC:axis_11] logic_score < 0.6 triggers expert fallback
+        if audit.get("logic_score", 1.0) < 0.6:
+            logger.info("deigma: Low logic_score detected. Triggering QWED expert fallback...")
+            from src.architrave.model_registry import get_qwed_models
 
-        # AXIS 11: Z3 Logic Verification
-        logic_blocks = re.findall(r"<LOGIC>(.*?)</LOGIC>", draft, re.DOTALL)
-        logic_failed = False
-        for lb in logic_blocks:
-            res = verifier.verify_logic(lb)
-            if res and not res.get("valid", True):
-                logger.warning(f"ergon: Z3 Logic check failed: {res.get('error')}")
-                logic_failed = True
-                break
+            qwed_expert = QWEDEngine(model=get_qwed_models()["fallback"])
+            audit = qwed_expert.audit_code_logic(draft)
 
-        if audit.get("has_contradiction") or math_failed or logic_failed:
-            logger.warning(f"ergon: verify_node REJECTED draft via Axis 11 (Attempt {retry_count + 1})")
-            log_rejection(f"Axis 11 (Audit={audit.get('has_contradiction')}, Math={math_failed}, Logic={logic_failed}) Violation")
-            return {"draft": "", "verification_retry": retry_count + 1, "memory_sync": False}
-        
-        # Calculate complexity to dynamically adjust the tier for subsequent nodes
-        complexity_score = len(draft) + (len(re.findall(r"\b(def|class|async|import)\b", draft)) * 100)
-        suggested_tier = "expert" if complexity_score > 3000 else "standard"
-        
-        return {"memory_sync": True, "verification_retry": retry_count, "selected_model_tier": suggested_tier}
+    # Core checks in sync pool (BA-01 & QWED)
+    results = await asyncio.to_thread(sync_verify, draft, retry_count)
 
-    draft = state.get("draft", "")
-    retry_count = state.get("verification_retry", 0)
-    
-    # Offload the entire sync logic to a thread pool to avoid blocking the main event loop
-    return await asyncio.to_thread(sync_verify, draft, retry_count)
+    if results.get("audit_fail"):
+        return {"draft": "", "verification_retry": retry_count + 1, "memory_sync": False}
+
+    # Step 3: Math Verification [TIER 1.4 FIX] - Moved to async body [Phase 1.0.24]
+    if re.search(r"[\d\w]+\s*[\+\-\*\/=]\s*[\d\w]+", draft):
+        from src.lachesis.verifiers.llm_engine import LLMMathEngine
+
+        math_engine = LLMMathEngine()
+        # [Phase 1.0.24] llm_engine is now fully async
+        math_res = await math_engine.verify_math_llm(draft)
+        if not math_res.get("is_valid"):
+            logger.warning(
+                f"deigma: Math verification failed: {math_res.get('result', 'Mismatch')}"
+            )
+            # [Phase 1.0.24] Implementation of Partial Correction instead of total rejection
+            return {
+                "partial_correction": {
+                    "error_type": "axis_11_math",
+                    "details": math_res.get(
+                        "result", "Mathematical inconsistency detected in Axis 11 audit."
+                    ),
+                    "hint": "Please review the mathematical steps and ensure all equations are balanced and correct.",
+                },
+                "verification_retry": retry_count + 1,
+                "memory_sync": False,
+            }
+
+    # Step 4: Z3 SAT Bridge (Async due to LLM extraction) [TIER 1.2 FIX]
+    smt_problem = await extract_logic_llm(draft)
+    if smt_problem:
+        from src.lachesis.verifiers.z3_engine import verify_logic as z3_verify
+
+        z3_res = z3_verify(smt_problem)
+        if not z3_res.get("is_valid", False):
+            logger.warning(f"deigma: Z3 Logic UNSAT/Unknown: {z3_res.get('result', 'Error')}")
+            return {
+                "partial_correction": {
+                    "error_type": "axis_11_logic",
+                    "details": z3_res.get(
+                        "result", "Z3 SMT solver detected logical unsatisfiability."
+                    ),
+                    "hint": "Check the logical constraints and consistency of assertions.",
+                },
+                "verification_retry": retry_count + 1,
+                "memory_sync": False,
+            }
+
+    complexity_score = len(draft) + (len(re.findall(r"\b(def|class|async|import)\b", draft)) * 100)
+    suggested_tier = "expert" if complexity_score > 3000 else "standard"
+
+    return {
+        "memory_sync": True,
+        "verification_retry": retry_count,
+        "selected_model_tier": suggested_tier,
+    }

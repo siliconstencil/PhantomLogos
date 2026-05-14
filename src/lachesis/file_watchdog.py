@@ -1,111 +1,179 @@
+import hashlib
+import json
 import os
-import sys
-import time
 import sqlite3
-import traceback
+import time
 from datetime import datetime
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if BASE_DIR not in sys.path:
-    sys.path.append(BASE_DIR)
+from src.utils.logging_config import setup_logger
 
-import importlib.util
-_sm_path = os.path.join(os.path.dirname(__file__), "snapshot_manager.py")
-_sm_spec = importlib.util.spec_from_file_location("_snapshot_manager", _sm_path)
-_sm_mod = importlib.util.module_from_spec(_sm_spec)
-_sm_spec.loader.exec_module(_sm_mod)
-SnapshotManager = _sm_mod.SnapshotManager
-DB_PATH = _sm_mod.DB_PATH
+from .snapshot_manager import IGNORE_DIRS, WATCH_DIRS, WATCH_PATTERNS, SnapshotManager
 
-WATCH_DIRS = ["src", "cognition", ".antigravity", "agent"]
-WATCH_PATTERNS = (".py", ".md", ".yaml", ".yml", ".json")
-IGNORE_DIRS = {".venv", "__pycache__", "data", "logs", "scratch", ".git", ".pytest_cache", "opencode"}
+logger = setup_logger(__name__)
 
-SIZE_THRESHOLD_PERCENT = 0.9
-L0_TOKEN_PATH = os.path.join(BASE_DIR, "data/snapshots/L0_AUTH_TOKEN")
 
 class PollingGuardian:
-    def __init__(self, project_root: str):
-        self.project_root = os.path.abspath(project_root)
+    """
+    Sovereign Shield: Cryptographic File Integrity Watchdog (SHA-256).
+    [SRC:axis_11] Enforces absolute L0 authorization for all system mutations. [HH:MM AM/PM PT]
+    """
+
+    def __init__(self, project_root: str | None = None):
+        from src.utils.project_path import get_project_root
+
+        self.project_root = (
+            str(get_project_root()) if project_root is None else os.path.abspath(project_root)
+        )
         self.manager = SnapshotManager(self.project_root)
-        self._last_mtimes = {} # Cache for mtime optimization
+        self._last_mtimes = {}  # Cache for mtime optimization
+        self._db_path = self.manager._db_path
+        self._token_path = self.manager._token_path
 
     def _is_l0_authorized(self) -> bool:
-        if os.path.exists(L0_TOKEN_PATH):
-            st = os.stat(L0_TOKEN_PATH)
+        if os.path.exists(self._token_path):
+            st = os.stat(self._token_path)
+            # 60s authorization window
             if time.time() - st.st_mtime < 60:
                 return True
         return False
 
-    def _log_violation(self, rel_path: str, old_size: int, new_size: int):
+    def _update_system_status(self, status: str, details: dict | None = None):
+        """Atomic update of the system status flag for agent awareness."""
+        status_path = os.path.join(self.project_root, "data/system_status.json")
+        os.makedirs(os.path.dirname(status_path), exist_ok=True)
+        ts = datetime.now().strftime("%I:%M %p PT")
+        data = {"status": status, "time": ts}
+        if details:
+            data.update(details)
+
+        temp_path = f"{status_path}.tmp"
+        for attempt in range(3):
+            try:
+                with open(temp_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=4)
+                os.replace(temp_path, status_path)
+                break
+            except Exception as e:
+                if attempt < 2:
+                    time.sleep(0.1)
+                    continue
+                logger.error(f"Guardian: Status update failed ({e})")
+
+    def _log_violation(self, rel_path: str, reason: str):
+        """Log sovereign violations to both file and Mnemosyne axes."""
         log_path = os.path.join(self.project_root, "logs/system/watchdog/integrity_violations.log")
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        with open(log_path, "a") as f:
-            ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            f.write(f"[{ts}] VIOLATION: {rel_path} | Size dropped from {old_size} to {new_size}. Rollback executed.\n")
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"[{ts}] VIOLATION: {rel_path} | {reason} | Rollback executed.\n")
 
-    def _check_file(self, rel_path: str):
+        try:
+            from cognition.mnemosyne.episodic_store import EpisodicStore
+            from cognition.mnemosyne.temporal_store import TemporalStore
+
+            es = EpisodicStore()
+            es.log(
+                session_id="system",
+                agent_id="SovereignShield",
+                action="rollback",
+                detail=f"File: {rel_path} | {reason}",
+                outcome="restored",
+            )
+            ts_store = TemporalStore()
+            ts_store.record(
+                session_id="system",
+                event_type="sovereign_block",
+                model_name="Guardian",
+                vram_gb=0,
+                extra={"rel_path": rel_path, "reason": reason, "rollback": True},
+            )
+        except Exception as e:
+            logger.error(f"Sovereign Shield: Mnemosyne sync failed ({e})")
+
+    def _get_file_hash(self, full_path: str) -> str:
+        sha256_hash = hashlib.sha256()
+        try:
+            with open(full_path, "rb") as f:
+                for byte_block in iter(lambda: f.read(4096), b""):
+                    sha256_hash.update(byte_block)
+            return sha256_hash.hexdigest()
+        except Exception:
+            return ""
+
+    def _check_file(self, rel_path: str) -> bool:
         full_path = os.path.join(self.project_root, rel_path)
-        if not os.path.exists(full_path): return
+        path_key = rel_path.lower().replace("\\", "/")
+
+        if not os.path.exists(full_path):
+            if not self._is_l0_authorized():
+                if self.manager.restore_file(rel_path):
+                    self._log_violation(rel_path, "Unauthorized deletion")
+                    return True
+            return False
 
         try:
             st = os.stat(full_path)
             new_mtime = st.st_mtime
-            
-            # Optimization: Skip if mtime hasn't changed since last check
             if rel_path in self._last_mtimes and self._last_mtimes[rel_path] == new_mtime:
-                return
-            
+                return False
+
             self._last_mtimes[rel_path] = new_mtime
-            new_size = st.st_size
-            
-            with sqlite3.connect(os.path.join(self.project_root, DB_PATH)) as conn:
+            current_hash = self._get_file_hash(full_path)
+            if not current_hash:
+                return False
+
+            with sqlite3.connect(self._db_path, timeout=30) as conn:
                 row = conn.execute(
-                    "SELECT size FROM snapshots WHERE path = ? ORDER BY timestamp DESC LIMIT 1",
-                    (rel_path.lower(),)
+                    "SELECT hash FROM snapshots WHERE path = ? ORDER BY timestamp DESC LIMIT 1",
+                    (path_key,),
                 ).fetchone()
-                
+
                 if row:
-                    old_size = row[0]
-                    if new_size < (old_size * SIZE_THRESHOLD_PERCENT):
+                    if current_hash != row[0]:
                         if not self._is_l0_authorized():
-                            print(f"[SOVEREIGN VIOLATION] {rel_path}: {old_size} -> {new_size}. ROLLBACK!", flush=True)
+                            logger.error(
+                                f"[SOVEREIGN VIOLATION] {rel_path}: Mutation detected. ROLLBACK!"
+                            )
                             self.manager.restore_file(rel_path)
-                            self._log_violation(rel_path, old_size, new_size)
-                            # Reset mtime after restore to ensure next check sees the restored file
-                            self._last_mtimes[rel_path] = os.path.getsize(full_path) 
-        except Exception:
-            pass
+                            self._log_violation(rel_path, "Unauthorized mutation (Hash mismatch)")
+                            return True
+
+                self.manager.take_snapshot(rel_path)
+                return False
+        except Exception as e:
+            logger.error(f"Guardian check error [{rel_path}]: {e}")
+            return False
 
     def run(self):
-        print(f"[INIT] Polling Integrity Guardian active on: {self.project_root}", flush=True)
+        logger.info(f"Polling Integrity Guardian (SHA-256) active on: {self.project_root}")
         cycle_count = 0
         while True:
+            had_violation = False
             try:
                 cycle_count += 1
-                if cycle_count % 100 == 0:
-                    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    print(f"[{ts}] [HEARTBEAT] Guardian cycle {cycle_count} completed. System secure.", flush=True)
-
                 for root_dir in WATCH_DIRS:
                     full_root = os.path.join(self.project_root, root_dir)
-                    if not os.path.isdir(full_root): continue
-                    
+                    if not os.path.isdir(full_root):
+                        continue
                     for root, dirs, files in os.walk(full_root):
                         dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
                         for file in files:
                             if file.endswith(WATCH_PATTERNS):
-                                rel_path = os.path.relpath(os.path.join(root, file), self.project_root).replace("\\", "/")
-                                self._check_file(rel_path)
+                                full_file_path = os.path.join(root, file)
+                                rel_path = os.path.relpath(
+                                    full_file_path, self.project_root
+                                ).replace("\\", "/")
+                                if self._check_file(rel_path):
+                                    had_violation = True
             except Exception as e:
-                print(f"[ERROR] Cycle error: {e}", flush=True)
-            
-            time.sleep(30)
+                logger.error(f"Guardian cycle error: {e}")
+
+            self._update_system_status("ERROR" if had_violation else "OK")
+            time.sleep(10)
+
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=os.getcwd())
-    args = parser.parse_args()
-    guardian = PollingGuardian(args.root)
+    from src.utils.project_path import get_project_root
+
+    guardian = PollingGuardian(str(get_project_root()))
     guardian.run()

@@ -1,7 +1,8 @@
-import unittest
 import os
-import sys
+import unittest
+
 from src.utils.sandbox import LightSandbox
+
 
 class TestLightSandbox(unittest.TestCase):
     def setUp(self):
@@ -41,7 +42,7 @@ print(f"PYTHONPATH: {os.environ.get('PYTHONPATH', 'NOT_SET')}")
         stdout, stderr = self.sandbox.run(code)
         # PYTHONPATH should be truly absent from env
         self.assertIn("PYTHONPATH: NOT_SET", stdout)
-        
+
     def test_windows_dll_support(self):
         # Test if basic math (which might need some DLLs) works
         code = "import math\nprint(math.sqrt(16))"
@@ -52,6 +53,7 @@ print(f"PYTHONPATH: {os.environ.get('PYTHONPATH', 'NOT_SET')}")
         code = "with open('C:/Windows/System32/drivers/etc/hosts', 'r') as f: print(f.read())"
         stdout, stderr = self.sandbox.run(code)
         self.assertIn("Error: Absolute paths or network shares are forbidden", stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,16 +1,19 @@
-from .base import Base
-from sqlalchemy import Column, Integer, String, DateTime, Text, func
+from datetime import UTC, datetime
+
+from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, func
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from datetime import datetime, timezone
+
 from src.utils.logging_config import setup_logger
 
+from .base import Base
+
 logger = setup_logger(__name__)
+
 
 class OperationalLog(Base):
     __tablename__ = "operational_logs_v2"
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    timestamp = Column(DateTime, default=lambda: datetime.now(UTC))
     session_id = Column(String(100), default="default")
     agent_id = Column(String(50), default="system")
     tool_name = Column(String(50))
@@ -18,22 +21,44 @@ class OperationalLog(Base):
     level = Column(String(20))
     message = Column(Text)
 
+
 class OperationalStore:
     """
     Mnemosyne Operational Memory Layer (Axis 7).
     Manages system telemetry, tool usage tracking, and self-awareness reporting.
     """
+
     AXIS_ID = 7
 
-    def __init__(self, db_url: str = "sqlite:///data/mnemosyne.db"):
-        self.engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    def __init__(self, db_url: str | None = None):
+        from src.utils.project_path import to_absolute_path
+
+        db_url = db_url or f"sqlite:///{to_absolute_path('data/mnemosyne.db')}"
+        self.engine = create_engine(
+            db_url, connect_args={"check_same_thread": False, "timeout": 30}
+        )
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
-    def record_event(self, name: str, level: str, message: str, agent_id: str = "system", tool_name: str = None, session_id: str = "default"):
+    def record_event(
+        self,
+        name: str,
+        level: str,
+        message: str,
+        agent_id: str = "system",
+        tool_name: str = None,
+        session_id: str = "default",
+    ):
         session = self.Session()
         try:
-            log = OperationalLog(name=name, level=level, message=message, agent_id=agent_id, tool_name=tool_name, session_id=session_id)
+            log = OperationalLog(
+                name=name,
+                level=level,
+                message=message,
+                agent_id=agent_id,
+                tool_name=tool_name,
+                session_id=session_id,
+            )
             session.add(log)
             session.commit()
         except Exception as e:
@@ -45,7 +70,12 @@ class OperationalStore:
     def get_recent_logs(self, limit: int = 50):
         session = self.Session()
         try:
-            logs = session.query(OperationalLog).order_by(OperationalLog.timestamp.desc()).limit(limit).all()
+            logs = (
+                session.query(OperationalLog)
+                .order_by(OperationalLog.timestamp.desc())
+                .limit(limit)
+                .all()
+            )
             return logs
         finally:
             session.close()
@@ -59,33 +89,37 @@ class OperationalStore:
         try:
             total_events = session.query(func.count(OperationalLog.id)).scalar() or 0
 
-            top_tools = session.query(
-                OperationalLog.tool_name,
-                func.count(OperationalLog.id).label("calls")
-            ).filter(
-                OperationalLog.tool_name.isnot(None)
-            ).group_by(
-                OperationalLog.tool_name
-            ).order_by(
-                func.count(OperationalLog.id).desc()
-            ).limit(5).all()
+            top_tools = (
+                session.query(
+                    OperationalLog.tool_name, func.count(OperationalLog.id).label("calls")
+                )
+                .filter(OperationalLog.tool_name.isnot(None))
+                .group_by(OperationalLog.tool_name)
+                .order_by(func.count(OperationalLog.id).desc())
+                .limit(5)
+                .all()
+            )
 
-            agent_activity = session.query(
-                OperationalLog.agent_id,
-                func.count(OperationalLog.id).label("events")
-            ).group_by(
-                OperationalLog.agent_id
-            ).order_by(
-                func.count(OperationalLog.id).desc()
-            ).limit(5).all()
+            agent_activity = (
+                session.query(
+                    OperationalLog.agent_id, func.count(OperationalLog.id).label("events")
+                )
+                .group_by(OperationalLog.agent_id)
+                .order_by(func.count(OperationalLog.id).desc())
+                .limit(5)
+                .all()
+            )
 
-            recent_errors = session.query(func.count(OperationalLog.id)).filter(
-                OperationalLog.level == "ERROR"
-            ).scalar() or 0
+            recent_errors = (
+                session.query(func.count(OperationalLog.id))
+                .filter(OperationalLog.level == "ERROR")
+                .scalar()
+                or 0
+            )
 
-            last_event = session.query(OperationalLog).order_by(
-                OperationalLog.timestamp.desc()
-            ).first()
+            last_event = (
+                session.query(OperationalLog).order_by(OperationalLog.timestamp.desc()).first()
+            )
 
             return {
                 "total_events": total_events,

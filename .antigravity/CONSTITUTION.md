@@ -28,10 +28,12 @@ Morpheus is mandated to monitor and restart LLM services if they become unrespon
 
 ## 5. Governance Protocols
 
-### BA-01: Language Neutrality
-- **Internals:** All code, logs, and system documentation must be in **English (ASCII-only)**.
-- **User Interaction (L0):** All communication with the human user must be in **Turkish**.
-- **Rationale:** Technical precision in English; accessibility in the user's native language.
+### BA-01: Layered Language Protocol
+- **Core Layer (code, DB schemas, system logs, JSON configs):** Must be in **English (ASCII-only)**.
+- **Reasoning Layer (agent internal thought, debug output):** Must be in **English (ASCII-only)**.
+- **Bridge Layer (plan, walkthrough, task list, rapor, .md artifacts):** Must be in **Turkish** (user-facing documentation).
+- **Interaction Layer (chat, responses, L0 communication):** Must be in **Turkish**.
+- **Rationale:** Technical precision in English for machine-readable artifacts; accessibility in Turkish for human-readable artifacts.
 
 ### EMOJI_BAN
 - **Rule:** The use of emojis or special character-based decorations in system files, code, or logs is **strictly prohibited**.
@@ -63,6 +65,18 @@ Morpheus is mandated to monitor and restart LLM services if they become unrespon
 ### SECRET_ISOLATION
 - **Rule:** Credentials and sensitive keys must never be hardcoded or stored in plain-text repositories. Use secure environment variables or system-level secret managers.
 - **Rationale:** To prevent security leaks and maintain environment-agnostic deployment.
+
+### L0_AUTH_PROTOCOL
+- **Rule:** Any write or system modification requires running `python scripts/create_l0_token.py` immediately before execution. Authorization window is 60 seconds.
+- **Rationale:** To prevent unauthorized state mutations and enforce L0 sovereignty.
+
+### TIMESTAMP_RULE
+- **Rule:** All actions and system events must include timestamps in `[HH:MM AM/PM PT]` format.
+- **Rationale:** To ensure chronological traceability across sessions.
+
+### BACKUP_BEFORE_WRITE
+- **Rule:** Automatic pre-write backup and atomic replacement for all ToolBridge file operations.
+- **Rationale:** To ensure recoverability and atomic rollback in case of agentic error.
 
 ---
 

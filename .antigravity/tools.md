@@ -21,7 +21,7 @@ All models below use GGUF quantization (Q4_K_M, Q5_K_XL, Q6_K, Q8_0). Benchmark 
 
 | Model | VRAM | MMLU | HumanEval | MATH | Context | Tok/s | Role |
 |-------|------|------|-----------|------|---------|-------|------|
-| **Qwen 2.5 Coder 7B** `qwen2-5-coder-7b-instruct-q4_k_m` | 4.7 GB | 72% | 88% | — | 32K | ~18 | L2 Primary — Code generation, agentic loops |
+| **Qwen 3.5 4B UD** `qwen3-5-4b-ud-q4_k_xl:latest` | 2.9 GB | 70% | 85% | — | 32K | ~30 | L2 Primary — Code generation, agentic loops |
 | **Ministral 3B** `ministral-3-3b-reasoning-2512-ud-q4_k_xl` | 2.2 GB | 60% | — | — | 32K | ~35 | L2 Light — Rapid response, low complexity |
 | **Hermes-3 Llama-8B** `hermes-3-llama-3-1-8b-q4_k_m` | 4.9 GB | 69% | 62% | — | 128K | ~16 | L2 Alternative — Strong tool use & function calling |
 | **Qwen 3.5 9B** `qwen3-5-9b-ud-q4_k_xl:latest` | 6.0 GB | 78% | 75% | — | 32K | ~14 | L1 Local Alt — Deep local reasoning |
@@ -54,6 +54,12 @@ All models below use GGUF quantization (Q4_K_M, Q5_K_XL, Q6_K, Q8_0). Benchmark 
 | **Qwen 3.5 2B** `qwen3-5-2b-ud-q6_k_xl:latest` | 1.9 GB | 65% | — | 32K | ~40 | Axis 11 — Light verification alternative |
 | **Qwen 3.5 4B** `qwen3-5-4b-ud-q4_k_xl:latest` | 2.9 GB | 70% | — | 32K | ~30 | Axis 11 — Verification alternative |
 | **Qwen 2.5 Coder 3B** `qwen2-5-coder-3b-instruct-q4_k_m:latest` | 2.1 GB | 65% | — | 32K | ~38 | Axis 11 — Lighter quantization variant |
+| **DeepSeek-R1-8B** `deepseek-r1-8b:latest` | 5.1 GB | 78% | 85% | 94.5% | 32K | ~16 | Axis 11 — [Phase 1.0.24] Reasoning + Math expert |
+| **Open-Xi-Math** `open-xi-math:latest` | 1.1 GB | — | — | 92.0% | 8K | ~18 | Axis 11 — [Phase 1.0.24] High-fidelity math verification |
+| **SmolLM3-3B** `smollm3-3b:latest` | 1.9 GB | 60% | — | — | 8K | ~35 | Axis 11 — [Phase 1.0.24] Fast math/reasoning |
+| **Qwen2.5-Math-1.5B** `qwen2.5-math-1.5b:latest` | 1.1 GB | — | — | 88.0% | 4K | ~45 | Axis 11 — [Phase 1.0.24] Small specialized math |
+| **math-mini-0.6B** `math-mini-0.6b:latest` | 0.45 GB | — | — | — | 4K | ~60 | Axis 11 — [Phase 1.0.24] Ultra-light math fallback |
+| **qwq-math-io-500m** `qwq-math-io-500m:latest` | 0.4 GB | — | — | — | 4K | ~70 | Axis 11 — [Phase 1.0.24] Minimalist math bridge |
 
 ### 2.4 Vision Pipeline (LocalRuntime &amp; Ollama)
 
@@ -95,9 +101,11 @@ These rules are critical for correct model behavior. Violations cause silent deg
 | **Qwen 2.5 Math 7B** (`qwen2.5-math-7b:latest`) | Qwen standard tokenizer | **temp=0.0; System prompt OPSIYONEL** | Math dogrulugu icin greedy decoding (temp=0.0) onerilir. Sadece 4K context (4096). |
 | **TinyLlama** (`tinyllama:latest`) | `\`<|system|>\``, `\`<|user|>\``, `\`<|assistant|>\`` | **temp=0.7, top_k=50, top_p=0.95** | Llama 2 tokenizer'in birebir aynisi. System prompt desteklenir. 2K context limiti. |
 | **DeepSeek-R1-Distill-Qwen-1.5B** | Ayni R1 kurallari | **Cikti basina `<think>\n` prefix; System prompt KULLANMA; temp=0.6** | 7B variant ile ayni kurallar. |
-| **Qwen 2.5 Coder 7B** | Qwen standard tokenizer | **temp=0.2-0.4 (code); temp=0.0 (verification)** | Code generation icin dusuk temperature onerilir. |
+| **Qwen 3.5 4B UD** | Qwen standard tokenizer | **temp=0.2-0.4 (code); temp=0.0 (verification)** | Code generation icin dusuk temperature onerilir. |
 | **Phi-4 Mini** | Microsoft tokenizer | **temp=0.2 (audit); temp=0.7 (creative)** | Audit/review gorevlerinde dusuk temperature, yaratıcı gorevlerde yuksek. System prompt destegi var. |
 | **MiMo-VL** (`mimo-vl:latest`) | Qwen2.5-VL chat template | **temp=0.3, top_p=0.95; `/no_think` ile thinking kapatilir** | Xiaomi MiMo-VL-7B-RL. Gorsel input metinden ONCE gelmeli. System prompt GGUF icinde embedded. |
+| **DeepSeek-R1-8B** | R1 standard tokenizer | **temp=0.6; System prompt KULLANMA** | Distill variantlarla ayni kurallar. |
+| **qwq-math-io-500m** | Qwen tokenizer | **temp=0.0; top_p=0.95** | Math bridge, greedy decoding zorunlu. |
 
 ---
 
@@ -107,7 +115,7 @@ These rules are critical for correct model behavior. Violations cause silent deg
 |------|-------|-------|--------------|------|----------|
 | **Tier 0** | Ultra-Light | Fast response, skip audit | `deepscaler-1-5b-preview-q4_k_m` | 1.1 GB | `deepseek-r1-distill-qwen-1-5b-q8_0` |
 | **Tier 1** | Light | Rapid, low-latency | `ministral-3-3b-reasoning-2512-ud-q4_k_xl` | 2.2 GB | `llama-3-2-3b-instruct-ud-q4_k_xl` |
-| **Tier 2** | Primary | Standard agentic loops | `qwen2-5-coder-7b-instruct-q4_k_m` | 4.7 GB | `granite-4.1-8b:latest` |
+| **Tier 2** | Primary | Standard agentic loops | `qwen3-5-4b-ud-q4_k_xl:latest` | 2.9 GB | `granite-4.1-8b:latest` |
 | **Tier 3** | Expert (Cloud) | Deep reasoning | `models/antigravity-strategic-gateway` | — | `qwen3-5-9b-ud-q4_k_xl:latest` (local) |
 
 ### Tier Selection Rules
@@ -135,7 +143,8 @@ These rules are critical for correct model behavior. Violations cause silent deg
 | **Vision Full** | MiMo-VL-7B-RL (5.7) | 5.7 GB | Flagship VLM — Thinking + Creative + General |
 | **Vision OCR** | Qwen2-VL OCR 2B (1.1) | 1.1 GB | Fast document/OCR — dedicated lightweight |
 | **Fast (L0+L2)** | DeepScaler-1.5B (1.1) + Ministral-3B (2.2) | 3.3 GB | Rapid response |
-| **Verification** | Qwen-7B (4.7) + Qwen-3B (2.5) | 7.2 GB | Heavy code/math audit |
+| **Verification (Expert)** | DeepSeek-R1-8B (5.1) + math-mini (0.45) | 5.55 GB | Phase 1.0.24 — Expert math audit |
+| **Verification (Light)** | SmolLM3-3B (1.9) + qwq-math (0.4) | 2.3 GB | Phase 1.0.24 — Rapid math audit |
 | **Idle** | Nomic (0.5) + Jina (0.6) | 1.1 GB | Background retrieval only |
 
 ### Sequential Loading & Recovery Protocol
@@ -152,7 +161,7 @@ These rules are critical for correct model behavior. Violations cause silent deg
 | Task | Recommended Model | Expected Latency | Stream Quality |
 |------|------------------|-----------------|----------------|
 | Simple Q&amp;A | DeepScaler 1.5B (Tier 0) | <800ms first token | Basic |
-| Code generation | Qwen 2.5 Coder 7B (Tier 2) | ~2s first token | High |
+| Code generation | Qwen 3.5 4B UD (Tier 2) | ~1.5s first token | High |
 | Logical audit | Phi-4 Mini (Tier 2) | ~1.5s first token | Structured |
 | Math verification (SymPy) | Deterministic | <10ms | N/A |
 | Math verification (LLM) | Qwen 2.5 Math 7B | ~2.5s first token | Step-by-step |

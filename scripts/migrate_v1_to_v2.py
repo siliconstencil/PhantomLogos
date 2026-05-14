@@ -1,11 +1,11 @@
-import sqlite3
 import os
-import sys
+import sqlite3
+
 
 def migrate():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     db_path = os.path.join(base_dir, "data", "mnemosyne.db")
-    
+
     if not os.path.exists(db_path):
         print(f"Database not found at {db_path}")
         return
@@ -26,7 +26,9 @@ def migrate():
         cursor.execute("SELECT session_id FROM operational_logs_v2 LIMIT 1")
     except sqlite3.OperationalError:
         print("Table 'operational_logs_v2' does not have 'session_id' column. Adding it...")
-        cursor.execute("ALTER TABLE operational_logs_v2 ADD COLUMN session_id TEXT DEFAULT 'default'")
+        cursor.execute(
+            "ALTER TABLE operational_logs_v2 ADD COLUMN session_id TEXT DEFAULT 'default'"
+        )
 
     # 3. Migrate data
     print("Migrating data from v1 to v2...")
@@ -62,9 +64,10 @@ def migrate():
     print("Compacting database (VACUUM)...")
     conn.execute("VACUUM")
     print("Database optimized.")
-    
+
     conn.close()
     print("Migration Phase 11.15 completed successfully.")
+
 
 if __name__ == "__main__":
     migrate()

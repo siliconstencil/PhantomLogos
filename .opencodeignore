@@ -1,0 +1,43 @@
+# Dependencies
+.venv/
+node_modules/
+opencode/node_modules/
+.opencode/node_modules/
+
+# Build artifacts
+bin/
+
+# Runtime data
+data/
+opencode/
+.opencode/
+
+# Logs
+logs/
+
+# Cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Version control
+.git/
+
+# Scratch
+scratch/
+
+# Sub-projects
+projects/
+
+# OpenCode TUI build
+opentui/
+
+# Binary model files
+*.gguf
+*.bin
+*.safetensors
+
+# OS files
+Thumbs.db
+.DS_Store

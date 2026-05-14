@@ -15,10 +15,19 @@ data/
 .antigravity/cache/
 
 # System Artifacts
-logs/*.log
-logs/*.json
+logs/
 scratch/
 bin/
+temp_*
+_tmp_*
+*.bak
+debug_config.json
+
+# Runtime Audit
+.antigravity/audit/*.log
+
+# Workspace Notes
+docs/chunk/.Hank/
 
 # IDE & OS
 .vscode/
@@ -32,10 +41,12 @@ dist/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 
 # Managed & External
 opencode/
+.opencode/
 node_modules/
 .antigravity/backup/

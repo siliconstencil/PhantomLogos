@@ -1,11 +1,12 @@
-import sqlite3
 import os
+import sqlite3
+
 
 def check():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     db_path = os.path.join(base_dir, "data", "mnemosyne.db")
-    
-    print(f"--- Schema Integrity Check (Phase 1) ---")
+
+    print("--- Schema Integrity Check (Phase 1) ---")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -13,10 +14,19 @@ def check():
     print("Checking operational_logs_v2...")
     cursor.execute("PRAGMA table_info(operational_logs_v2)")
     columns = {col[1]: col[2] for col in cursor.fetchall()}
-    
-    required = ["id", "timestamp", "session_id", "agent_id", "tool_name", "name", "level", "message"]
+
+    required = [
+        "id",
+        "timestamp",
+        "session_id",
+        "agent_id",
+        "tool_name",
+        "name",
+        "level",
+        "message",
+    ]
     missing = [c for c in required if c not in columns]
-    
+
     if not missing:
         print("  [PASS] All required columns exist.")
         if columns["session_id"] == "TEXT":
@@ -36,13 +46,14 @@ def check():
     cursor.execute("SELECT COUNT(*) FROM operational_logs_v2")
     count = cursor.fetchone()[0]
     print(f"  [INFO] Total rows in operational_logs_v2: {count}")
-    
+
     cursor.execute("SELECT COUNT(*) FROM operational_logs_v2 WHERE session_id='legacy_v1'")
     legacy_count = cursor.fetchone()[0]
     print(f"  [INFO] Migrated legacy rows: {legacy_count}")
 
     conn.close()
     print("--- Check Complete ---")
+
 
 if __name__ == "__main__":
     check()
