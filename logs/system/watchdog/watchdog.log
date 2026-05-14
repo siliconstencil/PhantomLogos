@@ -62,3 +62,11 @@
 [2026-05-09 22:33:20] [HEARTBEAT] Guardian cycle 2100 completed. System secure.
 [2026-05-09 22:37:45] [HEARTBEAT] Guardian cycle 2200 completed. System secure.
 [2026-05-09 22:42:03] [HEARTBEAT] Guardian cycle 2300 completed. System secure.
+Traceback (most recent call last):
+  File "D:\Hank\src\lachesis\file_watchdog.py", line 8, in <module>
+    from .snapshot_manager import SnapshotManager, WATCH_DIRS, IGNORE_DIRS, WATCH_PATTERNS
+ImportError: attempted relative import with no known parent package
+Traceback (most recent call last):
+  File "D:\Hank\src\lachesis\file_watchdog.py", line 8, in <module>
+    from .snapshot_manager import SnapshotManager, WATCH_DIRS, IGNORE_DIRS, WATCH_PATTERNS
+ImportError: attempted relative import with no known parent package

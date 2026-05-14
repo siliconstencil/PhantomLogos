@@ -1,35 +1,51 @@
 import asyncio
 from typing import Any
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
+
 
 async def negotiate_node(state: Any):
     """Initial node: negotiate DOD, load agent definition, resolve model."""
     try:
         from src.clotho.bootstrap import start_morpheus
+
         start_morpheus()
 
+        from cognition.mnemosyne.session_log import SessionLog
         from cognition.sophia.sprint_contract import SprintContract
         from src.clotho.agent_loader import AgentRegistry
-        from cognition.mnemosyne.session_log import SessionLog
 
         sc = SprintContract(state["session_id"])
         contract = await sc.negotiate(state["task"])
 
+        # [Phase 1.0.21] Goal Lifecycle Restoration (Axis 3)
+        try:
+            from cognition.mnemosyne.goal_store import GoalStore
+
+            GoalStore().add(title=state["task"][:255], session_id=state["session_id"])
+            logger.info("ergon: Goal record created for task.")
+        except Exception as ge:
+            logger.warning(f"ergon: GoalStore injection failed ({ge})")
+
         agent_reg = AgentRegistry.get_instance()
-        
+
         # SOTA 2026: Dynamic Agent Selection (RuFlow Mapping)
         task_lower = state["task"].lower()
         complexity = contract.get("complexity", 0.7)
-        
-        if any(kw in task_lower for kw in ["audit", "security", "verify", "check", "vulnerability"]):
+
+        if any(
+            kw in task_lower for kw in ["audit", "security", "verify", "check", "vulnerability"]
+        ):
             agent_id = "lachesis"
-        elif complexity >= 0.8 or any(kw in task_lower for kw in ["implement", "create", "build", "refactor"]):
+        elif complexity >= 0.8 or any(
+            kw in task_lower for kw in ["implement", "create", "build", "refactor"]
+        ):
             agent_id = "clotho"
         else:
             agent_id = "sophia"
-            
+
         agent = agent_reg.get(agent_id)
         active_agent = agent.to_dict() if agent else {"id": agent_id, "temperature": 0.1}
 
@@ -39,17 +55,23 @@ async def negotiate_node(state: Any):
 
         # Merge Attack: VRAM + Reliability override for tier selection
         try:
-            from src.clotho.bootstrap import quick_vram_check
             from cognition.mnemosyne.meta_cognition import MetaCognitionStore
+            from src.clotho.bootstrap import quick_vram_check
+
             vram = await asyncio.to_thread(quick_vram_check)
             free_gb = vram.get("free_gb", 7.0)
             rel = await asyncio.to_thread(MetaCognitionStore().get_reliability, "sophia")
             if free_gb < 2.0 or rel < 0.3:
-                tier = 1
-                model_tier = "light"
-                logger.warning(f"ergon: Forced Tier 1 (VRAM={free_gb}GB, reliability={rel:.2f})")
+                tier = 0 if free_gb < 1.0 else 1
+                model_tier = "ultra_light" if tier == 0 else "light"
+                logger.warning(
+                    f"ergon: Forced Tier {tier} (VRAM={free_gb}GB, reliability={rel:.2f})"
+                )
             else:
-                if complexity < 0.5:
+                if complexity < 0.3:
+                    tier = 0
+                    model_tier = "ultra_light"
+                elif complexity < 0.5:
                     tier = 1
                     model_tier = "light"
                 elif complexity <= 0.8 and free_gb >= 3.0:
@@ -60,33 +82,39 @@ async def negotiate_node(state: Any):
                     model_tier = "expert" if free_gb >= 5.0 else "primary"
         except Exception as e:
             logger.warning(f"ergon: VRAM/reliability check failed, using complexity-only ({e})")
-            tier = 1 if complexity < 0.5 else (2 if complexity <= 0.8 else 3)
-            model_tier = "light" if complexity < 0.5 else ("primary" if complexity <= 0.8 else "expert")
+            if complexity < 0.3:
+                tier = 0
+                model_tier = "ultra_light"
+            elif complexity < 0.5:
+                tier = 1
+                model_tier = "light"
+            else:
+                tier = 2 if complexity <= 0.8 else 3
+                model_tier = "primary" if complexity <= 0.8 else "expert"
 
-        logger.info(
-            f"ergon: Agent '{active_agent['id']}' Tier={tier} ({model_tier})"
-        )
+        logger.info(f"ergon: Agent '{active_agent['id']}' Tier={tier} ({model_tier})")
 
         try:
             from cognition.mnemosyne.operational_store import OperationalStore
+
             OperationalStore().record_event(
                 name="session.init",
                 level="INFO",
                 message=f"Session started with agent '{active_agent['id']}' at Tier {tier}",
-                agent_id=active_agent['id'],
-                session_id=state["session_id"]
+                agent_id=active_agent["id"],
+                session_id=state["session_id"],
             )
         except Exception as oe:
             logger.warning(f"ergon: Failed to record session init event ({oe})")
 
         return {
-            "contract": contract, 
-            "memory_sync": sync_ok, 
+            "contract": contract,
+            "memory_sync": sync_ok,
             "active_agent": active_agent,
             "ru_flow_tier": tier,
             "selected_model_tier": model_tier,
             "ru_flow_active": (tier == 3),
-            "verification_retry": 0
+            "verification_retry": 0,
         }
     except asyncio.CancelledError:
         raise

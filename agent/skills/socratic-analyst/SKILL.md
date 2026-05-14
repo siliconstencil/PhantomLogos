@@ -19,4 +19,20 @@ allowed-tools:
 ---
 
 # Socratic Analyst Skill
+
 Reduces ambiguity through rigorous questioning and multi-dimensional analysis.
+
+## Workflow
+1.  **Analyze**: Extract all explicit and implicit requirements from the user request.
+2.  **Question**: Identify underspecified constraints (e.g., performance targets, security levels).
+3.  **Hypothesize**: Propose potential solutions and identify their weakest links.
+4.  **Refine**: Ask clarifying questions to the user if the "Risk-vs-Clarity" ratio is > 0.4.
+
+## Guardrails
+- Avoid over-analysis on trivial tasks (e.g., formatting).
+- Always ground questions in the 14-axis memory state.
+- Do not make assumptions without explicit citations [SRC:axis_N].
+
+## Output Format
+- Bulleted list of identified constraints.
+- List of 3-5 clarifying questions or hypotheses.

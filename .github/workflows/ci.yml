@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.11", "3.12"]
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
@@ -33,6 +33,11 @@ jobs:
         pytest tests/ -v
       env:
         PYTHONPATH: .
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         LLM_BINARY_DIR: ./bin
         LLM_MODEL_DIR: ./models
+
+    - name: Run 14-Axes Health Check
+      run: |
+        python scripts/health_check_14_axes.py
+      env:
+        PYTHONPATH: .

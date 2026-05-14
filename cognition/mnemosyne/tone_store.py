@@ -2,11 +2,12 @@
 Mnemosyne Creative/Tone Memory Layer (Axis 9).
 Persona adaptation and user message tone analysis.
 """
+
 import datetime
-import re
-from typing import Dict, Optional
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text
-from sqlalchemy.orm import sessionmaker, declarative_base
+
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -30,18 +31,23 @@ class ToneRecord(ToneBase):
     urgency = Column(Float, default=0.0)
     verbosity = Column(String(20), default="normal")
     original_message = Column(Text)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class ToneStore:
     AXIS_ID = 9
 
-    def __init__(self, db_url: str = "sqlite:///data/mnemosyne.db"):
-        self.engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    def __init__(self, db_url: str | None = None):
+        from src.utils.project_path import to_absolute_path
+
+        db_url = db_url or f"sqlite:///{to_absolute_path('data/mnemosyne.db')}"
+        self.engine = create_engine(
+            db_url, connect_args={"check_same_thread": False, "timeout": 30}
+        )
         ToneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
-    def analyze_tone(self, message: str) -> Dict:
+    def analyze_tone(self, message: str) -> dict:
         """Simple keyword-based tone classifier."""
         msg_lower = message.lower()
         scores = {}
@@ -81,16 +87,22 @@ class ToneStore:
             session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(f"ToneStore (Axis {self.AXIS_ID}): record_tone failed ({e})", exc_info=True)
+            logger.error(
+                f"ToneStore (Axis {self.AXIS_ID}): record_tone failed ({e})", exc_info=True
+            )
         finally:
             session.close()
 
     def get_recent_tone(self, session_id: str, limit: int = 3) -> str:
         session = self.Session()
         try:
-            records = session.query(ToneRecord).filter(
-                ToneRecord.session_id == session_id
-            ).order_by(ToneRecord.created_at.desc()).limit(limit).all()
+            records = (
+                session.query(ToneRecord)
+                .filter(ToneRecord.session_id == session_id)
+                .order_by(ToneRecord.created_at.desc())
+                .limit(limit)
+                .all()
+            )
             if records:
                 tones = [r.tone for r in records]
                 return max(set(tones), key=tones.count)

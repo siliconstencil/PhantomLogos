@@ -1,10 +1,12 @@
-# Hermes Bridge Configuration
-# Phase 11.18.15 Sovereign Baseline
+id: hermes
+name: Hermes Bridge
+version: 1.0.0
+description: "Cross-system bridge and memory synchronization agent."
+capability: bridge
 
-agent:
-  id: hermes
-  role: bridge
-  version: 1.0.0
+model:
+  primary: null
+  fallback: null
 
 bridge:
   active: true
@@ -12,19 +14,21 @@ bridge:
   timeout: 60
   retry_count: 3
 
-# Skills configuration
-skills:
-  - id: hermes-bridge
-    path: agent/skills/hermes-bridge
-    enabled: true
+tools:
+  - semantic
+  - skill
+  - report
 
-# Monitoring
+skills:
+  - hermes-bridge
+
+memory_axes: [6, 14]
+
 monitoring:
   enabled: true
   interval: 30
   log_level: INFO
 
-# Security
 security:
   token_required: true
   l0_override: true

@@ -1,7 +1,10 @@
 import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Float
+
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
 from sqlalchemy.orm import sessionmaker
+
 from src.utils.logging_config import setup_logger
+
 try:
     from .base import Base
     from .temporal_store import TemporalStore
@@ -21,31 +24,38 @@ class ToolPath(Base):
     success_count = Column(Integer, default=0)
     failure_count = Column(Integer, default=0)
     avg_latency_ms = Column(Float, default=0)
-    last_used = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    last_used = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
     notes = Column(Text)
 
 
 class ProceduralStore:
     AXIS_ID = 2
 
-    def __init__(self, db_url: str = "sqlite:///data/mnemosyne.db"):
-        self.engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    def __init__(self, db_url: str | None = None):
+        from src.utils.project_path import to_absolute_path
+
+        db_url = db_url or f"sqlite:///{to_absolute_path('data/mnemosyne.db')}"
+        self.engine = create_engine(
+            db_url, connect_args={"check_same_thread": False, "timeout": 30}
+        )
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def record_usage(self, tool_name: str, task_type: str, success: bool, latency_ms: float = 0):
         session = self.Session()
         try:
-            row = session.query(ToolPath).filter(
-                ToolPath.tool_name == tool_name, ToolPath.task_type == task_type
-            ).first()
+            row = (
+                session.query(ToolPath)
+                .filter(ToolPath.tool_name == tool_name, ToolPath.task_type == task_type)
+                .first()
+            )
             if row:
                 if success:
                     row.success_count += 1
                 else:
                     row.failure_count += 1
                 row.avg_latency_ms = (row.avg_latency_ms + latency_ms) / 2
-                row.last_used = datetime.datetime.now(datetime.timezone.utc)
+                row.last_used = datetime.datetime.now(datetime.UTC)
             else:
                 row = ToolPath(
                     tool_name=tool_name,
@@ -56,7 +66,7 @@ class ProceduralStore:
                 )
                 session.add(row)
             session.commit()
-            
+
             # [SRC:axis_4] Record truth update in Temporal Graph
             try:
                 # We use a dummy session_id for background store updates or pass it if available
@@ -65,22 +75,30 @@ class ProceduralStore:
                     event_type="tool_performance",
                     event_key=f"tool_perf.{tool_name}.{task_type}",
                     latency_ms=latency_ms,
-                    extra={"success": success, "avg_latency": row.avg_latency_ms}
+                    extra={"success": success, "avg_latency": row.avg_latency_ms},
                 )
             except Exception as te:
-                logger.warning(f"ProceduralStore: Failed to record temporal fact for {tool_name} ({te})")
+                logger.warning(
+                    f"ProceduralStore: Failed to record temporal fact for {tool_name} ({te})"
+                )
         except Exception as e:
             session.rollback()
-            logger.error(f"ProceduralStore (Axis {self.AXIS_ID}): record_usage failed ({e})", exc_info=True)
+            logger.error(
+                f"ProceduralStore (Axis {self.AXIS_ID}): record_usage failed ({e})", exc_info=True
+            )
         finally:
             session.close()
 
     def best_tool(self, task_type: str):
         session = self.Session()
         try:
-            rows = session.query(ToolPath).filter(ToolPath.task_type == task_type).order_by(
-                ToolPath.success_count.desc()
-            ).limit(3).all()
+            rows = (
+                session.query(ToolPath)
+                .filter(ToolPath.task_type == task_type)
+                .order_by(ToolPath.success_count.desc())
+                .limit(3)
+                .all()
+            )
             success_rates = []
             for r in rows:
                 total = r.success_count + r.failure_count
@@ -88,7 +106,9 @@ class ProceduralStore:
                 success_rates.append((r.tool_name, rate, r.avg_latency_ms))
             return sorted(success_rates, key=lambda x: x[1], reverse=True)
         except Exception as e:
-            logger.error(f"ProceduralStore (Axis {self.AXIS_ID}): best_tool failed ({e})", exc_info=True)
+            logger.error(
+                f"ProceduralStore (Axis {self.AXIS_ID}): best_tool failed ({e})", exc_info=True
+            )
             return []
         finally:
             session.close()

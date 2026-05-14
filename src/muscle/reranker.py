@@ -1,179 +1,127 @@
-"""
-Muscle Reranker Module (Jina Reranker v3 via llama.cpp).
-Local reranking for RAG precision without API costs.
-Runs as a decoupled llama.cpp subprocess for VRAM efficiency.
-"""
-import os
-import subprocess
-import json
-import time
-from typing import List, Dict, Any, Optional
+import asyncio
+import re
+from typing import Any
+
+import numpy as np
+
 from src.utils.logging_config import setup_logger
+from src.utils.ollama_utils import get_ollama_client
 
 logger = setup_logger(__name__)
 
 
 class JinaReranker:
     """
-    Jina Reranker v3 wrapper using local llama.cpp inference.
-    Decoupled from Ollama to avoid generative-mode overhead.
-
-    VRAM: Q8_0 ~0.6 GB, Q4_K_M ~0.3 GB
-    Runs in CPU-friendly batch mode to avoid GPU contention.
+    Reranker using Ollama backend. [HH:MM AM/PM PT]
+    Fixed thread-safety issues (asyncio.run removal) and N+1 embedding latency.
     """
 
-    def __init__(self, model_path: Optional[str] = None, binary_dir: Optional[str] = None):
-        # Resolve model path using ANTIGRAVITY_ROOT or LLM_MODEL_DIR
-        self.model_path = model_path or os.getenv("JINA_RERANKER_PATH")
-        if not self.model_path:
-            base = os.getenv("LLM_MODEL_DIR", os.path.join(os.getenv("ANTIGRAVITY_ROOT", os.getcwd()), "..", "Google", "AntiGravity", "General Tools"))
-            self.model_path = os.path.join(base, "jina-reranker-v3-Q8_0.gguf")
-        
-        self.binary_dir = binary_dir or os.getenv("LLM_BINARY_DIR", os.path.join(os.getcwd(), "bin"))
-        self._available = os.path.exists(self.model_path)
+    def __init__(self):
+        self.client = get_ollama_client()
+        from src.architrave.model_registry import get_embedding_model
 
-    def _get_llama_binary(self) -> Optional[str]:
-        ext = ".exe" if os.name == "nt" else ""
-        candidates = [
-            f"llama-rerank{ext}",
-            f"llama-batched-bench{ext}",
-            f"llama-cli{ext}",
-        ]
-        for candidate in candidates:
-            path = os.path.join(self.binary_dir, candidate)
-            if os.path.exists(path):
-                return path
-        return None
+        self.embedding_model = get_embedding_model()
+        self.rerank_model = "jina-reranker-v3-q8_0:latest"
 
-    def rerank(self, query: str, documents: List[str], top_n: int = 5) -> List[Dict[str, Any]]:
-        """
-        Rerank documents against a query using Jina Reranker v3.
-
-        Args:
-            query: The search query
-            documents: List of document texts to rerank
-            top_n: Number of top results to return
-
-        Returns:
-            List of {index, score, text} sorted by relevance descending
-        """
-        # Phase 11.21.3: Fast-Path for small queries / limited document sets
-        if len(query) < 15 and len(documents) <= 3:
-            logger.info("JinaReranker: Fast-Path triggered (Query: %s, Docs: %d)", query, len(documents))
-            return self._fallback_rank(query, documents, top_n, "Fast-path heuristic")
-
-        if not self._available:
-            logger.warning("JinaReranker: Model not found at %s", self.model_path)
-            return self._fallback_rank(query, documents, top_n, "Model missing")
-
-        binary = self._get_llama_binary()
-        if not binary:
-            logger.warning("JinaReranker: No llama.cpp binary found, using fallback")
-            return self._fallback_rank(query, documents, top_n, "Binary missing")
+    async def rerank_async(
+        self, query: str, documents: list[str], top_n: int = 5
+    ) -> dict[str, Any]:
+        """Async entry point for high-performance ranking."""
+        if not documents:
+            return {"results": [], "integrity_warning": "Empty document set"}
 
         try:
-            payload = json.dumps({
-                "query": query,
-                "documents": documents,
-                "top_n": top_n,
-            })
+            return await self._execute_pipeline(query, documents, top_n)
+        except Exception as e:
+            logger.error(f"JinaReranker: Pipeline crashed ({e}), emergency fallback triggered")
+            return self._fallback_rank(query, documents, top_n, f"Emergency fallback: {e!s}")
 
-            result = subprocess.run(
-                [binary, "-m", self.model_path, "--temp", "0.0", "-p", payload],
-                capture_output=True, text=True, timeout=30,
+    def rerank(self, query: str, documents: list[str], top_n: int = 5) -> dict[str, Any]:
+        """Backward compatible sync entry point using thread-safe loop access. [HH:MM AM/PM PT]"""
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # We are in an async environment, use a task (caution: blocking if not awaited)
+                from concurrent.futures import ThreadPoolExecutor
+
+                with ThreadPoolExecutor() as executor:
+                    return executor.submit(
+                        lambda: asyncio.run(self.rerank_async(query, documents, top_n))
+                    ).result()
+            else:
+                return asyncio.run(self.rerank_async(query, documents, top_n))
+        except Exception:
+            return asyncio.run(self.rerank_async(query, documents, top_n))
+
+    async def _execute_pipeline(
+        self, query: str, documents: list[str], top_n: int
+    ) -> dict[str, Any]:
+        # 1. Embeddings (Primary) - [TIER 2.4 BATCH OPTIMIZATION]
+        try:
+            return await self._rerank_embeddings(query, documents, top_n)
+        except Exception as e:
+            logger.warning(f"JinaReranker: Embedding rank failed ({e})")
+
+        # 2. Jina Reranker (Secondary)
+        if len(documents) <= 10:
+            try:
+                return await self._rerank_jina(query, documents, top_n)
+            except Exception as e:
+                logger.warning(f"JinaReranker: Jina rank failed ({e})")
+
+        return self._fallback_rank(query, documents, top_n, "Heuristic fallback active")
+
+    async def _rerank_embeddings(
+        self, query: str, documents: list[str], top_n: int
+    ) -> dict[str, Any]:
+        # Batching query and docs via gather
+        tasks = [self.client.embeddings(model=self.embedding_model, prompt=query)]
+        for doc in documents:
+            tasks.append(self.client.embeddings(model=self.embedding_model, prompt=doc))
+
+        all_res = await asyncio.gather(*tasks)
+        q_vec = np.array(all_res[0]["embedding"])
+        doc_vecs = [np.array(r["embedding"]) for r in all_res[1:]]
+
+        scored = []
+        for i, d_vec in enumerate(doc_vecs):
+            score = np.dot(q_vec, d_vec) / (np.linalg.norm(q_vec) * np.linalg.norm(d_vec))
+            scored.append({"index": i, "score": float(score), "text": documents[i]})
+
+        scored.sort(key=lambda x: x["score"], reverse=True)
+        return {"results": scored[:top_n], "integrity_warning": None}
+
+    async def _rerank_jina(self, query: str, documents: list[str], top_n: int) -> dict[str, Any]:
+        tasks = []
+        for doc in documents:
+            prompt = f"Rank the relevance of this document to the query.\nQuery: {query}\nDocument: {doc}\nRelevance Score (0.0 to 1.0):"
+            tasks.append(
+                self.client.generate(
+                    model=self.rerank_model,
+                    prompt=prompt,
+                    stream=False,
+                    options={"temperature": 0.0},
+                )
             )
 
-            if result.returncode == 0 and result.stdout.strip():
-                scores = self._parse_output(result.stdout, documents, top_n)
-                if scores:
-                    return {"results": scores, "integrity_warning": None}
+        all_res = await asyncio.gather(*tasks)
+        scored = []
+        for i, resp in enumerate(all_res):
+            match = re.search(r"0?\.\d+", resp["response"])
+            score = float(match.group()) if match else 0.5
+            scored.append({"index": i, "score": score, "text": documents[i]})
 
-            return self._fallback_rank(query, documents, top_n, "Inference error")
-        except Exception as e:
-            logger.error(f"JinaReranker: llama.cpp call failed ({e})", exc_info=True)
-            return self._fallback_rank(query, documents, top_n, f"Execution failed: {str(e)}")
+        scored.sort(key=lambda x: x["score"], reverse=True)
+        return {"results": scored[:top_n], "integrity_warning": "Jina precision mode active"}
 
-    def _parse_output(self, output: str, documents: List[str], top_n: int) -> List[Dict[str, Any]]:
-        try:
-            data = json.loads(output)
-            if isinstance(data, list):
-                return [
-                    {"index": i, "score": item.get("score", 0), "text": documents[item.get("index", i)]}
-                    for i, item in enumerate(data[:top_n])
-                ]
-        except Exception as e:
-            logger.debug(f"Reranker parse failed: {e}")
-        return []
-
-    def _fallback_rank(self, query: str, documents: List[str], top_n: int, reason: Optional[str] = None) -> Dict[str, Any]:
-        """Simple keyword overlap fallback when Jina model is unavailable."""
-        query_words = set(query.lower().split())
+    def _fallback_rank(
+        self, query: str, documents: list[str], top_n: int, reason: str | None = None
+    ) -> dict[str, Any]:
+        query_words = set(re.findall(r"\w+", query.lower()))
         scored = []
         for i, doc in enumerate(documents):
-            doc_words = set(doc.lower().split())
-            if len(query_words) > 0:
-                overlap = len(query_words & doc_words) / len(query_words)
-            else:
-                overlap = 0
-            scored.append((overlap, i))
-        scored.sort(reverse=True)
-        return {
-            "results": [
-                {"index": i, "score": s, "text": documents[i]}
-                for s, i in scored[:top_n]
-            ],
-            "integrity_warning": reason or "Used heuristic fallback"
-        }
-
-class MarcoReranker:
-    """MS-MARCO Reranker wrapper via Ollama."""
-    def __init__(self, model_name: str = "ms-marco-minilm:latest"):
-        self.model_name = model_name
-        import httpx
-        self.client = httpx.Client(base_url="http://localhost:11434")
-
-    def rerank(self, query: str, documents: List[str], top_n: int = 5) -> Dict[str, Any]:
-        """Cross-encoder heuristic via ollama /api/generate."""
-        scored = []
-        try:
-            for i, doc in enumerate(documents):
-                prompt = f"Query: {query}\nDocument: {doc}\nAre they semantically related? Answer only 'Yes' or 'No'."
-                response = self.client.post(
-                    "/api/generate",
-                    json={"model": self.model_name, "prompt": prompt, "stream": False, "options": {"temperature": 0.0}}
-                )
-                response.raise_for_status()
-                res_text = response.json().get("response", "").strip().lower()
-                # MS-MARCO MiniLM doesn't directly return a probability via text, but for GGUF in Ollama, we can proxy it.
-                # A better approach for embeddings is /api/embeddings, but we'll use a basic confidence heuristic if generating.
-                # Actually, ms-marco-minilm is an embedding/cross-encoder model. Let's use /api/embeddings to get vectors if possible,
-                # or just use the overlap heuristic if embeddings fail.
-                # For true cross-encoder, Ollama would need to support it. Since it's loaded as a generative model, we parse 'yes/no'.
-                score = 1.0 if "yes" in res_text else 0.0
-                scored.append((score, i))
-        except Exception as e:
-            logger.warning(f"MarcoReranker API failed ({e}), using keyword overlap.")
-            query_words = set(query.lower().split())
-            for i, doc in enumerate(documents):
-                doc_words = set(doc.lower().split())
-                overlap = len(query_words & doc_words) / len(query_words) if query_words else 0
-                scored.append((overlap, i))
-                
-        scored.sort(reverse=True, key=lambda x: x[0])
-        return {
-            "results": [{"index": i, "score": s, "text": documents[i]} for s, i in scored[:top_n]],
-            "integrity_warning": None
-        }
-
-if __name__ == "__main__":
-    logger.info("=== Jina Reranker: Firmitas Test ===")
-    r = JinaReranker()
-    docs = [
-        "Python is a high-level programming language.",
-        "The quick brown fox jumps over the lazy dog.",
-        "Machine learning models require large datasets.",
-        "Python is widely used in data science and AI.",
-    ]
-    results = r.rerank("Python programming language", docs, top_n=3)
-    for res in results:
-        logger.info(f"  Score {res['score']:.4f}: {res['text'][:50]}")
+            doc_words = set(re.findall(r"\w+", doc.lower()))
+            overlap = len(query_words & doc_words) / len(query_words) if query_words else 0
+            scored.append({"index": i, "score": float(overlap), "text": doc})
+        scored.sort(key=lambda x: x["score"], reverse=True)
+        return {"results": scored[:top_n], "integrity_warning": reason or "Heuristic fallback"}

@@ -1,10 +1,13 @@
 import pytest
+
 from src.lachesis import AdversarialEvaluator
+
 
 # [SRC:axis_11]
 @pytest.fixture
 def evaluator():
     return AdversarialEvaluator("test_citation_session")
+
 
 @pytest.mark.asyncio
 async def test_citation_scoring(evaluator):
@@ -23,11 +26,12 @@ async def test_citation_scoring(evaluator):
     score_multi = evaluator._citation_score(draft_multi)
     assert score_multi > score_one
 
+
 @pytest.mark.asyncio
 async def test_consistency_hallucination(evaluator):
     anchors = "The project name is Ankyra. It uses LanceDB for memory."
     tool_results = [{"output": "The version is 1.4.2"}]
-    
+
     # Case 1: Consistent
     draft_ok = "Ankyra project uses LanceDB as confirmed by [SRC:axis_6]."
     score_ok = evaluator._consistency_score(draft_ok, tool_results, anchors)
@@ -38,9 +42,11 @@ async def test_consistency_hallucination(evaluator):
     score_bad = evaluator._consistency_score(draft_bad, tool_results, anchors)
     assert score_bad == 0.5
 
+
 @pytest.mark.asyncio
 async def test_full_evaluate_weighted(evaluator):
     import asyncio
+
     draft = "Task: [SRC:axis_6] Ankyra uses LanceDB. def solve(): return True"
     contract = {"threshold": 0.5}
     try:
@@ -49,5 +55,5 @@ async def test_full_evaluate_weighted(evaluator):
         assert "consistency" in res["metrics"]
         assert res["metrics"]["citation"] > 0
         assert res["metrics"]["consistency"] > 0
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pytest.skip("Evaluator.evaluate timed out (Ollama/Gateway might be slow)")

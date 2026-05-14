@@ -1,6 +1,6 @@
 # Phantom Logos Development Tasks
 
-## Phase 11.18.10 - Codebase Mapper Hardening [COMPLETED]
+## Codebase Mapper Hardening [COMPLETED]
 - [x] **M1: AST Migration**
     - [x] `codebase_mapper.py`: Replace regex `IMPORT_PATTERN` with `ast.parse`
     - [x] Handle multi-line imports, aliases, conditional imports
@@ -27,7 +27,7 @@
     - [x] Debounce test: 3 writes → 1 remap (cancellation verified)
     - [x] Lachesis audit: 7/7 files verified
 
-## Phase 11.18.9 - Two-Stage Semantic Reranking [COMPLETED]
+## Two-Stage Semantic Reranking [COMPLETED]
 - [x] **R1: Candidate Pool Expansion**
     - [x] `semantic`: limit 20 → 100 for wider coverage
     - [x] LanceDB L2 sort → top 20 → Jina rerank → top 5
@@ -38,7 +38,7 @@
     - [x] `muscle/__init__.py`: Export MarcoReranker
     - [x] Zero new models, zero VRAM increase
 
-## Phase 11.18.8 - Sovereign Hardening [COMPLETED]
+## Sovereign Hardening [COMPLETED]
 - [x] **H1: OutputGuard Pipeline**
     - [x] `ergon.py`: OutputGuard.check() in verify_node
     - [x] `ergon.py`: OutputGuard in refine_node
@@ -59,7 +59,7 @@
 - [x] **H7: BA-01 Exemption**
     - [x] output_guard.py: is_user_interaction bypasses Turkish char check
 
-## Phase 11.18.7 - Documentation Alignment [COMPLETED]
+## Documentation Alignment [COMPLETED]
 - [x] **D1: Global Rebrand**
     - [x] Phantom Logos → Phantom Logos across 14 documentation files
     - [x] 13-axis consistency check (all 12-axis references corrected)
@@ -67,7 +67,7 @@
     - [x] Broken links restored (AGENTS.md cross-references)
     - [x] ROADMAP.md synchronized with current progress
 
-## Phase 11.18.6 - True Agency [COMPLETED]
+## True Agency [COMPLETED]
 - [x] **T1: Dynamic Agent Selection**
     - [x] `ergon.py`: Task type routes to Sophia/Clotho/Lachesis dynamically
     - [x] `krisis.py`: Hallucination spiral fix (3 failed → deadlock_resolver)
@@ -75,7 +75,7 @@
     - [x] 5 new SOTA skills (MCP Discovery, Mnemosyne Query, VRAM Profiler, Deadlock Resolver, Error Recovery)
     - [x] Total 23 skills active
 
-## Phase 11.19 - Skill Restructuring [COMPLETED]
+## Skill Restructuring [COMPLETED]
 - [x] **S1: Recovery**
     - [x] 10 phantom SKILL.md files created
     - [x] YAML parser upgrade → `yaml.safe_load()`
@@ -83,7 +83,7 @@
     - [x] AGENTS.md root + .antigravity consolidated
     - [x] skills/ moved to agent/skills/
 
-## Phase 11.18.5 - System Hardening [COMPLETED]
+## System Hardening [COMPLETED]
 - [x] **H1: Protocol**
     - [x] Transport hardening (`trust_env=False`)
     - [x] Ollama singleton `AsyncClient` across 6 modules
@@ -92,7 +92,7 @@
     - [x] 9 `asyncio.to_thread` calls for heavy sync ops
     - [x] EntityExtractor thread-safety
 
-## Phantom Logos v1.0.0 - Sovereign Rebirth [SEALED]
+## Sovereign Rebirth [SEALED]
 - [x] **R1: Rebrand**
     - [x] Phantom Logos → Phantom Logos
     - [x] 13-axis foundation sealed
@@ -101,7 +101,7 @@
     - [x] GatewayArchitrave unified client
     - [x] All previous 11.x iterations consolidated
 
-## Phase 11.18.4 - SovereignTruthGuard [DEFERRED]
+## SovereignTruthGuard [DEFERRED]
 - [ ] **G1: CRITICAL - Shadow Verification**
     - [ ] `output_guard.py`: Define `VIOLATION_SHADOW_VERIFY` & impact
     - [ ] `tool_bridge.py`: Implement real-time hardware telemetry assertions
@@ -115,7 +115,7 @@
     - [ ] `self_tuner.py`: Automate model rotation after consecutive verification failures
     - [ ] `krisis.py`: Implement fallback chain routing for blacklisted models
 
-## Phase 11.18.3 - Rapid Integration (Flash Mode Refactor) [COMPLETED]
+## Rapid Integration (Flash Mode Refactor) [COMPLETED]
 - [x] **S1: CRITICAL - Core Hardening**
     - [x] `tool_bridge.py`: Remove `shell` tool entirely
     - [x] `security_utils.py`: Create keyring integration with env fallback
@@ -144,7 +144,7 @@
     - [x] Verify keyring loading and fallback logic
     - [x] Verify shell tool removal
 
-## Phase 11.13 - Sovereign Knowledge Base Consolidation [COMPLETED]
+## Sovereign Knowledge Base Consolidation [COMPLETED]
 - [x] Create directory structure in `.antigravity/`
 - [x] Move blueprints (`topography.md`, `tools.md`)
 - [x] Move history (`audit/`, `walkthroughs/`)
@@ -158,7 +158,7 @@
 - [x] Optimize `.gitignore` for GitHub standards
 - [x] Finalize `README.md` rewrite
 
-## Phase 11.17 - Architectural Decoupling [COMPLETED]
+## Architectural Decoupling [COMPLETED]
 - [x] **Sophia Layer Decomposition**
     - [x] Create `hephaestus.py` (Tools/Schemas)
     - [x] Create `gnosis.py` (Context Assembly)
@@ -176,7 +176,7 @@
     - [x] 19/19 Integration tests pass
     - [x] 13-Axis stability audit SUCCESS
 
-## Phase 11.18.1 - Agnostic Gateway Refactor [COMPLETED]
+## Agnostic Gateway Refactor [COMPLETED]
 - [x] **D1: CRITICAL - Agnostic Client**
     - [x] `gemini_client.py`: Refactor to `AgnosticArchitrave`
     - [x] `gemini_client.py`: Implement `HttpOptions(base_url)` proxy routing
@@ -196,7 +196,7 @@
         - [x] Implement SSOT-compliant fixes for ModelLoader and VisionRouting
         - [x] Integrate Lessons Learned into Axis 8 (Meta-Cognition)
 
-## Phase 11.18.2 - Sovereign Event Loop Hardening [COMPLETED]
+## Sovereign Event Loop Hardening [COMPLETED]
 - [x] **E1: CRITICAL - Async Persistence**
     - [x] `orchestrator.py`: Migrate to `AsyncSqliteSaver`
     - [x] `control_handoff.py`: Implement global 120s timeout and `thread_id`

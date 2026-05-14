@@ -1,7 +1,7 @@
-import ollama
 import json
-import re
-from typing import Tuple
+
+import ollama
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -32,13 +32,14 @@ class TaskRouter:
     FunctionGemma-based task classifier.
     Routes incoming tasks to the appropriate specialist agent.
     """
+
     def __init__(self, model: str = ROUTER_MODEL):
         self.model = model
 
     def classify(self, task: str) -> str:
         prompt = (
             "You are a task classifier. Respond in JSON format.\n"
-            "Format: {\"category\": \"string\", \"confidence\": float}\n"
+            'Format: {"category": "string", "confidence": float}\n'
             "Categories: code, math, reasoning, retrieval, chat, vision.\n\n"
             f"Task: {task}"
         )
@@ -58,8 +59,10 @@ class TaskRouter:
                 for cat in TASK_CATEGORIES:
                     if cat in category:
                         return cat
-            
-            logger.warning(f"Router: Low confidence ({confidence}) for category '{category}'. Falling back to keywords.")
+
+            logger.warning(
+                f"Router: Low confidence ({confidence}) for category '{category}'. Falling back to keywords."
+            )
             return self._keyword_fallback(task)
 
         except Exception as e:
@@ -68,9 +71,24 @@ class TaskRouter:
 
     def _keyword_fallback(self, task: str) -> str:
         t_low = task.lower()
-        if any(kw in t_low for kw in ["image", "picture", "screenshot", "photo", "diagram", "ocr", "visual", "screen"]):
+        if any(
+            kw in t_low
+            for kw in [
+                "image",
+                "picture",
+                "screenshot",
+                "photo",
+                "diagram",
+                "ocr",
+                "visual",
+                "screen",
+            ]
+        ):
             return "vision"
-        if any(kw in t_low for kw in ["code", "function", "class", "def ", "python", "javascript", "script"]):
+        if any(
+            kw in t_low
+            for kw in ["code", "function", "class", "def ", "python", "javascript", "script"]
+        ):
             return "code"
         if any(kw in t_low for kw in ["calculate", "math", "algebra", "equation", "formula"]):
             return "math"
@@ -80,7 +98,7 @@ class TaskRouter:
             return "retrieval"
         return "chat"
 
-    def route(self, task: str) -> Tuple[str, str]:
+    def route(self, task: str) -> tuple[str, str]:
         category = self.classify(task)
         system_prompt = CATEGORY_PROMPTS.get(category, CATEGORY_PROMPTS["chat"])
         return category, system_prompt

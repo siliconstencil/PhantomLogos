@@ -1,7 +1,9 @@
 import json
+
 from ..hephaestus import _get_store
 
-def _build_axis_10(agent_id: str) -> list:
+
+def _build_axis_10(agent_id: str) -> str:
     lines = []
     try:
         rules = _get_store().get_secure_rules(agent_id)
@@ -12,5 +14,6 @@ def _build_axis_10(agent_id: str) -> list:
                 lines.append(f"RULES:\n{json.dumps(rules)}")
             if facts:
                 lines.append(f"FACTS:\n{json.dumps(facts)}")
-    except Exception: pass
-    return lines
+    except Exception:
+        pass
+    return "\n".join(lines)

@@ -1,4 +1,4 @@
 from .local_runtime import LocalRuntime
-from .reranker import JinaReranker, MarcoReranker
+from .reranker import JinaReranker
 
-__all__ = ["LocalRuntime", "JinaReranker", "MarcoReranker"]
+__all__ = ["JinaReranker", "LocalRuntime"]

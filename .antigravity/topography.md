@@ -1,6 +1,6 @@
 # Phantom Logos: System Topography & Micro-Level Data Flow
-# Phantom Logos Topography (v1.0.0 Sovereign Baseline)
-*Status: Phase 11.19.6 Stabilization COMPLETE — Modular Refactoring & Gateway Hardening*
+
+*Status: Phase 1.0.24 - Math Pipeline Modernized & Async Hardened*
 
 This document provides a high-fidelity mapping of the Phantom Logos Agentic OS, detailing module interactions, data persistence across the 14-axis Mnemosyne memory, and the Sovereign Gateway architecture.
 
@@ -11,49 +11,116 @@ This document provides a high-fidelity mapping of the Phantom Logos Agentic OS, 
 The system operates on a 3-Tier hierarchical structure (RuFlow) ensuring high-reasoning strategy is decoupled from deterministic execution and sovereign verification.
 
 ```mermaid
-graph TD
-    L0[User - Authority] -->|Agnostic Request| SGW[Sovereign Strategic Gateway]
-    SGW -->|GatewayArchitrave| AG[AgnosticArchitrave]
-    
-    AG -->|L1: Strategy| SOPHIA[Sophia - Strategist]
-    AG -->|L2: Execution| CLOTHO[Clotho - Executor]
-    AG -->|L3: Audit| LACHESIS[Lachesis - Auditor]
-    
-    SOPHIA -->|Axis 1: Write Path| MN[Mnemosyne DB]
-    CLOTHO -->|Axis 2: Tool Usage| TB[ToolBridge]
-    LACHESIS -->|Axis 11: Formal Ver| MN
-    
-    TB -->|Spatial Graph| AX5[Axis 5: Codebase Mapper]
-    TB -->|Memory Recall| AX6[Axis 6: Semantic Store]
-    
-    MORP[Morpheus Sweeper] -->|7GB VRAM Hygiene| TB
-    MORP -->|DB Optimization| MN
-    
-    subgraph "Sovereign Shield (Phase 11.18.16)"
-        SW[Snapshot Guardian] -->|SHA-256 snapshots| SD[(snapshots.db)]
-        WD[Integrity Watchdog] -->|2s scan + atomic rollback| SW
-        LT[L0 Auth Token] -->|60s TTL override| WD
+graph TB
+    subgraph L0["L0 — User Authority"]
+        L0[L0: Hank]
     end
-    
-    subgraph "Axis 14 Visual Pipeline (Phase 11.18.17)"
-        V14[Visual Store] -->|Nomic text embedding| A14[(Axis 14)]
-        V14 -->|OCR/Thinking/Creative| VL[MiMo-VL-7B-RL]
+
+    subgraph GW["Sovereign Gateway Layer"]
+        IDE[Antigravity IDE] -->|:32553| SGW[Sovereign GatewayArchitrave]
+        SGW -->|Circuit Breaker 60s| CB{Circuit Breaker}
+        CB -->|Open| MR[model_registry]
+        CB -->|Open -> Fail| MO[MockResponse]
+        MR -->|Capability Resolution| KR[krisis — Routing]
+        OPC[OpenCode CLI] -->|Axis 13| SGW
     end
-    
-    SW --> MN
-    WD -->|integrity violations| LG[logs/integrity_violations.log]
+
+    subgraph L1["L1 — Sophia (Strategy)"]
+        KR -->|Tier 0-3| SOPHIA[Sophia — Strategist]
+        SOPHIA --> GNO[Gnosis — 14-Axis Context Assembly]
+        SOPHIA --> HEP[hephaestus — 24 Singletons]
+        SOPHIA --> EID[eidos — 5 Pydantic Schemas]
+        GNO --> ANK[Ankyra — JIT XML Anchors]
+    end
+
+    subgraph L2["L2 — Clotho (Execution)"]
+        KR -->|Tier 0-2| ORC[orchestrator — LangGraph]
+        ORC --> ERG[ergon/ — 11 LangGraph Nodes]
+        ORC --> CLOTHO[Clotho — Executor]
+        ORC --> ATROP[Atropos — Context Engineer]
+        ATROP -->|Token Budget| AX12[Axis 12: Efficiency]
+        ERG --> TB[ToolBridge]
+        TB --> SBX[LightSandbox]
+        TB --> JIN[Jina Reranker v3]
+        TB --> FL[File Changelog]
+        ACT[ActivityMonitor] --> ORC
+    end
+
+    subgraph L3["L3 — Lachesis (Audit)"]
+        ORC -->|Critique| LACH[Lachesis — Auditor]
+        LACH --> VER[verifiers/ — SymPy+Z3+QWED+LLM]
+        LACH --> OG[OutputGuard]
+        LACH --> EVL[8-Pillar Evaluator]
+        LACH --> ST[SelfTuner]
+        LACH --> HERM[Hermes — Bridge Auditor]
+        HERM --> AX13[Axis 13: Cross-Session]
+    end
+
+    subgraph MEM["Mnemosyne — 14-Axis Memory"]
+        direction LR
+        AX1[Axis 1: Episodic<br/>SQLite WAL] --- AX2[Axis 2: Procedural<br/>SQLite]
+        AX3[Axis 3: Goal<br/>SQLite] --- AX4[Axis 4: Temporal<br/>SQLite]
+        AX5[Axis 5: Spatial<br/>226 modules] --- AX6[Axis 6: Semantic<br/>LanceDB+FTS]
+        AX7[Axis 7: Operational<br/>SQLite+Sweeper] --- AX8[Axis 8: Meta-Cog<br/>SQLite]
+        AX9[Axis 9: Creative<br/>ToneStore] --- AX10[Axis 10: Rational<br/>SQLite]
+        AX11[Axis 11: Verification<br/>SymPy+Z3+QWED] --- AX12
+        AX13 --- AX14[Axis 14: Visual<br/>SQLite+VisualStore]
+    end
+
+    subgraph SHIELD["Sovereign Shield"]
+        SW[Snapshot Guardian — 30s SHA-256] --> SND[(snapshots.db)]
+        WD[Integrity Watchdog — 30s poll] -->|Atomic Rollback| SW
+        LT[L0 Auth Token — 60s TTL] -->|Override| WD
+        WD --> FL
+    end
+
+    subgraph INFRA["Local Infrastructure"]
+        OLL[Ollama API :11434]
+        LOC[LocalRuntime — llama.cpp]
+        NOM[Nomic Embed MoE]
+        subgraph VIS["Vision Pipeline"]
+            V14[VisualStore] --> VL[Qwen2.5-VL (Default)]
+        end
+    end
+
+    subgraph STORES["Data Stores"]
+        MDB[(mnemosyne.db)]
+        SPD[(spatial.db)]
+        RDB[(reliability.db)]
+        OPD[(opencode.db)]
+        LDB[(lancedb/)]
+        CHK[(langgraph_checkpoints.sqlite)]
+    end
+
+    L0 -->|Request| IDE
+    GNO <-->|14 Axes Read| MDB
+    SOPHIA -->|Axis 1 Write Path| AX1
+    CLOTHO -->|Axis 2 Tool Usage| AX2
+    LACH -->|Axis 11 Formal Ver| AX11
+    MORPH[Morpheus — VRAM Manager] -->|7GB Hygiene| OLL
+    MORPH -->|DB Pruning| MDB
+    MORPH -->|VRAM Metrics| AX7
+    TB -->|Spatial Graph| AX5
+    TB -->|Semantic Recall| AX6
     TB --> V14
+    SGW -->|Fallback| OLL
+    SGW -->|Fallback| LOC
+    SW --> MDB
+    SOPHIA -->|Skill Injection| TB
+    LACH -->|Audit Feedback| SOPHIA
+    LACH -->|Audit Feedback| CLOTHO
+    ORC --> LACH
 ```
 
 | Layer | Agent | Role | Model Tier | Axis Anchor |
 | :--- | :--- | :--- | :--- | :--- |
 | **L1** | **Sophia** | Strategist | Sovereign Gateway (Cloud) / Qwen 3.5 9B (Local) | Axis 10 (Rational) |
-| **L2** | **Clotho** | Executor | Qwen 2.5 Coder 7B | Axis 2 (Procedural) |
+| **L2** | **Clotho** | Executor | Qwen 3.5 4B UD | Axis 2 (Procedural) |
 | **L3** | **Lachesis** | Adversarial Auditor | Phi-4 Mini Reasoning / Qwen 2.5 Coder 3B | Axis 11 (Verification) |
 | **L2** | **Atropos** | Context Engineer | Deterministic / Tiktoken | Axis 12 (Efficiency) |
 | **L2** | **Morpheus** | VRAM Manager | Deterministic / Nvidia-SMI | Axis 7 (Operational) |
 | **L3** | **Hermes** | Bridge Auditor | CLI / Cross-Session | Axis 13 (Cross-Session) |
-| **L2** | **Sophia-14** | Vision Pipeline | MiMo-VL-7B-RL | Axis 14 (Visual) |
+| **L2** | **Sophia-14** | Vision Pipeline | Qwen2.5-VL (Default) / MiMo-VL-7B-RL (Flagship) | Axis 14 (Visual) |
 
 ---
 
@@ -65,10 +132,14 @@ All cloud traffic routes through a single sovereign proxy layer, eliminating mul
 graph LR
     A[Sophia / Pydantic AI] -->|GoogleModel provider=gw.get_provider()| B[GatewayArchitrave]
     C[Manual reasoning calls] -->|generate_async| B
-    B -->|SovereignProvider wraps genai.Client| D{ANTIGRAVITY_GATEWAY_URL}
+    B -->|SovereignProvider wraps genai.Client| CB{Circuit Breaker 60s}
+    CB -->|Open| D{ANTIGRAVITY_GATEWAY_URL}
     D -->|localhost:32553| E[Antigravity IDE Proxy]
     E -->|Secure Tunnel| F[Cloud Model Provider]
+    CB -->|Open -> Fail| MO[MockResponse]
+    B -->|async_retry on 500/503| CB
     B -->|Fallback if Gateway fails| G[Local Ollama / Muscle]
+    G -->|http://localhost:11434| H[Ollama API]
 ```
 
 ### Gateway Components
@@ -100,13 +171,13 @@ Mnemosyne maintains OS agility via autonomous pruning and strict 7GB VRAM hygien
 | **2** | **Procedural** | SQLite | Tool usage patterns and successful execution routes. | `_get_procedural().record_usage()` per tool call |
 | **3** | **Goal** | SQLite | Active objectives and task state tracking. | `_get_goals().update()` per phase |
 | **4** | **Temporal** | SQLite | Time-series event sequences and latency metrics. | `_get_temporal().record()` per operation |
-| **5** | **Spatial** | SQLite | CodebaseMapper with AST parser + SQL LIKE optimization. Incremental remap with prune support. 71 modules, 276 edges persisted to `spatial.db`. | `_get_spatial().record_dependency()` on scan |
+| **5** | **Spatial** | SQLite | CodebaseMapper with AST parser + SQL LIKE optimization. Incremental remap with prune support. 226 modules, 7 circular dependencies detected (Phase 11.19.19). Persisted to `spatial.db`. | `_get_spatial().record_dependency()` on scan |
 | **6** | **Semantic** | LanceDB + Hybrid | Vector + FTS (RRF Merge) + Jina Reranker (v3). | `_get_semantic().store()` per memory |
 | **7** | **Operational** | SQLite + Sweeper | VRAM metrics, DB Pruning (30d retention), telemetry. Note: 30d raw retention may conflict with Axis 13 pattern analysis — archival strategy pending. | `_get_sweeper().log()` periodic |
 | **8** | **Meta-Cog** | SQLite | Behavioral reliability tracking, execution failure analysis, agent success rates. | `_get_meta().adjust_reliability()` + `failure_memory` |
 | **9** | **Creative** | ToneStore | Persona and communication style tokens. | Auto-updated via interaction analysis |
 | **10** | **Rational** | SQLite | Formal logic, governance rules (`rules.json`), decision trees. | `_get_store().record_fact()` per governance rule |
-| **11** | **Verification** | SymPy + Z3 + QWED | Sovereign local verification of mathematical/logical claims and expressions. | `sympy_verifier.verify_expression()` per technical claim |
+| **11** | **Verification** | SymPy + Z3 + QWED + LLM | Sovereign local verification of mathematical/logical claims and expressions. [Phase 1.0.24: Asynchronous Pipeline + 7 New Math Models] | `sympy_verifier.verify_expression()` per technical claim |
 | **12** | **Efficiency** | SQLite + ContextCacheStore | Context caching (Axis 12) for 1-hour TTL anchors. Cache eviction is TTL-based only; no active sweep integrated yet. | `architrave.create_context_cache()` on anchor build |
 | **13** | **Cross-Session** | SQLite (External) | Cross-session bridge and inter-session pattern recognition (OpenCode). | `opencode_store.log()` via Hermes CLI |
 | **14** | **Visual** | SQLite + VisualStore | VLM output storage with Nomic text embedding. 50-entry LRU retention, 30-day TTL. | `VisualStore.store_vision()` per vision call |
@@ -144,56 +215,116 @@ context += _build_axis_14()  # Visual Memory (VLM outputs)
 sequenceDiagram
     participant User as L0 User
     participant GW as Sovereign Gateway
+    participant KR as krisis (Routing)
     participant Sophia as L1 Sophia
     participant Gnosis as Gnosis Context
+    participant ATROP as Atropos
+    participant HEP as hephaestus
+    participant EID as eidos
     participant Clotho as L2 Clotho
+    participant ORC as orchestrator
+    participant ERG as ergon/ (11 Nodes)
     participant TB as ToolBridge
     participant Lachesis as L3 Lachesis
+    participant OG as OutputGuard
+    participant EVL as 8-Pillar Evaluator
     participant DB as Mnemosyne DB
+    participant HERM as Hermes
+    participant MORPH as Morpheus
 
     User->>GW: Task request
-    GW->>Sophia: Route to L1
+    GW->>KR: Complexity analysis + tier selection
+    KR->>GW: Tier 0/1/2/3 assigned
+    GW->>Sophia: Route to L1 (Tier 2-3)
+    MORPH->>MORPH: VRAM flush if needed (7GB hygiene)
+
     Sophia->>Gnosis: get_dynamic_context(task)
+    Gnosis->>HEP: Get singleton axis getters
     Gnosis->>DB: Read 14 axes
     DB-->>Gnosis: Unified context block
-    Gnosis-->>Sophia: MNEMOSYNE AXIS 1-14
-    
+    Gnosis->>ATROP: Apply token budget & pruning
+    ATROP-->>Gnosis: Budgeted context
+    Gnosis-->>Sophia: Stable (Axes 9-13) + Dynamic (Axes 1-8,14)
+
+    Sophia->>HEP: SovereignProvider injection
+    HEP->>EID: Validate SophiaOutput Pydantic schema
     Sophia->>GW: generate_async(thinking=True)
     GW-->>Sophia: Draft response with [SRC:axis_N]
     Sophia->>DB: _get_episodic().log("draft") [Write Path]
-    
+
     Sophia->>Clotho: Extract tool calls
-    Clotho->>TB: Execute tools
-    TB-->>Clotho: Tool results
-    Clotho->>DB: _get_procedural().record_usage()
-    
-    Clotho->>Lachesis: Draft + Results
+    Clotho->>ORC: Construct LangGraph state
+    ORC->>ERG: Execute node pipeline
+    ERG->>ERG: symmachia (negotiate)
+    ERG->>ERG: kathedra (anchor inject)
+    ERG->>ERG: grammateia (draft/expert draft)
+    ERG->>TB: synergeia (tool execution)
+    TB->>TB: LightSandbox (isolated code exec)
+    TB->>TB: Jina Reranker (2-stage: Nomic 100→5)
+    TB->>TB: Vision Pipeline (horasis dispatch)
+    TB-->>ERG: Tool results
+    ERG->>ERG: deigma (initial verify)
+    ERG->>DB: _get_procedural().record_usage()
+
+    ERG->>Lachesis: elenchos (critique)
+    Lachesis->>OG: OutputGuard rule enforcement
+    Lachesis->>EVL: 8-Pillar adversarial evaluation
+    EVL->>Lachesis: SymPy+Z3+QWED+LLM (4 engines)
+    Lachesis->>Lachesis: L3 Two-Pass (Phi-4→Qwen-7b if low)
     Lachesis->>DB: _get_meta().adjust_reliability()
-    Lachesis-->>Clotho: CritiqueResult
-    
-    Clotho->>GW: generate_async(refine, critique)
-    GW-->>Clotho: Final response with citations
-    
-    Clotho->>DB: _get_episodic().log("refine")
+    Lachesis-->>ERG: CritiqueResult
+
+    alt confidence > 0.9 (Adaptive Draft Cycle)
+        KR->>ERG: Skip refine_node
+    else confidence <= 0.9
+        ERG->>ERG: orthosis (refine)
+        ERG->>GW: generate_async(refine, critique)
+        GW-->>ERG: Refined response
+    end
+
+    ERG->>ERG: theoria (reflection meta-analysis)
+    ERG->>DB: _get_episodic().log("refine")
+    ORC-->>Clotho: Final state
+
+    alt 3+ failed audits (deadlock)
+        ERG->>ERG: aporia (deadlock resolver)
+    end
+
+    Clotho->>HERM: Cross-session persistence
+    HERM->>DB: opencode_store.log() [Axis 13]
     Clotho-->>User: Final output
+
+    MORPH->>MORPH: Post-execution VRAM sweep + prune
 ```
 
-### Future Features (Post 11.19.6)
+### Future Features (Post 1.0.17)
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| LightSandbox | Completed | `src/clotho/sandbox.py` — isolated code execution |
+| LightSandbox | Completed | `src/utils/sandbox.py` — isolated code execution |
 | Morpheus Config B | Completed | 4 model-set VRAM management (Default/Vision/Fast/Verify) |
 | L3 Two-Pass Verification | Completed | Phi-4 Mini → low confidence → Qwen-7b verify |
 | Ultra-Light L0 Tier | Completed | deepseek-1.5b as Tier 0 for rapid response |
 | Modular Refactoring | Completed | ergon/bridge/gnosis/verifiers/mapper/eidos — 6 packages extracted from monoliths (Phase 11.19.5) |
 | Gateway Hardening | Completed | Circuit breaker, 60s local fallback, MockResponse on failure, sweeper health check (Phase 11.19.6) |
+| Path Standardization | Completed | 11 Mnemosyne stores migrated to absolute path anchoring — ghost DBs eliminated (Phase 1.0.4) |
+| Circular Dep SSOT | Completed | base_models.py created as circular dependency resolver (Phase 1.0.4) |
+| Snapshots DB Recovery | Completed | 857MB -> 16KB, zombi watchdog termination (Phase 1.0.5) |
+| LSP Restoration | Completed | Pyright installed, Opencode semantic analysis fixed (Phase 1.0.5) |
+| Sovereign Gate Hardening | Completed | CONSTITUTION.md SSOT, L0 Auth Protocol, Ollama hybrid reranker (Phase 1.0.6) |
+| Foundation Stability | Completed | ToolBridge remediation, GraphState cleanup, Ebbinghaus decay (Phase 1.0.7) |
+| Gateway SPOF Hardening | Completed | Circuit breaker with ConnectError, TinyLlama fallback, 300s tick (Phase 1.0.8) |
+| Purification & Cycle Break | Completed | Editable package, Pyright portability, BA-01 sweep (Phase 1.0.9) |
+| Resilient Shutdown | Completed | SIGINT/SIGBREAK handlers, WAL flush, StateSnapshot recovery (Phase 1.0.10) |
+| WAL Checkpoint Optimization | Completed | Thread-safe write counter + PRAGMA wal_checkpoint(TRUNCATE) (Phase 1.0.11) |
+| Agent Contextual Awareness | Completed | system_status.json flag, SYSTEM CRITICAL context injection (Phase 1.0.12) |
+| Semantic Hardening | Completed | Real Ollama embeddings, Matryoshka 256 slicing, health guard (Phase 1.0.13) |
+| Environmental Hardening | Completed | .pth sys.path anchoring, zero-config imports (Phase 1.0.14) |
+| Infrastructure SSOT | Completed | PEP 621 metadata, ruff replaces black/isort, selective mypy (Phase 1.0.15) |
+| Quality Gate Actuation | Completed | pre-commit hooks, auto-fix mode, 239 violation audit (Phase 1.0.16) |
+| Dynamic Quality Remediation | Completed | pyproject.toml lint migration, organic remediation (Phase 1.0.17) |
 | MCP Runtime | Proposed | Native MCP server integration for dynamic tool discovery |
 | Distributed Memory | Proposed | Remote Mnemosyne sync across agent clusters |
-| Axis 14 Visual | Completed | Visual memory store for OCR/scene analysis (Phase 11.18.17) |
-| Sovereighty Shield | Completed | file_watchdog + snapshot_manager + L0 Auth Token (Phase 11.18.16) |
-| Temporal Validity | Completed | event_key + supersede + fact history (Phase 11.19.1) |
-| CORE_MODELS Protection | Completed | sync_from_ollama + keep_alive=-1 prevents model eviction (Phase 11.19.6) |
 | SLM MCP Integration | Proposed | SuperLocalMemory V3.4 memory system via MCP |
 
 ---
@@ -214,21 +345,22 @@ sequenceDiagram
 | `activity` | `src/clotho/activity.py` | 26 | 1 | Singleton ActivityMonitor (thread-safe is_busy) |
 | `skill_loader` | `src/clotho/skill_loader.py` | 109 | 7 | SKILL.md loader with YAML frontmatter parser |
 | `agent_loader` | `src/clotho/agent_loader.py` | 138 | 8 | Agent YAML definitions registry |
-| `gateway_client` | `src/architrave/gateway_client.py` | 244 | 18 | GatewayArchitrave + SovereignProvider, circuit breaker, 60s timeout, local fallback, MockResponse |
+| `gateway_client` | `src/architrave/gateway_client.py` | 251 | 18 | GatewayArchitrave + SovereignProvider, circuit breaker, 60s timeout, local fallback, MockResponse |
 | `model_registry` | `src/architrave/model_registry.py` | 161 | 6 | Capability-based model resolution (benchmarks in `data/model_benchmarks.json`) |
 | `context_cache` | `src/architrave/context_cache.py` | 172 | 2 | Axis 12 context caching |
 | `opencode_store` | `src/architrave/opencode_store.py` | 117 | 6 | Cross-session bridge store |
+| `base_models` | `src/architrave/base_models.py` | new | 1 | SSOT for model_registry imports, circular dep resolver (Phase 1.0.4) |
 | `entity_extractor` | `src/architrave/entity_extractor.py` | 119 | 7 | Entity extraction for graph |
 | `mapper/` | `src/lachesis/mapper/` | 3 files | 2 classes | Codebase dependency graph (AST parser + GraphManager/CodebaseMapper) |
-| `verifiers/` | `src/lachesis/verifiers/` | 6 files | 4 engines | Axis 11: SymPy+Z3+QWED+LLM verification, 6-pillar evaluator, output guard |
+| `verifiers/` | `src/lachesis/verifiers/` | 8 files | 4 engines | Axis 11: SymPy+Z3+QWED+LLM verification, 8-pillar evaluator, output guard |
 | `file_watchdog` | `src/lachesis/file_watchdog.py` | 94 | 6 | Sovereign Shield: OS-level file integrity, 30s polling, mtime change detection (Phase 11.18.16) |
 | `snapshot_manager` | `src/lachesis/snapshot_manager.py` | 109 | 8 | Sovereign Shield: Periodic SHA-256 snapshots of 120 critical files (Phase 11.18.16) |
-| `self_tuner` | `src/lachesis/self_tuner.py` | 77 | 6 | Meta-cognitive performance tuning |
+| `self_tuner` | `src/lachesis/self_tuner.py` | 76 | 6 | Meta-cognitive performance tuning, cross-tier import via service_locator |
 | `sophia` | `cognition/sophia/sophia.py` | 285 | 4 | Core reasoning: draft, critique, refine |
 | `gnosis/` | `cognition/sophia/gnosis/` | 16 files | 14 axis builders | 14-axis context assembly package (stable/dynamic split, JSON minification) |
 | `hephaestus` | `cognition/sophia/hephaestus.py` | 296 | 24 | Singleton getters, schemas from `.eidos`, SovereignProvider injection, JIT scan_pattern |
 | `eidos` | `cognition/sophia/eidos.py` | new | 5 schemas | Pydantic models: TechnicalClaim, SophiaOutput, InconsistencyEvidence, ReasoningState, CritiqueResult |
-| `sweeper` | `cognition/morpheus/sweeper.py` | 405 | 17 | VRAM fragmentation cleanup, heal_ollama, gateway health check, weekly/monthly summary |
+| `sweeper` | `cognition/morpheus/sweeper.py` | 391 | 17 | VRAM fragmentation cleanup, heal_ollama, gateway health check, weekly/monthly summary |
 | `scheduler` | `cognition/morpheus/scheduler.py` | 148 | 9 | Load/unload scheduler, periodic 30s tick |
 | `loader` | `cognition/morpheus/loader.py` | 89 | 7 | Ollama model loader with CORE_MODELS protection, `sync_from_ollama()`, `keep_alive=-1` |
 | `vram_config` | `cognition/morpheus/vram_config.py` | new | constants | CORE_MODELS list, VRAM budget constants |
@@ -248,7 +380,11 @@ sequenceDiagram
 | `session_log` | `cognition/mnemosyne/session_log.py` | 100 | 6 | Session event log |
 | `memory_arbitrator` | `cognition/mnemosyne/memory_arbitrator.py` | 54 | 4 | Memory scoring engine |
 | `base` | `cognition/mnemosyne/base.py` | 6 | 0 | SQLAlchemy base |
+| `sandbox` | `src/utils/sandbox.py` | 124 | 5 | LightSandbox: isolated code execution with temp dir jail, PATH stripping |
+| `project_path` | `src/utils/project_path.py` | 52 | 3 | Project root resolution, to_absolute_path helper |
+| `websearch` | `src/tools/websearch.py` | 89 | 2 | Web search via DuckDuckGo, result formatting |
 | `ollama_utils` | `src/utils/ollama_utils.py` | 14 | 1 | Singleton AsyncClient (Phase 11.18.5) |
+| `service_locator` | `src/utils/service_locator.py` | new | 3 | Cross-tier dependency injection: L2-L3 circular, Sophia-Clotho decoupling |
 
 ### 5.2 Dependency Graph (Top 10 Modules by Edge Count)
 
@@ -260,9 +396,11 @@ sequenceDiagram
 | `clotho.orchestrator` | `clotho.ergon`, `clotho.bridge`, `lachesis.verifiers` |
 | `lachesis.mapper` | `mnemosyne.spatial_store` |
 | `clotho.mapper_bridge` | `lachesis.mapper`, `mnemosyne.spatial_store` |
+| `lachesis.verifiers` | `lachesis.self_tuner` (via service_locator) |
 | `muscle.local_runtime` | Subprocess management for llama.cpp |
+| `clotho.bridge` | `mnemosyne.*`, `lachesis.verifiers`, `architrave.*`, `mu scle.reranker` |
 
-Total: **71 modules, 276 edges** (174 stdlib, 101 project, 1 import)
+Total: **226 modules, 7 circular deps detected** (AST mapper scan via `scripts/update_mapper.py`)
 
 ---
 
@@ -283,7 +421,7 @@ D:\HANK/
 |   |-- README.md                        # .antigravity sub-documentation
 |   |-- SECURITY.md                      # Sovereign secret management policy
 |   |-- audit/                           # Audit records
-|   |   |-- phase_11_10.md              # Security hardening audit
+|   |   |-- phase_11_10.md               # Security hardening audit
 |   |   |-- session_transparency.md      # Session transparency log
 |   |   |-- legacy/                      # Historical archives
 |   |-- walkthroughs/                    # Execution history
@@ -294,6 +432,9 @@ D:\HANK/
 |       |-- TASKS.md                     # Active task list
 |
 |-- src/                                 # SOURCE CODE
+|   |-- tools/                           # Web/utility tools
+|   |   |-- __init__.py                  # Package init
+|   |   |-- websearch.py                 # DuckDuckGo web search
 |   |-- clotho/                          # LangGraph orchestration (L2 Executor)
 |   |   |-- orchestrator.py              # Spine: Graph construction + AsyncSqliteSaver
 |   |   |-- ergon/                       # Work: LangGraph node functions (11 nodes)
@@ -325,7 +466,7 @@ D:\HANK/
 |   |   |-- __init__.py                  # Lazy import entry point
 |   |   |-- mapper/                      # Codebase dependency graph (AST parser + GraphManager/CodebaseMapper)
 |   |   |-- verifiers/                   # 4-engine verification (SymPy + Z3 + QWED + LLM)
-|   |   |   |-- evaluator.py             # 6-pillar adversarial evaluator
+|   |   |   |-- evaluator.py             # 8-pillar adversarial evaluator
 |   |   |   |-- output_guard.py          # Output rule enforcement
 |   |   |-- file_watchdog.py             # File integrity watchdog (Phase 11.18.16)
 |   |   |-- snapshot_manager.py          # SHA-256 snapshot manager (Phase 11.18.16)
@@ -333,6 +474,7 @@ D:\HANK/
 |   |-- architrave/                      # Cloud connectivity (Gateway)
 |   |   |-- gateway_client.py            # GatewayArchitrave + SovereignProvider
 |   |   |-- context_cache.py             # Context caching (Axis 12)
+|   |   |-- base_models.py               # SSOT for circular dep resolution (Phase 1.0.4)
 |   |   |-- model_registry.py            # Capability-based model registry
 |   |   |-- opencode_store.py            # Cross-session bridge store
 |   |   |-- entity_extractor.py          # Entity extraction for graph
@@ -350,6 +492,9 @@ D:\HANK/
 |       |-- image_optimizer.py           # VLM image preprocessing
 |       |-- security_utils.py            # Keyring secret loader (Gateway API)
 |       |-- ollama_utils.py              # Singleton AsyncClient (Phase 11.18.5)
+|       |-- sandbox.py                    # LightSandbox (isolated code exec)
+|       |-- project_path.py               # Project root resolution helper
+|       |-- service_locator.py           # Cross-tier dependency injection (Phase 11.19.19)
 |
 |-- cognition/                           # COGNITIVE LAYER
 |   |-- sophia/                          # Tier-1 Reasoning (Sophia)
@@ -387,14 +532,18 @@ D:\HANK/
 |       |-- registry.py                  # Model fitting logic
 |       |-- vram_config.py               # CORE_MODELS list, VRAM budget constants
 |
-|-- scripts/                             # CLI TOOLS
+|-- scripts/                             # CLI TOOLS (58 scripts)
 |   |-- hermes_cli.py                    # Mnemosyne bridge CLI
-|   |-- discover_id.py, verify_models.py, test_bridge_hardening.py
+|   |-- discover_id.py                   # ID discovery tool
+|   |-- verify_models.py                 # Model verification
+|   |-- test_bridge_hardening.py         # Bridge hardening tests
+|   |-- create_l0_token.py               # L0 auth token generator
+|   |-- health_check.py                  # 14-axis integrity check
 |
 |-- tests/                               # TEST SUITE
 |   |-- test_axis_stability.py           # 14-axis stability audit
 |   |-- test_full_pipeline.py            # End-to-end pipeline test
-|   |-- (34 test files total)
+|   |-- (43 test files total)
 |
 |-- data/                                # RUNTIME DATA (gitignored)
 |   |-- mnemosyne.db                     # SQLite memory store
@@ -406,14 +555,14 @@ D:\HANK/
 |   |-- reliability.db                   # Agent reliability metrics
 |
 |-- agent/                               # AGENT YAML DEFINITIONS + SKILLS
-|   |-- sophia.yaml                      # Sophia agent config (13 axes)
+|   |-- sophia.yaml                      # Sophia agent config (14 axes)
 |   |-- clotho.yaml                      # Clotho execution profile
 |   |-- ...hermes.yaml, lachesis.yaml, atropos.yaml, morpheus.yaml
-|   |-- skills/                          # SKILL CAPABILITY FILES (23 total)
+|   |-- skills/                          # SKILL CAPABILITY FILES (35 total)
 |       |-- agent-orchestrator/          # Complex project management
 |       |-- code-generation/             # Production code implementation
 |       |-- discovery-mcp-scanner/       # MCP JIT tool discovery
-|       |-- (19 more skills...)
+|       |-- (29 more skills...)
 |
 |-- docs/                                # AUXILIARY DOCS
 |-- scratch/                             # LOCAL ARTIFACTS (gitignored)
@@ -426,30 +575,36 @@ D:\HANK/
 
 ## 7. Local Model Inventory & VRAM Matrix
 
-### Active Model Pool (23 models)
+### Active Model Pool (33 models)
 
 | Role | Model | VRAM (GB) | Runtime | Tier |
 |------|-------|-----------|---------|------|
 | L1 Strategist | Sovereign Gateway (Cloud) | — | Gateway | Expert |
-| L1 Local Alt | Qwen 3.5 9B UD | 5.5 | Ollama | Expert |
-| L2 Primary | Qwen 2.5 Coder 7B | 4.7 | Ollama | Primary |
+| L1 Local Alt | DeepSeek-R1 7B | 4.7 | Ollama | Expert (CoT) |
+| L2 Primary | Qwen 3.5 4B UD | 2.9 | Ollama | Primary |
 | L2 Light | Ministral 3B Reasoning | 2.2 | Ollama | Light |
 | L2 Ultra-Light | DeepSeek 1.5B | 1.2 | Ollama | Ultra-Light |
 | L3 Auditor | Phi-4 Mini Reasoning UD | 2.8 | Ollama | Verification |
 | L3 Verification | Qwen 2.5 Coder 3B Q6 | 2.5 | Ollama | Axis 11 |
+| **L3 Math Expert** | **DeepSeek-R1-8B** | **4.9** | **Ollama** | **Axis 11 (Phase 1.0.24)** |
+| **L3 Math High** | **Open-Xi-Math** | **4.6** | **Ollama** | **Axis 11 (Phase 1.0.24)** |
+| **L3 Math Medium**| **SmolLM3-3B** | **2.1** | **Ollama** | **Axis 11 (Phase 1.0.24)** |
+| **L3 Math Light** | **Qwen2.5-Math-1.5B**| **1.1** | **Ollama** | **Axis 11 (Phase 1.0.24)** |
+| **L3 Math Ultra** | **math-mini-0.6B** | **0.45**| **Ollama** | **Axis 11 (Phase 1.0.24)** |
+| **L3 Math Bridge**| **qwq-math-io-500m**| **0.4** | **Ollama** | **Axis 11 (Phase 1.0.24)** |
 | L3 Fallback | Qwen 2.5 Coder 0.5B | 0.5 | Ollama | Axis 11 |
 | Router | Granite 3B | 1.6 | Ollama | RuFlow |
-| Vision Flagship | MiMo-VL-7B-RL | 5.7 | LocalRuntime | Vision |
-| Vision OCR | Qwen2-VL OCR 2B | 1.1 | LocalRuntime | Vision (BYPASSED: MiMo-VL primary) |
-| Vision General | Qwen2.5-VL 3B | 2.5 | LocalRuntime | Vision (BYPASSED: MiMo-VL primary) |
-| Vision Thinking | Qwen3-VL Thinking 4B | 3.15 | LocalRuntime | Vision (BYPASSED) |
-| Vision Creative | Gemma 4 E4B 4B | 5.67 | LocalRuntime | Vision (BYPASSED) |
+| Vision Default | Qwen2.5-VL 3B | 2.5 | LocalRuntime | Vision (Stable primary) |
+| Vision OCR | Qwen2-VL OCR 2B | 1.1 | LocalRuntime | Vision (Document OCR) |
+| Vision Flagship | MiMo-VL-7B-RL | 5.7 | LocalRuntime | Vision (Flagship, active) |
+| Vision Thinking | Qwen3-VL Thinking 4B | 3.15 | LocalRuntime | Vision (BYPASSED, replaced by MiMo) |
+| Vision Creative | Gemma 4 E4B 4B | 5.67 | LocalRuntime | Vision (BYPASSED, replaced by MiMo) |
 | Embedding | Nomic Embed MoE Q8 | 0.5 | Ollama | Axis 6 |
 | Reranker | Jina Reranker V3 | 0.6 | Muscle | Retrieval |
 | Math Verifier | Qwen 2.5 Math 7B | 4.0 | Ollama | Axis 11 |
 | Math Light | DeepScaler 1.5B | 1.1 | Ollama | Axis 11 |
 | Tool Calling | FunctionGemma 270M | 0.3 | Ollama | RuFlow |
-| L2 Fallback | Granite 4.1 8B | 5.5 | Ollama | Draft |
+| L2 Fallback | Nemotron-3 Nano 4B | 4.6 | Ollama | Draft |
 | L2 Alternative | Hermes-3 Llama 8B | 4.9 | Ollama | Draft |
 | L2 Alternative | Llama 3.1 8B | 4.9 | Ollama | Draft |
 | L0 Alternative | SmolLM2 1.7B | 1.2 | Ollama | Ultra-Light |
@@ -461,17 +616,10 @@ Full benchmark data (MMLU, HumanEval, MATH, tokens/sec) available in `.antigravi
 
 | Mode | Active Models | VRAM | Use Case |
 |------|--------------|------|----------|
-| **A: Standard** | Qwen 7B (always) + Phi-4 Mini (on audit) | 4.7 GB idle / 7.5 GB peak | Normal agentic loop (need_based: Phi-4 loads only during audit) |
-| **B: Vision** | 2x Vision + Qwen 3B | 6.1 GB | Document/UI analysis |
+| **A: Standard** | Qwen 3.5 4B UD (always) + Phi-4 Mini (on audit) | 2.9 GB idle / 5.7 GB peak | Normal agentic loop (need_based: Phi-4 loads only during audit) |
+| **B: Vision** | 2x Vision + Qwen 3.5 4B UD | 6.1 GB | Document/UI analysis |
 | **C: Fast** | Ministral + Granite + DeepSeek | 5.0 GB | Rapid response |
-| **D: Verification** | Qwen 7B + Qwen 3B | 7.2 GB | Heavy logic/code audit |
-
-| Mode | Active Models | VRAM | Use Case |
-|------|--------------|------|----------|
-| **A: Standard** | Qwen 7B (always) + Phi-4 Mini (on audit) | 4.7 GB idle / 7.5 GB peak | Normal agentic loop (need_based: Phi-4 loads only during audit) |
-| **B: Vision** | 2x Vision + Qwen 3B | 6.1 GB | Document/UI analysis |
-| **C: Fast** | Ministral + Granite + DeepSeek | 5.0 GB | Rapid response |
-| **D: Verification** | Qwen 7B + Qwen 3B | 7.2 GB | Heavy logic/code audit |
+| **D: Verification** | Qwen 3.5 4B UD + Qwen 2.5 Coder 3B | 5.4 GB | Heavy logic/code audit |
 
 Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 
@@ -529,10 +677,10 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 
 | Resource | Location | Purpose |
 |----------|----------|---------|
-| Ollama Models (Blobs) | `D:\Google\AntiGravity\General Tools\OllamaModels\blobs\` | 73 files ~67 GB — Ollama-managed GGUF blobs |
-| Raw GGUF Files | `D:\Google\AntiGravity\General Tools\` | 32 standalone GGUF files (RAW, not in Ollama) |
-| Ollama Modelfiles | `D:\Google\AntiGravity\General Tools\OllamaModels\` | 41 `.Modelfile` definitions mapping GGUF -> Ollama tags |
-| Vision Models | `D:\Google\AntiGravity\General Tools\VisionSandbox\` | MiMo-7B (flagship), plus Qwen2.0-2B, Qwen2.5-3B, Qwen3-4B, Gemma4B — ~17 GB |
+| Ollama Models (Blobs) | `D:\Google\AntiGravity\General Tools\OllamaModels\blobs\` | 91 files ~75 GB — Cleaned & Synced |
+| Raw GGUF Files | `D:\Google\AntiGravity\General Tools\` | 36 standalone GGUF files (Source of Truth) |
+| Ollama Modelfiles | `D:\Google\AntiGravity\General Tools\OllamaModels\` | 35 `.Modelfile` definitions mapping GGUF -> Ollama tags |
+| Vision Models | `D:\Google\AntiGravity\General Tools\VisionSandbox\` | MiMo-7B, Qwen2.0-2B, Qwen2.5-3B, Qwen3-4B, Gemma4B (8 GGUF total) |
 | Python 3.12 | `.venv\` | Isolated runtime environment |
 | Antigravity IDE | External | Client interface and cloud proxy tunnel |
 
@@ -574,6 +722,31 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 | TemporalStore Singleton | ACTIVE | Module-level `_initialized` flag, `initialize_temporal_schema()` called once. ~43K daily redundant SQL queries eliminated (Phase 11.19.5). |
 | Watchdog Optimization | ACTIVE | Polling interval 2s→30s, mtime-based change detection. ~90% CPU reduction (Phase 11.19.5). |
 | CORE_MODELS Protection | ACTIVE | `vram_config.CORE_MODELS` (qwen2-5-coder-7b, tinyllama). `sync_from_ollama()` detects IDE-loaded models. `keep_alive=-1` prevents auto-eviction (Phase 11.19.6). |
+| 33-Item Check_SYS Remediation | COMPLETED | CI hardening, mock+DBWAL fixes, doc drift, shell=False, service_locator, credential manager, 226-module mapper, opencode VACUUM, log rotation (7 phases, Phase 11.19.12-19). |
+| Path Standardization | COMPLETED | 11 Mnemosyne stores migrated to `to_absolute_path` — no more ghost DBs (Phase 1.0.4) |
+| Circular Dep SSOT | COMPLETED | `base_models.py` created in `src/architrave/` to decouple `model_registry`-`self_tuner` (Phase 1.0.4) |
+| Vision Stability Pivot | COMPLETED | MiMo-VL-7B-RL replaced by Qwen2.5-VL as default vision engine due to `seq_add` instability (Phase 1.0.2) |
+| Secret Migration | COMPLETED | API keys moved from plain-text `.env` to Windows Credential Manager via `scripts/migrate_secrets.py` (Phase 1.0.1) |
+| LSP Restoration | ACTIVE | Pyright 1.1.409 installed in `.venv`, Opencode LSP command fixed to `pyright.langserver --stdio` (Phase 1.0.5) |
+| Snapshots Purge | COMPLETED | 857MB -> 16KB via DELETE+VACUUM after zombi watchdog terminated (Phase 1.0.5) |
+| Sovereign Gate Hardening | COMPLETED | CONSTITUTION.md SSOT, L0 Auth Protocol codified in rules.json/AGENTS.md/.cursorrules, Ollama-based hybrid reranker (Nomic+Jina), Model Registry sync to Qwen 3.5 UD v1.4.1 (Phase 1.0.6) |
+| Foundation Stability | COMPLETED | ToolBridge naming remediation (write_file, replace_content), GraphState orphan field cleanup, Ollama-based knowledge fallback (theoria.py), math.exp Ebbinghaus decay in MemoryArbitrator (Phase 1.0.7) |
+| Gateway SPOF Hardening | COMPLETED | Circuit breaker with ConnectError triggers + 30s cooldown, random jitter (0.5-2.0s) on async_retry, TinyLlama (0.7 GB) as safety fallback, cognition.morpheus import removal for IDE stability, Morpheus 300s tick scaling (Phase 1.0.8) |
+| Purification & Cycle Break | COMPLETED | Editable package (pip install -e .), Pyright portability with autoSearchPaths, surgical model_registry→self_tuner cycle break via base_models, ASCII/emoji BA-01 sweep across all .py files (Phase 1.0.9) |
+| Resilient Shutdown | COMPLETED | Windows SIGINT/SIGBREAK handlers, WAL flush + conn.close() on shutdown, checkpoint recovery with StateSnapshot, IDE resolution via pyrightconfig.json root mapping (Phase 1.0.10) |
+| WAL Checkpoint Optimization | COMPLETED | Thread-safe write counter + PRAGMA wal_checkpoint(TRUNCATE) in episodic_store.py, DBAPI cursor management to prevent WAL bloat (Phase 1.0.11) |
+| Agent Contextual Awareness | COMPLETED | Atomic system_status.json flag in file_watchdog.py, cycle-level had_violation detection, real-time SYSTEM CRITICAL injection into Gnosis context (Phase 1.0.12) |
+| Semantic Hardening | COMPLETED | Real Ollama embeddings with Matryoshka 256-dim slicing in theoria.py, autonomous health check + Emergency Mode in retrieval.py, TOKEN_TIER limits externalized to .env (Phase 1.0.13) |
+| Environmental Hardening | COMPLETED | .pth file (phantom_logos.pth) for permanent sys.path anchoring, zero-config imports in raw shell without PYTHONPATH (Phase 1.0.14) |
+| Infrastructure SSOT | COMPLETED | PEP 621 metadata standardization (authors, license, classifiers, urls), dependency cleanup (gliner, langchain removal), ruff replaces black/isort, selective mypy, base_models integration for EntityExtractor (Phase 1.0.15) |
+| Quality Gate Actuation | COMPLETED | pre-commit installation with auto-fix hooks (ruff --fix + ruff-format), pip recovery via get-pip.py, quality debt audit (239 violations), global exclude for logs/data/scratch (Phase 1.0.16) |
+| Dynamic Quality Remediation | COMPLETED | pyproject.toml lint config migration to [tool.ruff.lint], pre-commit transition from check-only to auto-fix mode, organic (no bulk --all-files) remediation strategy (Phase 1.0.17) |
+| SLM MCP Integration | Proposed | SuperLocalMemory V3.4 memory system via MCP |
+| ServiceLocator Cross-Tier | COMPLETED | `src/utils/service_locator.py` — L2-L3 circular dependency resolved, self_tuner→bootstrap via locator pattern (Phase 11.19.19) |
+| Sovereign Shield Hardening | ACTIVE | Full Mutation Detection via SHA-256 Hash. Replaces 10% size-drop threshold to catch unauthorized additions/overwrites (Phase 1.0.22). |
+| **Math Pipeline Modernization**| **ACTIVE** | **Integration of 7 specialized math/reasoning models (DeepSeek-R1-8B, Open-Xi, etc.), asynchronous verification refactor, and Morpheus VRAM-aware eviction (Phase 1.0.24).** |
+| **Partial Correction Bridge** | **ACTIVE** | **Introduction of partial_correction state to allow iterative refinement of specific Axis 11 errors instead of total rejection (Phase 1.0.24).** |
+| **Secure Sympy Parsing** | **ACTIVE** | **Replaced sympify() with parse_expr() + standard_transformations to mitigate RCE risks and improve implicit multiplication support (Phase 1.0.24).** |
 
 ---
 
@@ -581,6 +754,27 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 
 | Version | Date | Summary |
 |---------|------|---------|
+| **1.0.24** | **2026-05-14** | **Hardening Sovereign Math Pipeline.** 7 specialized models integrated. Asynchronous verify_math_llm refactor. Morpheus pre_model_load integration. partial_correction bridge in Clotho. Secure Sympy parse_expr migration. Axis 11 logic_score priority in SelfTuner. |
+| **1.0.23** | **2026-05-14** | **Neuro-Symbolic Cognitive Pipeline.** 4-stage verification chain (AST -> QWED -> Math -> Z3). Phi-4 Mini logic extraction to SMT-LIB2. Fail-closed policy for UNSAT results. |
+| 1.0.17 | 2026-05-13 | **Dynamic Quality Remediation (K1.5.3).** pyproject.toml lint config migrated to [tool.ruff.lint]. pre-commit hooks transitioned from check-only to auto-fix mode (ruff --fix, ruff-format). Organic remediation strategy (no bulk --all-files). |
+| 1.0.16 | 2026-05-13 | **Quality Gate Actuation (K1.5.2).** pre-commit installed and registered with auto-fix hooks. Pip corruption resolved via get-pip.py bootstrap. Quality debt audit generated (239 violations). Global excludes for logs/data/scratch dirs. |
+| 1.0.15 | 2026-05-13 | **Infrastructure SSOT & Dependency Hardening (K1.5.1).** pyproject.toml PEP 621 metadata (authors, license, classifiers, urls). Dead deps removed (gliner, langchain). ruff replaces black/isort. Selective mypy hardening. EntityExtractor connected to ModelRegistry. |
+| 1.0.14 | 2026-05-13 | **Environmental Hardening (K1.5.1).** .pth file integration for permanent sys.path anchoring to D:\Hank. Zero-config imports without PYTHONPATH. |
+| 1.0.13 | 2026-05-13 | **Semantic Hardening (K1.5.1).** Real Ollama embeddings with Matryoshka 256-dim slicing in theoria.py. Autonomous health check + Emergency Mode in retrieval.py. TOKEN_TIER limits externalized to .env. |
+| 1.0.12 | 2026-05-13 | **Agent Contextual Awareness.** Atomic system_status.json in file_watchdog.py. Cycle-level had_violation detection. Real-time SYSTEM CRITICAL injection into Gnosis context. |
+| 1.0.11 | 2026-05-13 | **WAL Checkpoint Optimization.** Thread-safe write counter + PRAGMA wal_checkpoint(TRUNCATE) in episodic_store.py. DBAPI cursor management to prevent WAL bloat. |
+| 1.0.10 | 2026-05-13 | **Resilient Shutdown.** Windows SIGINT/SIGBREAK handlers. WAL flush + conn.close() on shutdown. Checkpoint recovery with StateSnapshot. IDE resolution via pyrightconfig.json root mapping. |
+| 1.0.9 | 2026-05-13 | **Purification & Cycle Break.** Editable package (pip install -e .). Pyright portability with autoSearchPaths. Surgical model_registry→self_tuner cycle break. ASCII/emoji BA-01 sweep. |
+| 1.0.8 | 2026-05-13 | **Gateway SPOF Hardening.** Circuit breaker with ConnectError triggers + 30s cooldown. Random jitter on async_retry. TinyLlama (0.7 GB) safety fallback. Morpheus 300s tick scaling. |
+| 1.0.7 | 2026-05-13 | **Foundation Stability.** ToolBridge naming remediation (write_file, replace_content). GraphState orphan cleanup. Ollama knowledge fallback in theoria.py. Exponential Ebbinghaus decay in MemoryArbitrator. |
+| 1.0.6 | 2026-05-13 | **Sovereign Gate Hardening.** CONSTITUTION.md SSOT. L0 Auth Protocol codified. Ollama-based hybrid reranker (Nomic+Jina). Model Registry sync to Qwen 3.5 UD v1.4.1. |
+| 1.0.5 | 2026-05-12 | **Resource Optimization & IDE Stabilization.** Zombi processes (PID 12956/14284) terminated. snapshots.db purged 857MB -> 16KB via DELETE+VACUUM. Pyright 1.1.409 LSP installed and configured for Opencode semantic analysis. |
+| 1.0.4 | 2026-05-12 | **Circular Dependency & Path Hardening.** base_models.py created as SSOT for model_registry-self_tuner decoupling. 11 Mnemosyne stores standardized to `to_absolute_path` anchoring. Ghost DB `cognition/mnemosyne/mnemosyne.db` purged. |
+| 1.0.3 K0.3 | 2026-05-12 | **Stability Optimization.** 0.98+ axis stability baseline achieved. Token usage and reasoning latency metrics integrated into Mnemosyne logging. Sophia loop redundant inference calls resolved. |
+| 1.0.2 K0.1 | 2026-05-12 | **Semantic Relations Repair & System Stabilization.** .pth path registration and editable install (pip install -e .) resolved IDE import conflicts. Vision pivot to Qwen2.5-VL for seq_add stability. GLiNER2 integration for unified NER+RE. |
+| 1.0.1 K0.0 | 2026-05-11 | **Baseline Hardening.** RotatingFileHandler (10MB, 5 backups) in logging_config.py. ServiceLocator for L2-L3 circular dep decoupling. Path traversal guards in local_runtime/reranker. Secret migration to Windows Credential Manager. |
+| 11.19.10 | 2026-05-10 | **Sovereign Shield Actuation.** 3-layer protection (Git, Guardian, Bridge) fully functional. SnapshotManager/Watchdog race condition fixed. Absolute path enforcement. Pre-write backup in ToolBridge. |
+| 11.19.19 | 2026-05-11 | **Architectural Hardening & Remediation.** 7-phase 33-item Check_SYS remediation complete. CI hardening (3.12 matrix, health_check gate, legacy env cleanup). Mock fixes (test_schema_enforcement_fail, test_pruning_rules DB path). Doc drift corrected (topography, PR template, future.md → 14-axis). shell=False sweep. service_locator cross-tier fix. Credential manager. Mapper 226-module + 7 circular deps detected. opencode VACUUM. Log rotation. Skills count 35. Topography diagram fully expanded (24 missing nodes + 39 edges added). |
 | 11.19.6 | 2026-05-09 | **Stabilization & Gateway Hardening.** Gateway circuit breaker, 60s local fallback, MockResponse on failure, sweeper health check. CORE_MODELS protection with `sync_from_ollama()` + `keep_alive=-1`. Embedding Pydantic fix. `ReasoningState.error_message` field. TemporalStore singleton (~43K daily SQL queries eliminated). Watchdog 2s→30s polling (~90% CPU reduction). |
 | 11.19.5 | 2026-05-09 | **Modular Refactoring.** `ergon.py` → 12-file `ergon/` package. `tool_bridge.py` → 6-file `bridge/` package. `gnosis.py` → 16-file `gnosis/` package. `sympy_verifier.py` → 6-file `verifiers/` package. `codebase_mapper.py` → 3-file `mapper/` package. `eidos.py` schema extraction. 3 monolithic files deleted. Stable/Dynamic context split. |
 | 11.19.1 | 2026-05-08 | **Temporal Validity + Axis 14 + Sovereign Shield Docs.** `event_key` supersede lifecycle. visual_store.py deployed. topography.md and opencode.json synced with tools.md benchmarks. |
@@ -605,5 +799,5 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 ---
 
 *Created by Antigravity (Phantom Logos)*
-*Last Updated: 2026-05-09 [01:45 AM PT]*
-*Status: Phase 11.19.6 Stabilization COMPLETE*
+*Last Updated: 2026-05-14 [11:15 PM PT]*
+*Status: Phase 1.0.24 Hardening Sovereign Math Pipeline — Modernization COMPLETE*

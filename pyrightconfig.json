@@ -1,20 +1,24 @@
 {
     "include": [
-        "src",
-        "cognition",
-        "scripts",
-        "tests",
-        "scratch"
+        "."
     ],
     "exclude": [
         "**/__pycache__",
-        ".venv"
+        ".venv",
+        ".git"
     ],
-    "executionEnvironments": [
-        {
-            "root": ".",
-            "extraPaths": [],
-            "pythonVersion": "3.12"
-        }
-    ]
+    "analysis": {
+        "autoSearchPaths": false,
+        "extraPaths": [
+            "."
+        ],
+        "executionEnvironments": [
+            {
+                "root": "."
+            }
+        ],
+        "useLibraryCodeForTypes": true,
+        "typeCheckingMode": "basic",
+        "diagnosticMode": "workspace"
+    }
 }

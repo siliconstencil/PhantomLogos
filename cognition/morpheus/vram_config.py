@@ -2,44 +2,31 @@
 
 # Phase 11.18.15: Morpheus 8GB Dynamic Config
 MODEL_SETS = {
-    "default": {
-        "models": ["qwen2-5-coder-7b-instruct-q4_k_m:latest", "phi-4-mini-reasoning-ud-q5_k_xl:latest"],
-        "strategy": "need_based"
+    "math_expert": {"models": ["deepseek-r1-8b:latest"], "strategy": "all_at_once"},
+    "math_light": {
+        "models": ["smollm3-3b:latest", "qwq-math-io-500m:latest"],
+        "strategy": "all_at_once",
     },
-    "vision_ocr": {
-        "models": ["qwen2-vl-ocr:latest"],
-        "strategy": "all_at_once"
-    },
-    "vision_full": {
-        "models": ["mimo-vl:latest"],
-        "strategy": "all_at_once"
-    },
-    "fast": {
-        "models": ["deepscaler-1-5b-preview-q4_k_m:latest", "ministral-3-3b-reasoning-2512-ud-q4_k_xl:latest"],
-        "strategy": "all_at_once"
-    },
-    "verification": {
-        "models": ["qwen2-5-coder-7b-instruct-q4_k_m:latest", "qwen2-5-coder-3b-instruct-q6_k:latest"],
-        "strategy": "all_at_once"
-    }
+    "expert_reasoning": {"models": ["qwen3.5-9b-ud:latest"], "strategy": "all_at_once"},
 }
 
-# Phase 11.21.x: Core models that must never be auto-evicted (keeps IDE responsive)
-CORE_MODELS = [
-    "qwen2-5-coder-7b-instruct-q4_k_m:latest",  # L2 Primary — always resident for IDE
-    "tinyllama:latest",                         # OOM recovery — always available
-]
-
+# [Phase 1.0.24] Updated Eviction Order (Heavy to Light)
 EVICTION_ORDER = [
-    "phi-4-mini-reasoning-ud-q5_k_xl:latest",       # L3 (en once bosalt)
-    "mimo-vl:latest",                              # Vision flagship (5.7GB w/ mmproj)
-    "qwen2-5-coder-3b-instruct-q6_k:latest",       # Verification
-    "qwen2-vl-ocr:latest",                         # Vision OCR
-    "deepseek-math:7b",                            # Math verify (Phase 11.20)
-    "ministral-3-3b-reasoning-2512-ud-q4_k_xl:latest", # L2 Light
-    "deepseek-r1:7b",                              # R1 reasoning (Phase 11.20, larger, daha gec bosalt)
-    "deepscaler-1-5b-preview-q4_k_m:latest",       # L0
-    "qwen2-5-coder-7b-instruct-q4_k_m:latest",     # L2 Primary (en son)
-    "tinyllama:latest",                            # OOM recovery (en kucuk, en son)
-    "qwen2.5-vl:latest",                           # Vision light (yedek)
+    "qwen3.5-9b-ud:latest",  # Heavy expert (6.0 GB)
+    "deepseek-r1-8b:latest",  # Heavy expert (5.1 GB)
+    "qwen2.5-math-7b:latest",  # Math high (4.7 GB)
+    "deepseek-math:7b",  # Math fallback (4.7 GB)
+    "phi-4-mini-reasoning-ud-q5_k_xl:latest",  # L3 Auditor (2.8 GB)
+    "mimo-vl:latest",  # Flagship Vision (5.7 GB)
+    "qwen2.5-vl:latest",  # Standard Vision (2.5 GB)
+    "smollm3-3b:latest",  # Math medium (1.9 GB)
+    "qwen3-5-4b-ud-q4_k_xl:latest",  # L2 Primary (2.9 GB)
+    "ministral-3-3b-reasoning-2512-ud-q4_k_xl:latest",  # L2 Light (2.2 GB)
+    "open-xi-math:latest",  # Math light (1.1 GB)
+    "qwen2.5-math-1.5b:latest",  # Math light (1.1 GB)
+    "deepscaler-1-5b-preview-q4_k_m:latest",  # L2 Ultra-light (1.1 GB)
+    "math-mini-0.6b:latest",  # Math ultra-light (0.45 GB)
+    "qwq-math-io-500m:latest",  # Math bridge (0.4 GB)
+    "nomic-embed-text-v2-moe-q8:latest",  # Embeddings (0.5 GB)
+    "tinyllama:latest",  # OOM Recovery (0.7 GB)
 ]

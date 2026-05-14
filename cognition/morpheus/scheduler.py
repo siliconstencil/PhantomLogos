@@ -1,12 +1,12 @@
 import os
-import time
 import threading
-from typing import Optional, Dict, Any
+import time
 from dataclasses import dataclass
+
 from src.utils.logging_config import setup_logger
-from ..morpheus.registry import find_fitting_model, get_vram_gb, GPU_USABLE_VRAM_GB
+
 from ..morpheus.monitor import get_gpu_memory_info, set_cached_gpu_info
-from ..morpheus.loader import ModelLoader
+from ..morpheus.registry import GPU_USABLE_VRAM_GB, find_fitting_model
 
 logger = setup_logger(__name__)
 
@@ -14,7 +14,8 @@ logger = setup_logger(__name__)
 @dataclass
 class SchedulerState:
     """Snapshot of the Morpheus scheduler state at a given tick."""
-    active_model: Optional[str] = None
+
+    active_model: str | None = None
     gpu_used_gb: float = 0.0
     gpu_free_gb: float = 0.0
     fragmentation: float = 0.0
@@ -32,15 +33,17 @@ class MorpheusScheduler:
     - High fragmentation -> trigger sweep
     """
 
-    def __init__(self, idle_cooldown_s: Optional[float] = None):
-        self.idle_cooldown_s = idle_cooldown_s or float(os.getenv("MORPHEUS_IDLE_COOLDOWN_S", "120.0"))
+    def __init__(self, idle_cooldown_s: float | None = None):
+        self.idle_cooldown_s = idle_cooldown_s or float(
+            os.getenv("MORPHEUS_IDLE_COOLDOWN_S", "120.0")
+        )
         self._lock = threading.Lock()
-        self._active_model: Optional[str] = None
+        self._active_model: str | None = None
         self._last_request_time: float = time.time()
-        self._load_count: Dict[str, int] = {}
+        self._load_count: dict[str, int] = {}
         self._running = False
-        self._thread: Optional[threading.Thread] = None
-        
+        self._thread: threading.Thread | None = None
+
         # Sprint C: Injected dependencies for autonomous re-sharding
         self._loader = None
         self._sweeper = None
@@ -57,7 +60,7 @@ class MorpheusScheduler:
         self._running = False
         logger.info("MorpheusScheduler: Stop signal sent.")
 
-    def request_model(self, role: str) -> Optional[str]:
+    def request_model(self, role: str) -> str | None:
         """Request a model for a given role. Returns model name or None if no fit."""
         gpu_info = get_gpu_memory_info()
         free_gb = gpu_info.get("free_gb", 0)
@@ -75,15 +78,16 @@ class MorpheusScheduler:
         # Phase 11.18.15: Set E-core affinity for background Morpheus daemon
         try:
             import psutil
+
             p = psutil.Process()
             # i7-13620H: 6 P-cores (0-11) + 4 E-cores (12-15)
             # Correct Mask: 0xf000
             p.cpu_affinity([12, 13, 14, 15])
-            logger.info(f"MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].")
+            logger.info("MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].")
         except Exception as e:
             logger.warning(f"MorpheusScheduler: Failed to set CPU affinity ({e})")
 
-        interval = float(os.getenv("MORPHEUS_TICK_INTERVAL_S", "30.0"))
+        interval = float(os.getenv("MORPHEUS_TICK_INTERVAL_S", "300.0"))
         while self._running:
             try:
                 self._orchestrate_vram()
@@ -97,16 +101,21 @@ class MorpheusScheduler:
         used_gb = gpu_info.get("used_gb", 0)
         free_gb = gpu_info.get("free_gb", 0)
         idle_time = time.time() - self._last_request_time
-        
+
         # Sprint C: Dynamic Idle Threshold
-        idle_vram_threshold = float(os.getenv("MORPHEUS_VRAM_IDLE_THRESHOLD_GB", str(GPU_USABLE_VRAM_GB * 0.25)))
+        idle_vram_threshold = float(
+            os.getenv("MORPHEUS_VRAM_IDLE_THRESHOLD_GB", str(GPU_USABLE_VRAM_GB * 0.25))
+        )
 
         if idle_time > self.idle_cooldown_s and used_gb > idle_vram_threshold:
-            logger.info(f"MorpheusScheduler: Autonomous sweep triggered (Idle for {int(idle_time)}s, {used_gb}GB VRAM used)")
-            
+            logger.info(
+                f"MorpheusScheduler: Autonomous sweep triggered (Idle for {int(idle_time)}s, {used_gb}GB VRAM used)"
+            )
+
             # Use bootstrap to get singletons safely
             try:
-                from src.clotho.bootstrap import get_sweeper, get_loader
+                from src.clotho.bootstrap import get_loader, get_sweeper
+
                 sweeper = get_sweeper()
                 loader = get_loader()
                 # Sprint C: Soru 1 Approved - Trigger autonomous re-sharding
@@ -116,11 +125,14 @@ class MorpheusScheduler:
 
         try:
             from cognition.mnemosyne.temporal_store import TemporalStore
+
             ts = TemporalStore()
             ts.record(
                 session_id="morpheus",
-                event_type="scheduler.tick", model_name="morpheus",
-                vram_gb=used_gb, extra={"free_gb": free_gb, "idle_s": round(idle_time, 1)},
+                event_type="scheduler.tick",
+                model_name="morpheus",
+                vram_gb=used_gb,
+                extra={"free_gb": free_gb, "idle_s": round(idle_time, 1)},
             )
         except Exception as e:
             logger.warning(f"MorpheusScheduler: TemporalStore tick record failed ({e})")

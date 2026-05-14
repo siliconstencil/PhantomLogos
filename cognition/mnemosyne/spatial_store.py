@@ -3,12 +3,13 @@ Mnemosyne Spatial Memory Layer (Axis 5).
 SQLite-backed dependency graph for project structure queries.
 Answers "which module depends on X?" and "where is this defined?"
 """
-import os
-import re
+
 import datetime
+
 import sqlalchemy as sa
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import Column, DateTime, Integer, String, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -24,7 +25,7 @@ class ModuleNode(SpatialBase):
     line_count = Column(Integer, default=0)
     num_functions = Column(Integer, default=0)
     content_hash = Column(String(64))
-    last_indexed = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    last_indexed = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class DependencyEdge(SpatialBase):
@@ -39,19 +40,27 @@ class DependencyEdge(SpatialBase):
 class SpatialStore:
     AXIS_ID = 5
 
-    def __init__(self, db_url: str = "sqlite:///data/spatial.db"):
-        os.makedirs("data", exist_ok=True)
-        self.engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    def __init__(self, db_url: str | None = None):
+        from src.utils.project_path import to_absolute_path
+
+        db_url = db_url or f"sqlite:///{to_absolute_path('data/spatial.db')}"
+        self.engine = create_engine(
+            db_url, connect_args={"check_same_thread": False, "timeout": 30}
+        )
         SpatialBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def record_dependency(self, source: str, target: str, relationship: str = "imports"):
         session = self.Session()
         try:
-            existing = session.query(DependencyEdge).filter(
-                DependencyEdge.source_module == source,
-                DependencyEdge.target_module == target,
-            ).first()
+            existing = (
+                session.query(DependencyEdge)
+                .filter(
+                    DependencyEdge.source_module == source,
+                    DependencyEdge.target_module == target,
+                )
+                .first()
+            )
             if not existing:
                 edge = DependencyEdge(
                     source_module=source, target_module=target, relationship=relationship
@@ -60,7 +69,9 @@ class SpatialStore:
                 session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(f"SpatialStore (Axis {self.AXIS_ID}): record_dependency failed ({e})", exc_info=True)
+            logger.error(
+                f"SpatialStore (Axis {self.AXIS_ID}): record_dependency failed ({e})", exc_info=True
+            )
         finally:
             session.close()
 
@@ -72,30 +83,38 @@ class SpatialStore:
         finally:
             session.close()
 
-    def record_module(self, module_name: str, file_path: str, line_count: int = 0,
-                      num_functions: int = 0, content_hash: str = ""):
+    def record_module(
+        self,
+        module_name: str,
+        file_path: str,
+        line_count: int = 0,
+        num_functions: int = 0,
+        content_hash: str = "",
+    ):
         session = self.Session()
         try:
-            node = session.query(ModuleNode).filter(
-                ModuleNode.module_name == module_name
-            ).first()
+            node = session.query(ModuleNode).filter(ModuleNode.module_name == module_name).first()
             if node:
                 node.file_path = file_path
                 node.line_count = line_count
                 node.num_functions = num_functions
                 node.content_hash = content_hash
-                node.last_indexed = datetime.datetime.now(datetime.timezone.utc)
+                node.last_indexed = datetime.datetime.now(datetime.UTC)
             else:
                 node = ModuleNode(
-                    module_name=module_name, file_path=file_path,
-                    line_count=line_count, num_functions=num_functions,
+                    module_name=module_name,
+                    file_path=file_path,
+                    line_count=line_count,
+                    num_functions=num_functions,
                     content_hash=content_hash,
                 )
                 session.add(node)
             session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(f"SpatialStore (Axis {self.AXIS_ID}): record_module failed ({e})", exc_info=True)
+            logger.error(
+                f"SpatialStore (Axis {self.AXIS_ID}): record_module failed ({e})", exc_info=True
+            )
         finally:
             session.close()
 
@@ -103,12 +122,17 @@ class SpatialStore:
         """What does this module depend on?"""
         session = self.Session()
         try:
-            edges = session.query(DependencyEdge).filter(
-                DependencyEdge.source_module == module_name
-            ).all()
+            edges = (
+                session.query(DependencyEdge)
+                .filter(DependencyEdge.source_module == module_name)
+                .all()
+            )
             return [{"module": e.target_module, "relationship": e.relationship} for e in edges]
         except Exception as e:
-            logger.error(f"SpatialStore (Axis {self.AXIS_ID}): query_dependencies failed ({e})", exc_info=True)
+            logger.error(
+                f"SpatialStore (Axis {self.AXIS_ID}): query_dependencies failed ({e})",
+                exc_info=True,
+            )
             return []
         finally:
             session.close()
@@ -117,12 +141,16 @@ class SpatialStore:
         """What depends on this module?"""
         session = self.Session()
         try:
-            edges = session.query(DependencyEdge).filter(
-                DependencyEdge.target_module == module_name
-            ).all()
+            edges = (
+                session.query(DependencyEdge)
+                .filter(DependencyEdge.target_module == module_name)
+                .all()
+            )
             return [{"module": e.source_module, "relationship": e.relationship} for e in edges]
         except Exception as e:
-            logger.error(f"SpatialStore (Axis {self.AXIS_ID}): query_dependents failed ({e})", exc_info=True)
+            logger.error(
+                f"SpatialStore (Axis {self.AXIS_ID}): query_dependents failed ({e})", exc_info=True
+            )
             return []
         finally:
             session.close()
@@ -139,17 +167,22 @@ class SpatialStore:
             for kw in keywords:
                 kw_l = f"%{kw.lower()}%"
                 filters.append(
-                    sa.func.lower(ModuleNode.module_name).like(kw_l) |
-                    sa.func.lower(ModuleNode.file_path).like(kw_l)
+                    sa.func.lower(ModuleNode.module_name).like(kw_l)
+                    | sa.func.lower(ModuleNode.file_path).like(kw_l)
                 )
             if filters:
                 query = query.filter(sa.or_(*filters))
-            
+
             nodes = query.order_by(ModuleNode.module_name).limit(30).all()
-            return [{
-                "name": n.module_name, "path": n.file_path,
-                "lines": n.line_count, "functions": n.num_functions
-            } for n in nodes]
+            return [
+                {
+                    "name": n.module_name,
+                    "path": n.file_path,
+                    "lines": n.line_count,
+                    "functions": n.num_functions,
+                }
+                for n in nodes
+            ]
         except Exception as e:
             logger.error(f"SpatialStore: query_by_keywords failed ({e})")
             return []
@@ -162,15 +195,13 @@ class SpatialStore:
         try:
             # Delete edges where this module is source or target
             session.query(DependencyEdge).filter(
-                (DependencyEdge.source_module == module_name) |
-                (DependencyEdge.target_module == module_name)
+                (DependencyEdge.source_module == module_name)
+                | (DependencyEdge.target_module == module_name)
             ).delete(synchronize_session=False)
-            
+
             # Delete the module itself
-            session.query(ModuleNode).filter(
-                ModuleNode.module_name == module_name
-            ).delete()
-            
+            session.query(ModuleNode).filter(ModuleNode.module_name == module_name).delete()
+
             session.commit()
             logger.info(f"SpatialStore: Pruned module '{module_name}' and its edges.")
         except Exception as e:
@@ -183,12 +214,19 @@ class SpatialStore:
         session = self.Session()
         try:
             nodes = session.query(ModuleNode).order_by(ModuleNode.module_name).all()
-            return [{
-                "name": n.module_name, "path": n.file_path,
-                "lines": n.line_count, "functions": n.num_functions
-            } for n in nodes]
+            return [
+                {
+                    "name": n.module_name,
+                    "path": n.file_path,
+                    "lines": n.line_count,
+                    "functions": n.num_functions,
+                }
+                for n in nodes
+            ]
         except Exception as e:
-            logger.error(f"SpatialStore (Axis {self.AXIS_ID}): get_all_modules failed ({e})", exc_info=True)
+            logger.error(
+                f"SpatialStore (Axis {self.AXIS_ID}): get_all_modules failed ({e})", exc_info=True
+            )
             return []
         finally:
             session.close()

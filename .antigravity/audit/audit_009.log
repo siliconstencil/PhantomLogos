@@ -31,7 +31,7 @@ result = subprocess.run(
 )
 3. Ortak calisma alani: task.md benzeri bir "Shared Working Memory" Mnemosyne'de:
 facts tablosuna:
-  subject: "phase_11.8_sprint_a" 
+  subject: "phase_11.8_sprint_a"
   object: "orchestrator.py -> select_model_tier() eklendi, test gecti"
 Implementation Plan (Phase 11.9 Onerisi)
 Cross-Agent Context Protocol
@@ -64,11 +64,11 @@ conn.execute("PRAGMA journal_mode=WAL")
 2. Partitioned DELETE (En Verimli)
 Bulk delete sonrasi SQLite sayfalari geri kullanir ama dosya kuculmez. Bunun icin:
 # ADIM 1: Kontrollu silme (30 gun)
-DELETE FROM operational_logs 
+DELETE FROM operational_logs
 WHERE id IN (
-    SELECT id FROM operational_logs 
+    SELECT id FROM operational_logs
     WHERE timestamp < datetime('now', '-30 days')
-    ORDER BY id DESC 
+    ORDER BY id DESC
     LIMIT 500
 )  -- 500'er 500'er, buyuk kilitlenme yok
 # ADIM 2: Sayfa geri kazanim
@@ -95,25 +95,25 @@ def prune_database(self, days: int = 30, batch_size: int = 500):
     con = sqlite3.connect("data/mnemosyne.db")
     con.execute("PRAGMA journal_mode=WAL")
     con.execute("PRAGMA auto_vacuum=INCREMENTAL")
-    
+
     # 2. operational_logs: 500'er 500'er sil
     con.execute("""
         DELETE FROM operational_logs WHERE rowid IN (
-            SELECT rowid FROM operational_logs 
+            SELECT rowid FROM operational_logs
             WHERE timestamp < datetime('now', ? || ' days')
             LIMIT ?
         )
     """, (-days, batch_size))
-    
+
     # 3. events: ayni yontem
     con.execute("""
         DELETE FROM events WHERE rowid IN (
-            SELECT rowid FROM events 
+            SELECT rowid FROM events
             WHERE timestamp < datetime('now', ? || ' days')
             LIMIT ?
         )
     """, (-days, batch_size))
-    
+
     # 4. Sayfalari geri kazan (kucuk adimlar, kilitleme yok)
     con.execute("PRAGMA incremental_vacuum(50)")
     con.close()

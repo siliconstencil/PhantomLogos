@@ -1,7 +1,7 @@
 import ollama
-from typing import Optional
 
-_client: Optional[ollama.AsyncClient] = None
+_client: ollama.AsyncClient | None = None
+
 
 def get_ollama_client() -> ollama.AsyncClient:
     """
@@ -9,5 +9,7 @@ def get_ollama_client() -> ollama.AsyncClient:
     """
     global _client
     if _client is None:
-        _client = ollama.AsyncClient()
+        import os
+
+        _client = ollama.AsyncClient(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
     return _client

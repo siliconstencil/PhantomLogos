@@ -1,8 +1,8 @@
-import subprocess
-import re
 import json
+import re
+import subprocess
 import time
-from typing import Optional
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -10,12 +10,14 @@ logger = setup_logger(__name__)
 _cached_gpu_info = {}
 _cached_gpu_time = 0.0
 
+
 def set_cached_gpu_info(info: dict):
     global _cached_gpu_info, _cached_gpu_time
     _cached_gpu_info = info
     _cached_gpu_time = time.time()
 
-def get_cached_gpu_info(max_age: float = 35.0) -> Optional[dict]:
+
+def get_cached_gpu_info(max_age: float = 35.0) -> dict | None:
     if _cached_gpu_info and (time.time() - _cached_gpu_time) < max_age:
         return _cached_gpu_info
     return None
@@ -28,13 +30,19 @@ def get_gpu_memory_info() -> dict:
     Falls back to JSON parse of a subprocess call.
     """
     try:
-        import sys
-        creationflags = 0x08000000 if sys.platform == "win32" else 0
+        creationflags = (
+            0x08000000  # Phase 11.21.6: 30s timeout for high VRAM load/thermal throttling
+        )
         result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=memory.total,memory.used,memory.free,utilization.gpu",
-             "--format=csv,noheader,nounits"],
-            capture_output=True, text=True, timeout=5,
-            creationflags=creationflags
+            [
+                "nvidia-smi",
+                "--query-gpu=memory.total,memory.used,memory.free,utilization.gpu",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            creationflags=creationflags,
         )
         if result.returncode != 0:
             return _fallback()
@@ -50,9 +58,16 @@ def get_gpu_memory_info() -> dict:
                 "free_gb": round(free_mb / 1024, 2),
                 "utilization_pct": util,
             }
+    except subprocess.TimeoutExpired:
+        logger.warning(
+            "Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling."
+        )
+        return _fallback()
     except Exception as e:
         logger.error(f"Morpheus: GPU monitoring failed ({e})", exc_info=True)
         return _fallback()
+
+    return _fallback()
 
 
 def _fallback() -> dict:
@@ -79,3 +94,10 @@ def get_fragmentation_estimate() -> float:
     ratio = free / total
     # Crude heuristic: >60% free but nvidia-smi suggests high use = fragmented
     return max(0.0, 1.0 - ratio) if info.get("utilization_pct", 0) < 50 else 0.3
+
+
+if __name__ == "__main__":
+    import json
+
+    info = get_gpu_memory_info()
+    print(json.dumps(info, indent=2))

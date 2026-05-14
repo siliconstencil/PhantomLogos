@@ -16,17 +16,17 @@ graph TD
     ROUTER -->|Tier 1: Light| L2_MINI[Ministral-3b]
     ROUTER -->|Tier 2: Primary| L2_QWEN[Qwen-7b]
     ROUTER -->|Tier 3: Expert| L1_GEMINI[Gemini Thinking]
-    
+
     L2_MINI --> TB[ToolBridge]
     L2_QWEN --> TB
     L1_GEMINI --> TB
-    
+
     TB -->|Hybrid Search| A6[Axis 6: Vector + FTS]
     TB -->|Local Muscle| JR[Muscle - JinaReranker]
-    
+
     L2_QWEN -->|Draft + Citations| L3[L3: Auditor / Lachesis]
-    L3 -->|Weighted 6-Pillar Audit| L1_GEMINI
-    
+    L3 -->|Weighted 8-Pillar Audit| L1_GEMINI
+
     MORP[Morpheus Sweeper] -->|VRAM Unload| TB
     MORP -->|DB Pruning| M[Mnemosyne DB]
 ```
@@ -77,7 +77,7 @@ Detailed flow of a single user request through the hardened Phase 11.8 component
 - `src/clotho/orchestrator.py`: Driving the 3-tier RuFlow state machine.
 - `cognition/mnemosyne/semantic_store.py`: Hybrid search & RRF merge engine.
 - `cognition/morpheus/sweeper.py`: VRAM fragmentation and DB retention manager.
-- `src/lachesis/evaluator.py`: 6-pillar weighted grading (Citation/Consistency included).
+- `src/lachesis/evaluator.py`: 8-pillar weighted grading (Citation/Consistency included).
 
 ---
 *Created by Antigravity (Phantom Logos)*
@@ -123,7 +123,7 @@ D:\HANK/
 |   |   |-- skill_loader.py              # SKILL.md capability loader
 |   |   |-- control_handoff.py           # Task handoff entry point
 |   |-- lachesis/                        # L3 Audit & Verification
-|   |   |-- evaluator.py                 # 6-pillar adversarial evaluator
+|   |   |-- evaluator.py                 # 8-pillar adversarial evaluator
 |   |   |-- codebase_mapper.py           # Codebase dependency graph
 |   |   |-- output_guard.py              # Output rule enforcement
 |   |   |-- sympy_verifier.py            # Math/logic formal verification
@@ -303,7 +303,7 @@ Veri eksenleri, heterojen memory desenine çok uygun.
 
 2.2. 3-Tier Routing (RuFlow)
 text
-Complexity Score → 
+Complexity Score →
   Light → Ministral-3b
   Primary → Qwen-7b
   Expert → Gemini Thinking
@@ -318,7 +318,7 @@ L3 Auditor (Phi-4 Mini) sadece primary/expert sonuçlarını kontrol ediyor → 
 
 CONSTITUTION.md, rules.json, schema.sql
 
-L3 Auditing + 6-pillar weighted grading (Citation, Consistency, etc.)
+L3 Auditing + 8-pillar weighted grading (Citation, Consistency, etc.)
 
 output_guard.py – output filtering
 
@@ -463,7 +463,7 @@ Eksikler düzeltilirse production-grade sovereign agent olabilir.
 
 Doğrudan “şu modülde şu satırda hata var” seviyesinde analiz istersen, belirli bir dosyayı veya fonksiyonu işaret edebilirsin.
 
-local llm alet cantasini da paylasayim 
+local llm alet cantasini da paylasayim
 
 Directory: D:\Google\AntiGravity\General Tools\OllamaModels
 
@@ -650,7 +650,7 @@ python
 # Local model registry mapping
 LOCAL_MODEL_MAP = {
     "qwen-7b": "qwen2.5-coder:7b",
-    "ministral-3b": "ministral:3b", 
+    "ministral-3b": "ministral:3b",
     "phi-4-mini": "phi-4-mini:latest",
     "jina-reranker": "jina-reranker:v3",
     "jina-embeddings": "jina-embeddings:v3",
@@ -675,7 +675,7 @@ Local modellerin gerçek performans benchmark'ını istersen, belirli görevler 
 
 uzerinde calistigim sistem:
 
-Asus ROG Zepyrus G16 (2023 Model - GU603VI) 
+Asus ROG Zepyrus G16 (2023 Model - GU603VI)
 Processor: 13th Gen Intel Core i7-13620H (10 cores: 6 P-cores + 4 E-cores, up to 4.9 GHz boost).
 Graphics: NVIDIA GeForce RTX 4070 Laptop GPU 8GB GDDR6 (120W total power with 2030MHz Boost Clock, 100W+20W Dynamic Boost).
 Display: 16-inch, 1920x1200 (FHD+) 165Hz IPS, or 2560x1600 (QHD+) 240Hz, 500 nits, 100% DCI-P3.
@@ -713,9 +713,9 @@ Aktif Tutulacak (Her zaman):
 Swap Stratejisi (Morpheus):
   - L2 Light (Ministral) + L3 Auditor aynı anda → 4.5 GB
     Kalan 2.1 GB → L2 Primary sığmaz → SWAP gerekir
-  
+
   - L2 Primary (Qwen-7b) tek başına → 4.2 GB
-    Kalan 2.4 GB → L3 Auditor sığar → ✅ Aynı anda çalışabilir  
+    Kalan 2.4 GB → L3 Auditor sığar → ✅ Aynı anda çalışabilir
 Önerilen Çalışma Modları
 Mod	Aktif Modeller	VRAM	Kullanım Senaryosu
 Light	L2 Light (Ministral) + L3 (Phi-4)	~4.7 GB	Basit sorular, hızlı yanıt
@@ -748,9 +748,9 @@ VRAM_CONFIG = {
     "reserved_os_gb": 0.5,
     "reserved_jina_gb": 0.4,      # embedding + reranker
     "safety_margin_gb": 0.3,      # ani spike'lar için
-    
+
     "available_for_llms_gb": 6.8,
-    
+
     "model_priorities": {
         "jina-embeddings": 100,     # asla boşaltma
         "jina-reranker": 100,       # asla boşaltma
@@ -759,9 +759,9 @@ VRAM_CONFIG = {
         "l2-light": 40,
         "l1-local": 20              # (kullanılmıyor şu an)
     },
-    
+
     "swap_strategy": "lru_with_priority",  # Least Recently Used + priority
-    
+
     "emergency_unload": {
         "trigger_vram_usage_percent": 95,
         "unload_first": ["l2-primary", "l2-light"],
@@ -792,7 +792,7 @@ Mnemosyne DB (SQLite)	~2-5 GB	Zamanla büyür, 30-day pruning ile kontrol altın
 LanceDB (vector)	~1-3 GB	Index boyutuna bağlı
 Model tensörleri (GPU'da değil)	0	GGUF'ler GPU'da veya disk'te
 CodebaseMapper graph	~500MB-2GB	Proje boyutuna bağlı
-Python runtime + context	~1-2 GB	
+Python runtime + context	~1-2 GB
 Toplam (tahmini)	~8-12 GB	32GB için rahat
 Not: 48GB'a çıkarmak (SO-DIMM eklemek) gereksiz; 32GB yeterli.
 
@@ -843,7 +843,7 @@ Veya swap performans benchmark'ını
 
 çıkarabilirim. Hangisi?
 
-vision yok demissin oncekinde aslinda var fazlasi var hatta 
+vision yok demissin oncekinde aslinda var fazlasi var hatta
 
     # Phantom Logos: Local Model Ecosystem & Performance Matrix (Muscle)
 [11:30 AM PT] | Status: **Phase 11.12 - Operational Hardening (Model Sync & Security)**
@@ -980,9 +980,9 @@ def handle_vision_task(image_path: str, task_type: str) -> str:
         model = VISION_MODELS["ocr"]
         prompt = "Extract all text from this image with exact positioning."
     elif task_type == "describe":
-        model = VISION_MODELS["scene"]  
+        model = VISION_MODELS["scene"]
         prompt = "Describe what you see in this image in detail."
-    
+
     return call_ollama(model, prompt, images=[image_path])
 4. Morpheus Sweeper için 8GB Dynamic Configuration
 En kritik sorun: Hangi model ne zaman yüklenecek?
@@ -994,16 +994,16 @@ VRAM_CONFIG = {
     "total_gb": 8,
     "reserved_os_gb": 0.4,
     "reserved_cuda_gb": 0.2,
-    
+
     # Her zaman aktif (toplam: 1.1 GB)
     "always_resident": {
         "nomic-moe": 0.5,      # Axis 6 embedding
         "jina-reranker": 0.6,  # Retrieval reranking
     },
-    
+
     # Kalan VRAM: 8 - 1.1 = 6.9 GB
     "available_for_llms": 6.9,
-    
+
     # Model grupları (mutually exclusive)
     "model_sets": {
         "default_agent": {
@@ -1027,7 +1027,7 @@ VRAM_CONFIG = {
             "strategy": "all_at_once"
         }
     },
-    
+
     "swap_policy": {
         "eviction_order": [
             "phi-4-mini",          # L3 Auditor (en önce boşalt)
@@ -1051,9 +1051,9 @@ def route_request(user_input: str, has_image: bool = False) -> str:
     if has_image:
         # Görsel girdi: önce vision'a git
         return "vision_pipeline"
-    
+
     complexity = calculate_complexity(user_input)
-    
+
     if complexity < 0.3:
         return "tier1_light"      # ministral-3b
     elif complexity < 0.7:
@@ -1064,10 +1064,10 @@ def route_request(user_input: str, has_image: bool = False) -> str:
 def vision_pipeline(image, user_prompt):
     # 1. OCR ile metin çıkar
     text = call_ollama("qwen2-vl-ocr", prompt="Extract text", image=image)
-    
+
     # 2. Scene description
     scene = call_ollama("qwen2.5-vl", prompt="Describe", image=image)
-    
+
     # 3. Combined prompt ile L2'ye git
     combined = f"Image content:\nText: {text}\nScene: {scene}\nUser: {user_prompt}"
     return route_request(combined, has_image=False)
@@ -1194,18 +1194,18 @@ class LightSandbox:
     def __init__(self):
         self.temp_dir = tempfile.mkdtemp(prefix="phantom_sandbox_")
         self.allowed_paths = [str(Path.cwd()), self.temp_dir]
-        
+
     def run(self, code: str, timeout_sec: int = 10):
         # 1. Geçici dosyaya yaz
         script_path = os.path.join(self.temp_dir, "sandbox_script.py")
         with open(script_path, "w") as f:
             f.write(code)
-        
+
         # 2. Kısıtlı ortamda çalıştır
         env = os.environ.copy()
         env["PYTHONPATH"] = ""  # Mevcut modüllere erişimi kes
         env["PATH"] = ""        # Sistem komutlarına erişimi kes
-        
+
         try:
             result = subprocess.run(
                 [sys.executable, script_path],
@@ -1219,7 +1219,7 @@ class LightSandbox:
         finally:
             # 3. Temizlik
             os.unlink(script_path)
-    
+
     def cleanup(self):
         import shutil
         shutil.rmtree(self.temp_dir, ignore_errors=True)
@@ -1242,7 +1242,7 @@ class APISandbox:
         "https://api.anthropic.com/*",
         "https://generativelanguage.googleapis.com/*"
     ]
-    
+
     def validate_url(self, url):
         for allowed in self.ALLOWED_API_ENDPOINTS:
             if fnmatch.fnmatch(url, allowed):
@@ -1325,7 +1325,7 @@ Sonraki adım: Prod'a geçerken Docker sandbox'a geçersin. Beta için LightSand
 İstersen bu sandbox.py dosyasının tam kodunu (import'lar, hata yönetimi, logging ile birlikte) buraya yazayım, direkt kopyala/yapıştır yaparsın.
 
 This response is AI-generated, for reference only.
-eskiden baska birkac aletrnatif sistemde chroma mcp mem0 gibi alternatifler kullanmistim 
+eskiden baska birkac aletrnatif sistemde chroma mcp mem0 gibi alternatifler kullanmistim
 
 
 projede eklenmesi iyi olur dediklerin neler guncel repolardan bakarak
@@ -1346,7 +1346,7 @@ LoCoMo Bench. (Zero-LLM)	?	64.2%	~71%	70.4%
 LongMemEval	?	49.0%	63.8%	?
 BEAM (10M tokens)	?	48.6%	?	?
 Local-First	✅ Tamamen	⚠️ Kısmi (cloud opsiyonel)	⚠️ (OSS deprecate edildi)	✅ Evet
-Kaynaklar: Mem0 benchmark verileri ; Zep 63.8% LongMemEval ; SuperLocalMemory 
+Kaynaklar: Mem0 benchmark verileri ; Zep 63.8% LongMemEval ; SuperLocalMemory
 
 2. Phantom Logos'a Eklenmesi Gereken En Kritik 3 Özellik
 🔴 1. Temporal Memory Güçlendirme (Şu an Axis 4 çok zayıf)
@@ -1354,7 +1354,7 @@ Sorun: Mevcut Axis 4 sadece timestamp'li olayları SQLite'de tutuyor. "Facts cha
 
 Ne öneririm:
 
-Zep/Graphiti tarzı temporal knowledge graph entegrasyonu 
+Zep/Graphiti tarzı temporal knowledge graph entegrasyonu
 
 Veya daha hafif: SQLite'e temporal validity ekle (valid_from, valid_until, superseded_by)
 
@@ -1363,14 +1363,14 @@ sql
 ALTER TABLE temporal_memory ADD COLUMN valid_from TIMESTAMP;
 ALTER TABLE temporal_memory ADD COLUMN valid_until TIMESTAMP;
 ALTER TABLE temporal_memory ADD COLUMN superseded_by_id INTEGER;
-Beklenen kazanç: Temporal reasoning sorgularında ~%30 doğruluk artışı 
+Beklenen kazanç: Temporal reasoning sorgularında ~%30 doğruluk artışı
 
 🟡 2. Graph Memory'i Genişlet (Axis 5 sadece codebase için)
 Sorun: Mevcut Axis 5 sadece codebase dependency graph için. Kullanıcı tercihleri, entity relations, conversation graph yok.
 
 Ne öneririm:
 
-Mem0'un graph yaklaşımı veya Cognee'nin poly-store mimarisi entegre edilebilir 
+Mem0'un graph yaklaşımı veya Cognee'nin poly-store mimarisi entegre edilebilir
 
 Hafif çözüm: SQLite'de adjacency table ile entity graph
 
@@ -1389,7 +1389,7 @@ Sorun: Şu an sadece 30-day TTL var. Oysa bazı bilgiler zamana göre doğallık
 
 Ne öneririm:
 
-SuperLocalMemory V3.3'ün matematiksel forgetting curve'i implemente edilebilir 
+SuperLocalMemory V3.3'ün matematiksel forgetting curve'i implemente edilebilir
 
 Veya daha basit: Access frequency-based decay
 
@@ -1402,7 +1402,7 @@ def calculate_recall_probability(last_access: datetime, access_count: int) -> fl
     strength = min(1.0, access_count / 10) * math.exp(-days_since / 7)
     return strength
 3. Dikkate Alınması Gereken Yeni Trendler
-A. Retrieval-Centered Architecture ("True Memory" Yaklaşımı) 
+A. Retrieval-Centered Architecture ("True Memory" Yaklaşımı)
 Ana fikir: "Storage is not memory" - ingestion'da extract yapmak yerine, tüm event'leri verbatim sakla, retrieval sırasında multi-stage pipeline ile işle.
 
 Metrik	True Memory Pro	Mem0	Phantom Logos (tahmini)
@@ -1411,7 +1411,7 @@ LongMemEval	87.8%	49.0%	~60-65%
 BEAM-1M	76.6%	48.6%	Test edilmemiş
 Phantom Logos'a uyarlama: Axis 6 (Semantic) güçlü, ancak retrieval pipeline'ına multi-stage reranking eklenebilir (Jina zaten var, ama daha agresif kullanılabilir).
 
-B. SuperLocalMemory V3.3'ün "Zero-LLM" Modu 
+B. SuperLocalMemory V3.3'ün "Zero-LLM" Modu
 Çok ilginç bir konsept: Memory işlemleri için LLM çağırmak zorunda değilsiniz. SLM V3.3 tamamen CPU'da çalışıyor ve 70.4% LoCoMo puanı alıyor.
 
 Phantom Logos'a uyarlama:
@@ -1420,7 +1420,7 @@ L3 Auditor için zero-LLM verification katmanı eklenebilir
 
 Axis 11 (Verification) şu an SymPy+Z3 kullanıyor, buna rule-based memory consistency checker eklenebilir
 
-C. Mem0 v2'nin Yeni Memory Algorithm (Nisan 2026) 
+C. Mem0 v2'nin Yeni Memory Algorithm (Nisan 2026)
 Mem0 v2'nin yeni algoritması:
 
 Benchmark	Old	New	Improvement
@@ -1456,17 +1456,17 @@ Local-First	⭐⭐⭐⭐⭐	⭐⭐⭐⭐	Phantom Logos önde
 1. Zep/Graphiti tarzı temporal knowledge graph
 Nereden eklenir: Axis 4 (Temporal) + Axis 5 (Spatial) merge
 
-Kaynak: 
+Kaynak:
 
 2. SuperLocalMemory'den esinlenen forgetting curve
 Nereden eklenir: Yeni Axis 15: Forgetting veya Axis 7'ye entegre
 
-Kaynak: 
+Kaynak:
 
 3. Mem0 v2'nin multi-signal retrieval'i
 Nereden eklenir: Axis 6'daki hybrid search'e entity linking ekle
 
-Kaynak: 
+Kaynak:
 
 Sonuç: Mevcut Phantom Logos, local-first ve 13-axis yaklaşımıyla hala çok güçlü bir temele sahip. 2026'nın yeni framework'leri, özellikle temporal reasoning, forgetting mekanizmaları ve multi-channel retrieval konularında öne çıkıyor. Bu üç alana yapılacak yatırım, Phantom Logos'u SOTA seviyesine taşıyacaktır.
 
@@ -1578,4 +1578,3 @@ Config karmaşıklığı	Orta (docker-compose + mount)	Düşük (slm mode a)	Yü
 Düzeltme
 Az önce "Mem0 cloud-bağımlı" dedim — yanlış. Mem0 OSS + Ollama ile tamamen local çalışıyor. Ama varsayılan OpenAI olduğu için "local-first" demek doğru olmaz. SLM gibi sıfır config local değil.
 Mem0'ın asıl avantajı: 91.6% LoCoMo (cloud LLM ile), 88.6% LongMemEval (Gemma 4 yerel model ile). SLM'nin en iyi skoru 87.7% (Mode C, cloud). Yani Mem0 local bile olsa SLM'den daha yüksek skor alıyor.
-

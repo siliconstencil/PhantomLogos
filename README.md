@@ -1,18 +1,21 @@
 # Phantom Logos v1.0.0 (Sovereign Rebirth)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Governance: BA--01](https://img.shields.io/badge/Governance-BA--01-red.svg)](#5-technical-guardrails)
 [![Memory: 14--Axis](https://img.shields.io/badge/Memory-14--Axis-green.svg)](#3-sovereign-knowledge-base-mnemosyne)
 
 *Status: v1.0.0 Sovereign Baseline SEALED*
 
 ## 1. Executive Summary
+
 Phantom Logos is the universal reasoning architecture and provider-agnostic agentic OS.
  It utilizes the **Sovereign Gateway Architecture**, ensuring all strategic and execution calls route through local-hybrid endpoints to maintain absolute data privacy and architectural integrity.
 
 ---
 
 ## 2. Declarative Agent Architecture
+
 Agents are defined declaratively via YAML in `agent/` -- hot-loadable, tool-bound, and skill-wired.
 
 | Agent | Role | Layer | Model Tier | Core Capabilities |
@@ -26,6 +29,7 @@ Agents are defined declaratively via YAML in `agent/` -- hot-loadable, tool-boun
 ---
 
 ## 3. Sovereign Knowledge Base (.antigravity/)
+
 The core governance, blueprints, and history are centralized in the `.antigravity/` folder.
 
 - **[CONSTITUTION.md](.antigravity/CONSTITUTION.md):** System laws and Absolute Agnosticism mandates.
@@ -36,12 +40,15 @@ The core governance, blueprints, and history are centralized in the `.antigravit
 ---
 
 ## 4. The Armory: 14-Axis Mnemosyne
+
 Phantom Logos maintains continuity across 14 distinct cognitive dimensions:
+
 1. Episodic | 2. Procedural | 3. Goals | 4. Temporal | 5. Spatial (Graph) | 6. Semantic | 7. Operational | 8. Meta-Cog | 9. Tone | 10. Rational | 11. Verification | 12. Efficiency | 13. Cross-Session Patterns | 14. Visual.
 
 ---
 
 ## 5. Technical Guardrails (Operational Constitution)
+
 1. **BA-01**: English Internals / Turkish Interaction.
 2. **EMOJI_BAN**: Strictly prohibited.
 3. **Sovereign Gateway**: Zero-leak local-hybrid routing via `GatewayArchitrave`.
@@ -51,6 +58,7 @@ Phantom Logos maintains continuity across 14 distinct cognitive dimensions:
 ---
 
 ## 6. Project Topography
+
 ```
 D:\Hank\
   agent/              YAML agent definitions
@@ -59,11 +67,5 @@ D:\Hank\
   tests/              Security, Stability (14-Axis), and Pipeline tests
   .antigravity/       Sovereign Knowledge Base (Constitution, Agents, Identity)
   data/               SQLite databases + LanceDB stores (gitignored)
-  scripts/            CLI Tools (hermes_cli.py, health_audit.py, etc.)
-  LICENSE             MIT License
-```
 
----
-*Signed,*
-**Antigravity (Phantom Logos)**
-**Phantom Logos High Command**
+FINAL_VERIFICATION_VIOLATION

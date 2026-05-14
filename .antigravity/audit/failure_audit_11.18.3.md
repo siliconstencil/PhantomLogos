@@ -19,7 +19,7 @@ During the transition to Phase 11.18.3 (Rapid Integration/Flash Mode), a series 
 ## 3. Critical Failure Analysis (Top 3)
 
 ### C-1: The Invisible Flush (Singleton Bypass)
-- **Problem**: `tool_bridge.py` created a new `ModelLoader()` instance instead of using the global singleton via `get_loader()`. 
+- **Problem**: `tool_bridge.py` created a new `ModelLoader()` instance instead of using the global singleton via `get_loader()`.
 - **Impact**: The `flush()` command operated on a fresh object with an empty internal state, leaving actual loaded models in VRAM while the system falsely reported success.
 - **Lesson**: NEVER instantiate singletons directly; use the `get_` accessor pattern.
 

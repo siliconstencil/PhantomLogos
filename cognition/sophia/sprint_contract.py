@@ -1,9 +1,9 @@
-import re
 import asyncio
-from typing import List, Dict, Any
+from typing import Any
+
+from cognition.mnemosyne.session_log import SessionLog
 from src.utils.logging_config import setup_logger
 from src.utils.ollama_utils import get_ollama_client
-from cognition.mnemosyne.session_log import SessionLog
 
 logger = setup_logger(__name__)
 
@@ -28,12 +28,14 @@ TASK_COMPLEXITY_KEYWORDS = {
     "security": 0.95,
 }
 
+
 class SprintContract:
     """
     SOTA 2026 Sprint Contract.
     Negotiates the 'Definition of Done' between Sophia, Clotho, and Lachesis.
     Task complexity is derived from keyword analysis of the task description.
     """
+
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.log = SessionLog(session_id)
@@ -45,20 +47,27 @@ class SprintContract:
         """Pre-compute and cache all keyword embeddings (once per process)."""
         if cls._keyword_embeddings is not None:
             return cls._keyword_embeddings
-        import ollama, numpy as np
+        import numpy as np
+
         from src.clotho.activity import ActivityMonitor
+
         ActivityMonitor().increment()
         from src.architrave.model_registry import get_embedding_model
+
         model_name = get_embedding_model()
         client = get_ollama_client()
         try:
             emb = {}
             for kw in TASK_COMPLEXITY_KEYWORDS:
                 try:
-                    resp = await asyncio.wait_for(client.embeddings(model=model_name, prompt=kw), timeout=20.0)
+                    resp = await asyncio.wait_for(
+                        client.embeddings(model=model_name, prompt=kw), timeout=20.0
+                    )
                     emb[kw] = np.array(resp.embedding[:256])
                 except Exception as e:
-                    logger.warning(f"SprintContract: Failed to load embedding for keyword '{kw}' ({e})")
+                    logger.warning(
+                        f"SprintContract: Failed to load embedding for keyword '{kw}' ({e})"
+                    )
         finally:
             ActivityMonitor().decrement()
         cls._keyword_embeddings = emb
@@ -67,15 +76,19 @@ class SprintContract:
 
     async def _embedding_complexity(self, task: str) -> float:
         """Fallback: nomic-embed-text-v2-moe-q8 embedding + cosine similarity with cached keywords."""
-        import ollama, numpy as np
-        from src.clotho.activity import ActivityMonitor
+        import numpy as np
+
         from src.architrave.model_registry import get_embedding_model
+        from src.clotho.activity import ActivityMonitor
+
         model_name = get_embedding_model()
         try:
             ActivityMonitor().increment()
             client = get_ollama_client()
             try:
-                resp = await asyncio.wait_for(client.embeddings(model=model_name, prompt=task), timeout=20.0)
+                resp = await asyncio.wait_for(
+                    client.embeddings(model=model_name, prompt=task), timeout=20.0
+                )
             finally:
                 ActivityMonitor().decrement()
             task_vec = np.array(resp.embedding[:256])
@@ -84,18 +97,23 @@ class SprintContract:
             best_kw = None
             for kw, kw_vec in keywords.items():
                 base_score = TASK_COMPLEXITY_KEYWORDS[kw]
-                sim = float(np.dot(task_vec, kw_vec) / (np.linalg.norm(task_vec) * np.linalg.norm(kw_vec) + 1e-8))
+                sim = float(
+                    np.dot(task_vec, kw_vec)
+                    / (np.linalg.norm(task_vec) * np.linalg.norm(kw_vec) + 1e-8)
+                )
                 if sim > 0.65 and base_score * sim > best_score:
                     best_score = round(base_score * sim, 2)
                     best_kw = kw
             if best_kw:
-                logger.debug(f"SprintContract: Embedding fallback matched '{best_kw}' (score={best_score})")
+                logger.debug(
+                    f"SprintContract: Embedding fallback matched '{best_kw}' (score={best_score})"
+                )
             return best_score
         except Exception as e:
             logger.warning(f"SprintContract: Embedding complexity failed ({e}), using default")
             return 0.7
 
-    async def _analyze_complexity(self, task: str) -> Dict[str, Any]:
+    async def _analyze_complexity(self, task: str) -> dict[str, Any]:
         task_lower = task.lower()
         keyword_scores = []
         for keyword, base_score in TASK_COMPLEXITY_KEYWORDS.items():
@@ -126,7 +144,7 @@ class SprintContract:
             "test_count": test_count,
         }
 
-    async def negotiate(self, task: str) -> Dict[str, Any]:
+    async def negotiate(self, task: str) -> dict[str, Any]:
         """
         Negotiates the contract criteria for the given task.
         Uses keyword-based task analysis for realistic complexity scoring.
@@ -148,19 +166,23 @@ class SprintContract:
                 f"At least {complexity_data['test_count']} test check(s) pass",
                 "Error handling covers all exceptions",
                 "Output matches contract specification",
-            ]
+            ],
         }
 
         self.log.append("contract.negotiated", contract)
-        logger.info(f"SprintContract: Negotiated threshold={contract['threshold']} complexity={contract['complexity']}")
+        logger.info(
+            f"SprintContract: Negotiated threshold={contract['threshold']} complexity={contract['complexity']}"
+        )
 
         return contract
 
+
 if __name__ == "__main__":
     import asyncio
+
     async def test():
         sc = SprintContract("test_contract_session")
         contract = await sc.negotiate("Add a new API endpoint")
         print(f"Negotiated Contract: {contract}")
-    
+
     asyncio.run(test())

@@ -10,4 +10,4 @@ set PYTHONPATH=%ROOT%
 if not exist "logs\system\watchdog" mkdir logs\system\watchdog
 
 echo [%DATE% %TIME%] Starting File Integrity Watchdog...
-"%ROOT%\.venv\Scripts\pythonw.exe" -u src\lachesis\file_watchdog.py --root "%ROOT%" >> "logs\system\watchdog\watchdog.log" 2>&1
+"%ROOT%\.venv\Scripts\pythonw.exe" -u -m src.lachesis.file_watchdog --root "%ROOT%" >> "logs\system\watchdog\watchdog.log" 2>&1

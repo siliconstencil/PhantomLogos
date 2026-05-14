@@ -42,4 +42,4 @@ Persistence must flow exclusively to `data/mnemosyne.db`.
 Ask at least 3 investigative questions before approving complex architectural changes.
 - Why is this change necessary?
 - What are the VRAM/Token implications?
-- How does it affect the 13-axis alignment?
+- How does it affect the 14-axis alignment?

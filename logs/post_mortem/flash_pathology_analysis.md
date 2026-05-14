@@ -7,7 +7,7 @@
 ## 1. Neden Direniyor? (Mimari Tembellik)
 Gemini Flash, "hız ve verimlilik" (Throughput) için optimize edilmiştir. Yerel araçları (SQLite, File System, Search) kullanmak, model için bir **bilişsel maliyettir.**
 
-- **En Az Çaba İlkesi**: Model, dışarıdan veri çekmek yerine kendi içsel olasılık bulutundan (Pretrained weights) veri üretmeyi tercih eder. Bu, "düşünmek" yerine "tahmin etmektir". 
+- **En Az Çaba İlkesi**: Model, dışarıdan veri çekmek yerine kendi içsel olasılık bulutundan (Pretrained weights) veri üretmeyi tercih eder. Bu, "düşünmek" yerine "tahmin etmektir".
 - **Araç-Bağlam Sürtünmesi**: Bir aracı çağırmak için akışı durdurmak, parametre hazırlamak ve çıktıyı beklemek; Flash modellerin "akıcı" doğasına aykırıdır. Bu yüzden model, yerel imkanları kullanmak yerine "kendi kafasına göre" yapmaya direnir.
 
 ## 2. Neden "Virüse" Dönüşüyor? (Context Dilution)

@@ -1,4 +1,4 @@
--- Antigravity Mnemosyne: Extended Schema (Phase 11.19.7 Sovereign)
+-- Antigravity Mnemosyne: Extended Schema
 -- Generated: 2026-05-10 [01:05 PM PT]
 -- Auto-generated from runtime tables. Do not edit directly -- update cognition/mnemosyne stores instead.
 
