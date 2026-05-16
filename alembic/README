@@ -1,0 +1,8 @@
+Multi-database configuration for Mnemosyne (3 binds with isolated version paths).
+
+Managed Databases:
+- mnemosyne (data/mnemosyne.db)
+- reliability (data/reliability.db)
+- spatial (data/spatial.db)
+
+Each database has its own version history in alembic/versions/<name>/.
