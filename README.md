@@ -1,16 +1,16 @@
-# Phantom Logos v1.0.0 (Sovereign Rebirth)
+# Phantom Logos v1.1.0 (Sovereign Rebirth)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Governance: BA--01](https://img.shields.io/badge/Governance-BA--01-red.svg)](#5-technical-guardrails)
-[![Memory: 14--Axis](https://img.shields.io/badge/Memory-14--Axis-green.svg)](#3-sovereign-knowledge-base-mnemosyne)
+[![Governance: BA--01](https://img.shields.io/badge/Governance-BA--01-red.svg)](#5-technical-guardrails-operational-constitution)
+[![Memory: 14--Axis](https://img.shields.io/badge/Memory-14--Axis-green.svg)](#4-the-armory-14-axis-mnemosyne)
 
-*Status: v1.0.0 Sovereign Baseline SEALED*
+Status: **v1.1.0 Sovereign Stable SEALED**
 
 ## 1. Executive Summary
 
 Phantom Logos is the universal reasoning architecture and provider-agnostic agentic OS.
- It utilizes the **Sovereign Gateway Architecture**, ensuring all strategic and execution calls route through local-hybrid endpoints to maintain absolute data privacy and architectural integrity.
+It utilizes the **Sovereign Gateway Architecture**, ensuring all strategic and execution calls route through local-hybrid endpoints to maintain absolute data privacy and architectural integrity.
 
 ---
 
@@ -19,10 +19,10 @@ Phantom Logos is the universal reasoning architecture and provider-agnostic agen
 Agents are defined declaratively via YAML in `agent/` -- hot-loadable, tool-bound, and skill-wired.
 
 | Agent | Role | Layer | Model Tier | Core Capabilities |
-|-------|------|-------|------------|-------------------|
+| :--- | :--- | :--- | :--- | :--- |
 | **sophia** | Strategist | L1 | Strategic Gateway | 14-Axis Gnosis, Planning, Citation |
 | **clotho** | Executor | L2 | Execution Gateway | Coding, Tool Orchestration, Ergon |
-| **lachesis**| Auditor | L3 | Reasoning (Local) | Formal Verification, Spatial Graph, Audit |
+| **lachesis** | Auditor | L3 | Reasoning (Local) | Formal Verification, Spatial Graph, Audit |
 
 **See also:** [AGENTS.md](AGENTS.md) for operational protocols.
 
@@ -59,13 +59,18 @@ Phantom Logos maintains continuity across 14 distinct cognitive dimensions:
 
 ## 6. Project Topography
 
-```
+```text
 D:\Hank\
-  agent/              YAML agent definitions
+  .antigravity/       Sovereign Knowledge Base (Constitution, Agents, Identity)
+  agent/              YAML agent definitions and skills
+  alembic/            Alembic database migrations
+  bin/                Binary scripts and executables
   cognition/          Memory (Mnemosyne/14-axis), Gnosis (Sophia)
+  data/               SQLite databases + LanceDB stores (gitignored)
+  docs/               Auxiliary system documentation
+  logs/               System execution and watchdog logs
+  scratch/            Temporary scratch scripts and workspace
+  scripts/            CLI tools, utility scripts, and automation
   src/                Source modules (Ankyra, Architrave, Atropos, Clotho, Lachesis)
   tests/              Security, Stability (14-Axis), and Pipeline tests
-  .antigravity/       Sovereign Knowledge Base (Constitution, Agents, Identity)
-  data/               SQLite databases + LanceDB stores (gitignored)
-
-FINAL_VERIFICATION_VIOLATION
+```

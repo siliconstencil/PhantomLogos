@@ -254,29 +254,47 @@ class AdversarialEvaluator:
     async def _verification_score(self, draft: str) -> float:
         import asyncio
 
-        audit_res = await asyncio.to_thread(self.verifier.audit_code_logic, draft)
-
-        # Z3 Logical Consistency
-        inequality_exprs = re.findall(r"([a-zA-Z]\s*[><=]=?\s*\d+)", draft)
+        # Phase 1.0.31: Parallel Neuro-Symbolic Verification
+        inequality_exprs = re.findall(r"([a-zA-Z]\s*[><]=?\s*\d+)", draft)
+        
+        tasks = [
+            asyncio.to_thread(self.verifier.audit_code_logic, draft)
+        ]
+        
         if inequality_exprs:
             problem_str = "\n".join(inequality_exprs)
-            z3_res = await asyncio.to_thread(self.verifier.verify_logic, problem_str)
-            if z3_res.get("result") == "Unsatisfiable":
-                logger.warning(f"evaluator: Z3 detected mathematical contradiction: {problem_str}")
-                return 0.0
+            tasks.append(self.verifier.verify_logic(problem_str))
+        else:
+            # Identity task if no inequalities
+            async def no_z3(): return {"result": "No inequalities"}
+            tasks.append(no_z3())
+
+        # Execute QWED and Z3 in parallel
+        results = await asyncio.gather(*tasks)
+        audit_res = results[0]
+        z3_res = results[1]
+
+        if z3_res.get("result") == "Unsatisfiable":
+            logger.warning(f"evaluator: Z3 detected mathematical contradiction: {draft[:100]}...")
+            return 0.0
 
         math_score = 1.0
         math_exprs = re.findall(r"(\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+)", draft)
         if any(kw in draft.lower() for kw in ["calculate", "solve", "result", "="]) or math_exprs:
             complexity = self.verifier.verify_math_expression(draft)
-            if complexity == "simple" and math_exprs:
+            category = complexity.get("category", "light")
+            logger.info(f"evaluator: Math complexity detected: {category} (score: {complexity.get('score')})")
+
+            if category == "deterministic" and math_exprs:
+                # SymPy remains synchronous but we wrap in thread for safety
                 for expr in math_exprs:
-                    if not self.verifier.verify_math(expr).get("valid"):
+                    if not self.verifier.verify_math(expr).get("is_valid"):
                         math_score = 0.0
                         break
             else:
-                llm_res = await self.verifier.verify_math_llm(draft, light=True)
-                math_score = llm_res.get("confidence", 0.85) if llm_res.get("valid") else 0.4
+                # Intelligent routing to specific model tier
+                llm_res = await self.verifier.verify_math_llm(draft, tier=category)
+                math_score = llm_res.get("logic_score", 0.85) if llm_res.get("valid") else 0.4
 
         v_score = audit_res.get("logic_score", 1.0) * 0.6 + math_score * 0.4
         return 0.3 if math_score == 0.0 else v_score

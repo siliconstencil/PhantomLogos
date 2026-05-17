@@ -8,8 +8,8 @@ from src.atropos.context_pruner import ContextPruner
 # [SRC:axis_7]
 @pytest.mark.asyncio
 async def test_model_fitting():
-    assert find_fitting_model("router", 1.0) == "granite-3-0-2b-instruct-q4_k_m:latest"
-    assert find_fitting_model("critique", 3.0) == "phi-4-mini-reasoning-ud-q5_k_xl:latest"
+    assert find_fitting_model("router", 1.0) == "granite-3-2b:latest"
+    assert find_fitting_model("critique", 3.0) == "phi-4-mini-ud:latest"
     result = find_fitting_model("draft", 4.0)
     assert result is not None
 

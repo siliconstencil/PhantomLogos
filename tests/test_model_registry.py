@@ -10,17 +10,17 @@ from src.architrave.model_registry import (
 
 def test_vision_resolution():
     model = resolve_local_model("vision")
-    assert model == "mimo-vl:latest"
+    assert model == "mimo-7b-vl-ud:latest"
 
     variant = resolve_local_model("vision", "thinking")
-    assert variant == "mimo-vl:latest"
+    assert variant == "mimo-7b-vl-ud:latest"
 
 
 def test_vram_catalog():
-    assert "mimo-vl:latest" in VRAM_CATALOG_GB
-    assert VRAM_CATALOG_GB["mimo-vl:latest"] == 5.7
-    assert "deepseek-math:7b" in VRAM_CATALOG_GB
-    assert VRAM_CATALOG_GB["deepseek-math:7b"] == 4.7
+    assert "mimo-7b-vl-ud:latest" in VRAM_CATALOG_GB
+    assert VRAM_CATALOG_GB["mimo-7b-vl-ud:latest"] == 5.7
+    assert "deepseek-math-7b:latest" in VRAM_CATALOG_GB
+    assert VRAM_CATALOG_GB["deepseek-math-7b:latest"] == 4.7
 
 
 def test_embedding_helpers():
@@ -30,8 +30,8 @@ def test_embedding_helpers():
 
 def test_qwed_config():
     config = get_qwed_models()
-    assert config["primary"] == "qwen2-5-coder-3b-instruct-q6_k:latest"
-    assert config["fallback"] == "functiongemma-270m-it-q8_0:latest"
+    assert config["primary"] == "qwen2.5-coder-3b:latest"
+    assert config["fallback"] == "functiongemma-270m:latest"
 
 
 def test_bridge_resolution():
@@ -39,9 +39,9 @@ def test_bridge_resolution():
 
     bridge = ToolBridge(session_id="test")
     # Test shorthand resolution
-    assert bridge._resolve_model("qwen-7b") == "qwen2-5-coder-7b-instruct-q4_k_m:latest"
+    assert bridge._resolve_model("qwen-7b") == "qwen2.5-coder-7b:latest"
     # Test registry-based resolution
-    assert bridge._resolve_model("vision") == "mimo-vl:latest"
+    assert bridge._resolve_model("vision") == "mimo-7b-vl-ud:latest"
 
 
 if __name__ == "__main__":

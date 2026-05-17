@@ -4,6 +4,9 @@ from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
+from cognition.mnemosyne.operational_store import OperationalStore
+from cognition.mnemosyne.procedural_store import ProceduralStore
+
 # Phase 11.18.4: Session-level model blacklist to handle Hallucination Penalties
 BLACKLISTED_MODELS = {}  # {session_id: [model_names]}
 
@@ -23,10 +26,6 @@ def get_hermes_bridge_context(session_id: str) -> str:
     """
     ctx = ""
     try:
-        from cognition.mnemosyne.meta_cognition import MetaCognitionStore
-        from cognition.mnemosyne.operational_store import OperationalStore
-        from cognition.mnemosyne.procedural_store import ProceduralStore
-
         # -- Axis 7: Hermes + Tool events --
         op_store = OperationalStore()
         events = op_store.get_recent_logs(limit=20)
@@ -40,6 +39,7 @@ def get_hermes_bridge_context(session_id: str) -> str:
             ctx += part
 
         # -- Axis 8: Agent Reliability Score --
+        from cognition.mnemosyne.meta_cognition import MetaCognitionStore
         meta = MetaCognitionStore()
         rel = meta.get_reliability("sophia")
         ctx += "\n### SYSTEM RELIABILITY (AXIS 8):\n"
@@ -179,7 +179,7 @@ def should_continue(state: Any):
         is_valid = critique.get("is_pass", critique.get("is_valid", False))
 
     iteration = state.get("iteration", 0)
-    max_iter = state.get("max_iterations", 2)
+    max_iter = 2  # SOTA Guardrail: Hard limit for reasoning loops
 
     # Phase 11.19.2: Red Zone (Score < 0.4) triggers immediate deadlock resolver
     if zone == "red":
@@ -204,7 +204,6 @@ def should_continue(state: Any):
         from langgraph.graph import END
 
         from cognition.mnemosyne.meta_cognition import MetaCognitionStore
-
         meta = MetaCognitionStore()
         reliability = meta.get_reliability("sophia")
         if reliability < 0.2:
@@ -233,6 +232,43 @@ def should_continue(state: Any):
 
     tier = state.get("ru_flow_tier", 2)
     return "expert_draft" if tier == 3 else "draft"
+
+
+async def classify_tool_needs(task: str) -> dict[str, bool]:
+    """
+    [Phase 1.0.29] Local Tool Classification via FunctionGemma.
+    Determines if the task requires specific local resources to optimize parallel execution.
+    """
+    from src.architrave.model_registry import resolve_local_model
+    from src.utils.ollama_utils import get_ollama_client
+
+    model_name = resolve_local_model("tool_calling")
+    prompt = f"""<start_of_turn>user
+Task: {task}
+Analyze if this task requires:
+1. file_ops: Creating, reading, or modifying files/directories.
+2. search: Searching the web or external knowledge.
+3. vision: Processing images, screenshots, or visual data.
+
+Output only a JSON object:
+{{"needs_file_ops": bool, "needs_search": bool, "needs_vision": bool}}<end_of_turn>
+<start_of_turn>model
+"""
+    try:
+        import json
+        client = get_ollama_client()
+        resp = await client.generate(
+            model=model_name,
+            prompt=prompt,
+            format="json",
+            options={"temperature": 0.0, "stop": ["<end_of_turn>"]}
+        )
+        if resp and resp.response:
+            return json.loads(resp.response)
+    except Exception as e:
+        logger.warning(f"krisis: classify_tool_needs failed ({e}). Defaulting to all False.")
+    
+    return {"needs_file_ops": False, "needs_search": False, "needs_vision": False}
 
 
 def should_after_reflection(state: Any):

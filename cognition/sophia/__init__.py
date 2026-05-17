@@ -2,9 +2,11 @@
 from src.lachesis.verifiers import SympyVerifier
 
 from .gnosis import get_dynamic_context
-from .hephaestus import CritiqueResult, ReasoningState, extract_tool_calls, strip_thinking_block
+from .eidos import CritiqueResult, ReasoningState
+from .hephaestus import extract_tool_calls, strip_thinking_block
 from .router import TaskRouter
-from .sophia import resolve_model, run_critique, run_draft, run_refine
+from .sophia import run_critique, run_draft, run_refine
+from src.architrave.model_registry import resolve_model
 from .state_bus import StateBus, get_state_bus
 from .temperature_control import get_temperature
 from .tool_validator import ToolValidator

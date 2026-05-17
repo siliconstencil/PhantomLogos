@@ -15,8 +15,8 @@ logger = setup_logger("model_audit")
 # Configuration
 TEST_IMAGE = os.path.join(os.getcwd(), "data", "test_vision.png")  # Changed to relative-ish
 MODELS_TO_AUDIT = [
-    {"name": "qwen2-5-coder-7b-instruct-q4_k_m:latest", "type": "coding"},
-    {"name": "phi-4-mini-reasoning-ud-q5_k_xl:latest", "type": "reasoning"},
+    {"name": "qwen3.5-4b-ud:latest", "type": "coding"},
+    {"name": "phi-4-mini-ud:latest", "type": "reasoning"},
     {"name": "nomic-embed-text-v2-moe-q8:latest", "type": "light"},
 ]
 

@@ -13,6 +13,7 @@ def store():
     if os.path.exists(db_path):
         os.remove(db_path)
     store = TemporalStore(db_path=db_path)
+    store._ensure_table()
     yield store
     if os.path.exists(db_path):
         os.remove(db_path)

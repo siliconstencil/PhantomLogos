@@ -1,6 +1,6 @@
 import asyncio
 
-from src.clotho.tool_bridge import ToolBridge
+from src.clotho.bridge import ToolBridge
 
 
 async def test_bridge():

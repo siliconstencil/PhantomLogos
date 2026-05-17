@@ -16,15 +16,15 @@ This system operates through a 3-Tier hierarchical structure (RuFlow) designed f
 
 ### L2 - Runner (Executor / Clotho)
 
-- **Primary (Coding):** `qwen3-5-4b-ud-q4_k_xl:latest`.
-- **Light (Routine):** `ministral-3-3b-reasoning-2512-ud-q4_k_xl:latest`.
-- **Ultra-Light (Rapid):** `deepscaler-1-5b-preview-q4_k_m:latest`.
+- **Primary (Coding):** `qwen3.5-4b-ud:latest`.
+- **Light (Routine):** `ministral-3b-ud:latest`.
+- **Ultra-Light (Rapid):** `deepscaler-1.5b:latest`.
 - **Responsibility:** Task execution, code generation, and tool bridge orchestration via unified GatewayArchitrave.
 
 ### L3 - Auditor (Analyst / Lachesis)
 
-- **Primary (Logic):** `phi-4-mini-reasoning-ud-q5_k_xl:latest`.
-- **Primary (Code/Math):** `qwen2-5-coder-3b-instruct-q6_k:latest` or `qwen2.5-math-7b:latest`.
+- **Primary (Logic):** `phi-4-mini-ud:latest`.
+- **Primary (Code/Math):** `qwen2.5-coder-3b:latest` or `qwen2.5-math-7b-q4:latest`.
 - **Intelligence:** Spatial Graph Context Expansion (Axis 5).
 - **Responsibility:** Adversarial auditing, formal verification, and codebase mapping with dependency-aware expansion.
 
@@ -35,7 +35,7 @@ This system operates through a 3-Tier hierarchical structure (RuFlow) designed f
 Tasks are routed based on specific capability requirements to optimize VRAM and accuracy:
 
 1. **Sovereign Gateway Flow:** Unified routing for Pydantic AI and reasoning calls.
-2. **Vision Flow:** Diagram/OCR/Creative via `qwen2.5-vl:latest` (Ollama).
+2. **Vision Flow:** Diagram/OCR/Creative via `qwen2.5-vl-3b:latest` (Ollama).
 3. **Spatial Graph Flow:** Context-aware codebase mapping via Axis 5.
 4. **Formal Verification Flow:** Logical and mathematical truth guarding via Axis 11.
 5. **Episodic Write Path:** Automated logging of agentic steps for cross-session continuity.

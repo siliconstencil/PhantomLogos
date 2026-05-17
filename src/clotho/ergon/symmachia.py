@@ -49,6 +49,40 @@ async def negotiate_node(state: Any):
         agent = agent_reg.get(agent_id)
         active_agent = agent.to_dict() if agent else {"id": agent_id, "temperature": 0.1}
 
+        # [Step 1] Skill-First Calibration: Inject relevant skills based on task keywords
+        skill_context = ""
+        try:
+            from src.clotho.skill_loader import SkillLoader
+
+            loader = SkillLoader()
+            # Discover skills matching the task using native matching logic
+            relevant_skills = loader.match_for_task(task_lower)
+
+            # SOTA 2026: Supplementary calibration for critical tasks
+            if "audit" in task_lower:
+                relevant_skills.extend(["security-audit", "persona-auditor"])
+            elif "refactor" in task_lower:
+                relevant_skills.extend(["code-generation", "logic-deadlock-resolver"])
+
+            # Deduplicate and limit to top 10 for context efficiency
+            relevant_skills = sorted(list(set(relevant_skills)))[:10]
+
+            if relevant_skills:
+                logger.info(f"ergon: Calibrating agent with skills: {relevant_skills}")
+                fragments = []
+                for sk_name in relevant_skills:
+                    content = loader.get_skill_summary(sk_name)
+                    if content:
+                        fragments.append(content)
+                
+                skill_context = "\n\n## Calibrated Competencies\n" + "\n".join(fragments)
+            else:
+                # Default safety skill
+                skill_context = "\n\n## Calibrated Competencies\n" + (loader.get_skill_summary("error-self-recovery") or "")
+
+        except Exception as se:
+            logger.warning(f"ergon: Skill-First calibration failed ({se})")
+
         log = SessionLog(state["session_id"])
         history = log.get_history(limit=1)
         sync_ok = len(history) > 0
@@ -111,6 +145,7 @@ async def negotiate_node(state: Any):
             "contract": contract,
             "memory_sync": sync_ok,
             "active_agent": active_agent,
+            "calibrated_skills": skill_context,
             "ru_flow_tier": tier,
             "selected_model_tier": model_tier,
             "ru_flow_active": (tier == 3),

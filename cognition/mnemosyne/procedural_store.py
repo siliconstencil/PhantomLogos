@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from src.utils.logging_config import setup_logger
 
 try:
-    from .base import Base
+    from .models import MnemosyneBase, ToolPath
     from .temporal_store import TemporalStore
 except ImportError:
     from base import Base
@@ -15,17 +15,7 @@ except ImportError:
 logger = setup_logger(__name__)
 
 
-class ToolPath(Base):
-    __tablename__ = "tool_paths"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), default="system")
-    tool_name = Column(String(100), nullable=False)
-    task_type = Column(String(100), nullable=False)
-    success_count = Column(Integer, default=0)
-    failure_count = Column(Integer, default=0)
-    avg_latency_ms = Column(Float, default=0)
-    last_used = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-    notes = Column(Text)
+from .models import ToolPath
 
 
 class ProceduralStore:
@@ -38,7 +28,7 @@ class ProceduralStore:
         self.engine = create_engine(
             db_url, connect_args={"check_same_thread": False, "timeout": 30}
         )
-        Base.metadata.create_all(self.engine)
+        MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def record_usage(self, tool_name: str, task_type: str, success: bool, latency_ms: float = 0):

@@ -6,27 +6,11 @@ from sqlalchemy.orm import sessionmaker
 from src.utils.logging_config import setup_logger
 
 try:
-    from .base import Base
+    from .models import MnemosyneBase, Goal
 except ImportError:
     from base import Base
 
 logger = setup_logger(__name__)
-
-
-class Goal(Base):
-    __tablename__ = "goals"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), default="system")
-    session_id = Column(String(64), default="")  # [Phase 1.0.21] Session isolation for goals
-    title = Column(String(255), nullable=False)
-    description = Column(Text)
-    status = Column(String(50), default="pending")
-    priority = Column(Integer, default=3)
-    parent_goal_id = Column(Integer, nullable=True)
-    progress_pct = Column(Float, default=0)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-    completed_at = Column(DateTime, nullable=True)
-
 
 class GoalStore:
     AXIS_ID = 3
@@ -38,7 +22,7 @@ class GoalStore:
         self.engine = create_engine(
             db_url, connect_args={"check_same_thread": False, "timeout": 30}
         )
-        Base.metadata.create_all(self.engine)
+        MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def add(

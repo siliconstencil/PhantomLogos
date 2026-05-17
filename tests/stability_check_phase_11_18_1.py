@@ -2,7 +2,7 @@ import asyncio
 import os
 import unittest
 
-from src.architrave.gemini_client import AgnosticArchitrave
+from src.architrave.gateway_client import GatewayArchitrave as AgnosticArchitrave
 
 
 class TestAgnosticStability(unittest.IsolatedAsyncioTestCase):

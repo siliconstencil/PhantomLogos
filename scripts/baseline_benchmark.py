@@ -159,9 +159,9 @@ class BaselineBenchmark:
                                 warnings.append("K0.1 BUG: 0 row semantic_relations detected")
 
             elif name == "Vision Call":
-                ttft = await self._measure_ttft("mimo-vl:latest", prompt)
+                ttft = await self._measure_ttft("mimo-7b-vl-ud:latest", prompt)
                 result = await asyncio.wait_for(coro, timeout=120)
-                model_used = "mimo-vl:latest"
+                model_used = "mimo-7b-vl-ud:latest"
 
             elif name == "Embedding Call":
                 ttft = await self._measure_ttft("nomic-embed-text-v2-moe-q8:latest", prompt)
@@ -236,7 +236,7 @@ class BaselineBenchmark:
         async def vision_call():
             client = get_ollama_client()
             return await client.chat(
-                model="mimo-vl:latest",
+                model="mimo-7b-vl-ud:latest",
                 messages=[{"role": "user", "content": vision_prompt, "images": [TEST_IMAGE_PATH]}],
             )
 

@@ -12,27 +12,15 @@ from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
-ToneBase = declarative_base()
+from .models import MnemosyneBase, ToneRecord
 
 TONE_KEYWORDS = {
-    "urgent": {"urgent", "asap", "immediately", "critical", "emergency", "hemen", "acil"},
-    "casual": {"hey", "hi", "hello", "merhaba", "selam", "just", "maybe", "belki"},
-    "frustrated": {"bug", "error", "wrong", "broken", "not working", "hata", "calismiyor"},
-    "analytical": {"analyze", "compare", "evaluate", "why", "how", "explain", "analiz"},
-    "creative": {"design", "create", "imagine", "what if", "tasarla", "yarat"},
+    "urgent": ["urgent", "asap", "immediately", "quick", "fast", "hurry"],
+    "frustrated": ["bug", "error", "broken", "fail", "wrong", "stupid", "hate"],
+    "creative": ["idea", "design", "think", "imagine", "create", "style"],
+    "analytical": ["data", "report", "stats", "logic", "reason", "proof"],
+    "casual": ["hey", "hi", "hello", "thanks", "ok", "cool"]
 }
-
-
-class ToneRecord(ToneBase):
-    __tablename__ = "tone_history"
-    id = Column(Integer, primary_key=True)
-    session_id = Column(String(64), nullable=False)
-    tone = Column(String(50), default="neutral")
-    urgency = Column(Float, default=0.0)
-    verbosity = Column(String(20), default="normal")
-    original_message = Column(Text)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
 
 class ToneStore:
     AXIS_ID = 9
@@ -44,7 +32,7 @@ class ToneStore:
         self.engine = create_engine(
             db_url, connect_args={"check_same_thread": False, "timeout": 30}
         )
-        ToneBase.metadata.create_all(self.engine)
+        MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def analyze_tone(self, message: str) -> dict:

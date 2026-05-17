@@ -32,6 +32,13 @@ def _asyncio_exception_handler(loop, context):
     """Global asyncio loop exception handler to catch unhandled crashes."""
     exception = context.get("exception")
     message = context.get("message")
+
+    if isinstance(exception, asyncio.CancelledError):
+        from src.utils.logging_config import log_system_event
+
+        log_system_event("WARNING", f"clotho_handoff: Task cancelled: {message}")
+        return
+
     logger.error(f"clotho_handoff: Unhandled loop exception: {message} ({exception})")
     # Trigger shutdown flag to prevent further ingestion
     global _shutdown_requested
@@ -120,7 +127,6 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
         "task": task_description,
         "session_id": actual_session_id,
         "iteration": 0,
-        "max_iterations": 2,
         "memory_sync": True,
         "image_path": None,
         "draft": "",
@@ -141,7 +147,26 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
     logger.info(f"Clotho: Session {actual_session_id} initialized.")
     config = {"configurable": {"thread_id": actual_session_id}}
     try:
-        result = await asyncio.wait_for(app.ainvoke(initial_state, config=config), timeout=120.0)
+        if recovered_state:
+            result = await asyncio.wait_for(app.ainvoke(None, config=config), timeout=120.0)
+        else:
+            result = await asyncio.wait_for(app.ainvoke(initial_state, config=config), timeout=120.0)
+
+        # Basarili gorev sonrasi control_handoff.py'ye positive reward (1.0 success score) ekle!
+        try:
+            from cognition.mnemosyne.meta_cognition import MetaCognitionStore
+
+            MetaCognitionStore().adjust_reliability(
+                agent_id="sophia",
+                delta=1.0,
+                violation_type="",
+                session_id=actual_session_id,
+            )
+        except Exception as e_reward:
+            logger.warning(
+                f"clotho_handoff: Failed to award success reliability to sophia ({e_reward})"
+            )
+
         return result.get("final_output", "")
     except asyncio.CancelledError:
         # Triggered by signal handler or external cancellation

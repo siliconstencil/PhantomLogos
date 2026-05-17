@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cognition.sophia.hephaestus import ReasoningState
+from cognition.sophia.eidos import ReasoningState
 from cognition.sophia.sophia import run_draft
 from src.clotho.bridge import ToolBridge
 from src.clotho.krisis import BLACKLISTED_MODELS
@@ -40,7 +40,8 @@ class TestSovereignTruthGuard(unittest.IsolatedAsyncioTestCase):
         """S3: Test if a Hard Gate block prevents Sophia from generating."""
         # Simulate a severe recurring failure match
         mock_context.return_value = (
-            "Context text",
+            "stable",
+            "dynamic",
             {"block": True, "reason": "Severe Hallucination Loop Detected"},
         )
 

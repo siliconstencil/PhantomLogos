@@ -15,21 +15,7 @@ from .semantic_store import SemanticStore
 # Implements Option A: Nomic Text Embeddings for Zero-VRAM overhead.
 
 logger = setup_logger(__name__)
-VisualBase = declarative_base()
-
-
-class VisualMemory(VisualBase):
-    __tablename__ = "visual_memories"
-    id = Column(Integer, primary_key=True)
-    image_hash = Column(String(64), index=True)
-    description = Column(Text)
-    vector = Column(LargeBinary)  # 256-dim float32 vector (Nomic)
-    source_path = Column(String(512))
-    variant = Column(String(50))  # ocr, thinking, creative, primary
-    metadata_json = Column(Text)  # JSON string
-    session_id = Column(String(100), index=True)
-    timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
+from .models import MnemosyneBase, VisualMemory
 
 class VisualStore:
     AXIS_ID = 14
@@ -43,7 +29,7 @@ class VisualStore:
         self.engine = create_engine(
             db_url, connect_args={"check_same_thread": False, "timeout": 30}
         )
-        VisualBase.metadata.create_all(self.engine)
+        MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
         self._semantic_store = None  # Lazy init
 
@@ -63,7 +49,7 @@ class VisualStore:
     ):
         """Stores a visual memory with its Nomic text embedding."""
         image_hash = self._get_image_hash(image_path)
-        vector = await self._get_text_embedding(description)
+        vector = await self._get_text_embedding(description, is_query=False)
 
         session = self.Session()
         try:
@@ -108,7 +94,7 @@ class VisualStore:
 
     async def search_similar(self, query_text: str, session_id: str, limit: int = 5):
         """Searches visual memories using SemanticStore's hybrid search."""
-        vector = await self._get_text_embedding(query_text)
+        vector = await self._get_text_embedding(query_text, is_query=True)
         if vector is None:
             return []
 
@@ -166,15 +152,18 @@ class VisualStore:
         except Exception:
             return "error_hashing"
 
-    async def _get_text_embedding(self, text: str) -> np.ndarray:
+    async def _get_text_embedding(self, text: str, is_query: bool = False) -> np.ndarray:
+        """[Phase 1.0.30] Standardized embedding via MatryoshkaService with Prefixes."""
         try:
-            from src.architrave.model_registry import get_embedding_model
-            from src.utils.ollama_utils import get_ollama_client
+            from src.utils.service_locator import get_matryoshka
+            matryoshka = get_matryoshka()
+            if not matryoshka:
+                raise RuntimeError("MatryoshkaService not available.")
 
-            model_name = get_embedding_model()
-            client = get_ollama_client()
-            resp = await client.embeddings(model=model_name, prompt=text)
-            return np.array(resp.embedding)[:256]
+            if is_query:
+                return await matryoshka.embed_query(text)
+            else:
+                return await matryoshka.embed_document(text)
         except Exception as e:
             logger.warning(f"VisualStore: Embedding generation failed ({e})")
             return None

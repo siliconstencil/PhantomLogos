@@ -6,6 +6,7 @@ Manages Sovereign Gateway explicit caching for 1-hour TTL context anchors.
 import hashlib
 import os
 import sqlite3
+import threading
 import time
 
 from src.utils.logging_config import setup_logger
@@ -22,108 +23,142 @@ class ContextCacheStore:
     AXIS_ID = 12
     MAX_TOTAL_SIZE_BYTES = 50 * 1024 * 1024
 
-    def __init__(self, db_path: str | None = None):
+    def __init__(self, db_path: str | None = None, start_sweep: bool = True, sweep_interval: float = 60.0):
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         self.db_path = db_path or os.path.join(base, "data", "mnemosyne.db")
+        self._lock = threading.Lock()
         self._ensure_table()
 
+        # Background sweeper thread
+        self._stop_sweep = threading.Event()
+        self._sweep_thread = None
+        if start_sweep:
+            self._start_background_sweep(sweep_interval)
+
+    def _start_background_sweep(self, sweep_interval: float):
+        def sweep_loop():
+            while not self._stop_sweep.is_set():
+                try:
+                    self.purge_expired()
+                except Exception as e:
+                    logger.error(f"ContextCacheStore: Background sweep error ({e})")
+                
+                # Check stop event every 1 second to allow fast shutdown
+                slept = 0.0
+                while slept < sweep_interval and not self._stop_sweep.is_set():
+                    time.sleep(min(1.0, sweep_interval - slept))
+                    slept += 1.0
+
+        self._sweep_thread = threading.Thread(target=sweep_loop, daemon=True)
+        self._sweep_thread.start()
+
+    def close(self):
+        """Stops the background sweeper thread."""
+        self._stop_sweep.set()
+        if self._sweep_thread and self._sweep_thread.is_alive():
+            self._sweep_thread.join(timeout=2.0)
+
     def _ensure_table(self):
-        conn = sqlite3.connect(self.db_path)
-        try:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS context_cache (
-                    key TEXT PRIMARY KEY,
-                    content TEXT,
-                    expires_at FLOAT,
-                    created_at FLOAT,
-                    size_bytes INTEGER
-                )
-            """)
-            conn.commit()
-        finally:
-            conn.close()
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS context_cache (
+                        key TEXT PRIMARY KEY,
+                        content TEXT,
+                        expires_at FLOAT,
+                        created_at FLOAT,
+                        size_bytes INTEGER
+                    )
+                """)
+                conn.commit()
+            finally:
+                conn.close()
 
     def _hash_key(self, content: str) -> str:
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
     def get(self, content: str) -> str | None:
-        self.purge_expired()
         key = self._hash_key(content)
-        conn = sqlite3.connect(self.db_path)
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT content, expires_at FROM context_cache WHERE key = ?", (key,))
-            row = cursor.fetchone()
-        finally:
-            conn.close()
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = conn.cursor()
+                cursor.execute("SELECT content, expires_at FROM context_cache WHERE key = ?", (key,))
+                row = cursor.fetchone()
+            finally:
+                conn.close()
 
         if row:
             return row[0]
         return None
 
     def set(self, content: str, ttl_seconds: int = 3600) -> bool:
-        self.purge_expired()
         key = self._hash_key(content)
         now = time.time()
         entry_size = len(content.encode("utf-8"))
-        conn = sqlite3.connect(self.db_path)
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM context_cache")
-            total_size = cursor.fetchone()[0]
-            while total_size + entry_size > self.MAX_TOTAL_SIZE_BYTES:
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM context_cache")
+                total_size = cursor.fetchone()[0]
+                while total_size + entry_size > self.MAX_TOTAL_SIZE_BYTES:
+                    cursor.execute(
+                        "SELECT key, size_bytes FROM context_cache ORDER BY created_at ASC LIMIT 1"
+                    )
+                    row = cursor.fetchone()
+                    if not row:
+                        break
+                    cursor.execute("DELETE FROM context_cache WHERE key = ?", (row[0],))
+                    total_size -= row[1]
                 cursor.execute(
-                    "SELECT key, size_bytes FROM context_cache ORDER BY created_at ASC LIMIT 1"
+                    """
+                    INSERT OR REPLACE INTO context_cache (key, content, expires_at, created_at, size_bytes)
+                    VALUES (?, ?, ?, ?, ?)
+                """,
+                    (key, content, now + ttl_seconds, now, entry_size),
                 )
-                row = cursor.fetchone()
-                if not row:
-                    break
-                cursor.execute("DELETE FROM context_cache WHERE key = ?", (row[0],))
-                total_size -= row[1]
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO context_cache (key, content, expires_at, created_at, size_bytes)
-                VALUES (?, ?, ?, ?, ?)
-            """,
-                (key, content, now + ttl_seconds, now, entry_size),
-            )
-            conn.commit()
-            return True
-        except Exception as e:
-            logger.error(f"ContextCacheStore: Failed to write cache ({e})")
-            return False
-        finally:
-            conn.close()
+                conn.commit()
+                return True
+            except Exception as e:
+                logger.error(f"ContextCacheStore: Failed to write cache ({e})")
+                return False
+            finally:
+                conn.close()
 
     def _delete_key(self, key: str):
-        conn = sqlite3.connect(self.db_path)
-        try:
-            conn.execute("DELETE FROM context_cache WHERE key = ?", (key,))
-            conn.commit()
-        finally:
-            conn.close()
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                conn.execute("DELETE FROM context_cache WHERE key = ?", (key,))
+                conn.commit()
+            finally:
+                conn.close()
 
     def purge_expired(self) -> int:
         now = time.time()
-        conn = sqlite3.connect(self.db_path)
-        try:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM context_cache WHERE expires_at < ?", (now,))
-            purged = cursor.rowcount
-            conn.commit()
-        finally:
-            conn.close()
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM context_cache WHERE expires_at < ?", (now,))
+                purged = cursor.rowcount
+                conn.commit()
+            finally:
+                conn.close()
         return purged
 
     def count_active(self) -> int:
         now = time.time()
-        conn = sqlite3.connect(self.db_path)
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM context_cache WHERE expires_at > ?", (now,))
-            return cursor.fetchone()[0]
-        finally:
-            conn.close()
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM context_cache WHERE expires_at > ?", (now,))
+                return cursor.fetchone()[0]
+            finally:
+                conn.close()
 
 
 class AnchorContextBuilder:

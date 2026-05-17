@@ -113,36 +113,47 @@ class GraphState(TypedDict):
     critique: dict | Any
     final_output: str
     iteration: int
-    max_iterations: int
     memory_sync: bool
     session_id: str
     contract: dict | None
     image_path: str | None
     vision_analysis: str | None
     anchors: str | None
+    calibrated_skills: str | None
     active_agent: str | None
     tool_calls: list[dict] | None
     tool_results: list[dict] | None
     tool_iteration: int
     ru_flow_active: bool
     ru_flow_tier: int
-    spatial_dirty: bool
 
     selected_model_tier: str
     verification_retry: int
     reflection_insight: str | None
     partial_correction: dict | None
     l0_approved: bool
-    spatial_context: list[str]
 
 
 # --- Graph Construction (Clotho) ---
 
 
 def wait_for_l0(state: Any):
-    """Dummy node. Execution pauses here if l0_approved is False."""
-    logger.info("orchestrator: Waiting for L0 approval (Sovereign Gate).")
-    return {"l0_approved": state.get("l0_approved", False)}
+    """Sovereign Gate: Verifies L0 approval and state integrity before proceeding."""
+    logger.info("orchestrator: Sovereign Gate reached. Verifying L0 intent.")
+    
+    # Axis 13: Verify State Integrity
+    if not state.get("task"):
+        logger.error("orchestrator: Gate Violation - Missing task in state.")
+        return {"l0_approved": False}
+    
+    # Check for L0 approval (SOTA 2026: Explicit state flag required)
+    approved = state.get("l0_approved", False)
+    if not approved:
+        logger.warning("orchestrator: L0 Gate closed. Explicit approval flag missing.")
+        return {"l0_approved": False}
+        
+    logger.info("orchestrator: L0 Gate PASSED.")
+    return {"l0_approved": True}
 
 
 def finalize_node(state: Any):
@@ -338,11 +349,11 @@ def create_clotho_graph():
     except asyncio.CancelledError:
         raise
     except Exception as e:
-        logger.error(
-            f"orchestrator: Failed to initialize checkpointer ({e}). Compiling without persistence.",
+        logger.critical(
+            f"orchestrator: CRITICAL FAILURE - Failed to initialize checkpointer ({e}). Axis 13 persistence is mandatory.",
             exc_info=True,
         )
-        return workflow.compile(interrupt_before=["wait_for_l0"])
+        raise RuntimeError("System integrity violation: Axis 13 persistence failure.") from e
 
 
 def should_vision_run(state: Any):
@@ -359,14 +370,14 @@ if __name__ == "__main__":
         initial_state = {
             "task": "Create a high-performance Python decorator for logging execution time.",
             "iteration": 0,
-            "max_iterations": 2,
             "memory_sync": False,
             "image_path": None,
             "session_id": "test_session_decoupling",
         }
 
         logger.info("Clotho: Starting Orchestration Graph...")
-        async for event in app.astream(initial_state):
+        config = {"configurable": {"thread_id": "test_session_decoupling"}}
+        async for event in app.astream(initial_state, config=config):
             if isinstance(event, dict):
                 for node, values in event.items():
                     sync = values.get("memory_sync", "N/A") if isinstance(values, dict) else "N/A"

@@ -16,6 +16,58 @@ class ReflectionStore:
         from src.utils.project_path import to_absolute_path
 
         self.db_path = db_path or to_absolute_path("data/mnemosyne.db")
+        self._ensure_tables()
+
+    def _ensure_tables(self):
+        """[Phase 1.0.25.2] Ensures raw SQL tables exist for entities, reflections, relations, and failure memory."""
+        sql_entities = """
+        CREATE TABLE IF NOT EXISTS entities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            session_id TEXT,
+            frequency INTEGER DEFAULT 1,
+            last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(name, type)
+        );"""
+        sql_reflections = """
+        CREATE TABLE IF NOT EXISTS reflections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            insight TEXT NOT NULL,
+            category TEXT DEFAULT 'general',
+            session_id TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );"""
+        sql_relations = """
+        CREATE TABLE IF NOT EXISTS semantic_relations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT NOT NULL,
+            predicate TEXT,
+            object TEXT NOT NULL,
+            session_id TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );"""
+        sql_failure = """
+        CREATE TABLE IF NOT EXISTS failure_memory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            error_type TEXT NOT NULL,
+            root_cause TEXT,
+            prevention_rule TEXT,
+            context_hash TEXT UNIQUE,
+            severity INTEGER DEFAULT 1,
+            recurrence_count INTEGER DEFAULT 1,
+            status TEXT DEFAULT 'active',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );"""
+        try:
+            self._execute(sql_entities)
+            self._execute(sql_reflections)
+            self._execute(sql_relations)
+            self._execute(sql_failure)
+            logger.info("ReflectionStore: Raw SQL tables verified/created.")
+        except Exception as e:
+            logger.error(f"ReflectionStore: Failed to ensure tables ({e})")
 
     def _get_conn(self):
         return sqlite3.connect(self.db_path)
@@ -166,3 +218,9 @@ class ReflectionStore:
     def resolve_failure(self, context_hash: str):
         sql = "UPDATE failure_memory SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE context_hash = ?"
         self._execute(sql, (context_hash,))
+
+
+if __name__ == '__main__':
+    store = ReflectionStore()
+    store.store_reflection('test_session', 'Verification of schema initialization.')
+    print('ReflectionStore: Schema verified.')

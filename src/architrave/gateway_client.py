@@ -270,7 +270,73 @@ class GatewayArchitrave:
             model=model, contents=prompt, config=types.GenerateContentConfig(**kwargs)
         )
 
+    async def _local_distill(self, text: str, target_tokens: int = 3000) -> str:
+        """
+        [Phase 1.0.29] Local Content Distillation via MatryoshkaService.
+        Selects the most semantically dense chunks to stay under cloud thresholds.
+        """
+        try:
+            from src.utils.service_locator import get_matryoshka
+            matryoshka = get_matryoshka()
+            if not matryoshka:
+                return text[:target_tokens * 4] # Rough fallback
+
+            # Split by paragraphs, or sentences if paragraphs are too few
+            chunks = [p.strip() for p in text.split("\n\n") if p.strip()]
+            if len(chunks) <= 3:
+                # Fallback: Split by sentences (rough regex)
+                import re
+                chunks = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+            
+            if len(chunks) <= 5:
+                return text[:target_tokens * 4]
+
+            # Embed chunks and the whole text
+            import numpy as np
+            full_vec = await matryoshka.embed_query(text[:8192]) # Cap for embedding
+            
+            scored_chunks = []
+            for c in chunks:
+                if len(c) < 20: continue # Skip tiny chunks
+                c_vec = await matryoshka.embed_query(c)
+                score = np.dot(full_vec, c_vec)
+                scored_chunks.append((score, c))
+            
+            # Sort by similarity
+            scored_chunks.sort(key=lambda x: x[0], reverse=True)
+            
+            distilled = []
+            current_len = 0
+            # Keep first and last chunks for context preservation
+            first = chunks[0]
+            last = chunks[-1]
+            distilled.append(first)
+            current_len += len(first)
+            
+            for score, c in scored_chunks:
+                if c == first or c == last:
+                    continue
+                if current_len + len(c) < target_tokens * 4:
+                    distilled.append(c)
+                    current_len += len(c)
+            
+            if last not in distilled:
+                distilled.append(last)
+            
+            logger.info(f"Architrave: Distillation complete ({len(chunks)} -> {len(distilled)} chunks).")
+            return " ... ".join(distilled)
+        except Exception as e:
+            logger.warning(f"Architrave: Distillation failed ({e})")
+            return text[:target_tokens * 4]
+
     async def generate_async(self, prompt: str, **kwargs):
+        # Phase 1.0.29: Content Guard (Cloud Leakage Prevention)
+        threshold = int(os.getenv("CLOUD_TOKEN_THRESHOLD", "4000"))
+        # Rough token estimation for speed (1 token ~ 4 chars)
+        if len(prompt) > threshold * 4:
+            logger.info(f"Architrave: Content Guard triggered (len={len(prompt)}). Distilling locally...")
+            prompt = await self._local_distill(prompt, target_tokens=threshold - 1000)
+
         # Gateway health check ve circuit breaker kontrolu
         if self.client is None or not await self.is_gateway_healthy():
             if self.client:
@@ -287,6 +353,7 @@ class GatewayArchitrave:
             # Wrap the API call with async_retry
             @async_retry(max_attempts=2, base_delay=2.0)
             async def _call():
+                assert self.client is not None
                 return await self.client.aio.models.generate_content(
                     model=model, contents=prompt, config=types.GenerateContentConfig(**kwargs)
                 )

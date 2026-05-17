@@ -6,38 +6,14 @@ from sqlalchemy.orm import sessionmaker
 from src.utils.logging_config import setup_logger
 
 try:
-    from .base import Base
+    from .models import MnemosyneBase, GovernanceRule, Fact
 except ImportError:
     from base import Base
 
 logger = setup_logger(__name__)
 
 
-class GovernanceRule(Base):
-    """Strict rules and policies that the agent MUST follow."""
-
-    __tablename__ = "governance_rules"
-    id = Column(Integer, primary_key=True)
-    rule_id = Column(String(50), unique=True, nullable=False)
-    agent_id = Column(String(50), default="system")
-    description = Column(Text, nullable=False)
-    severity = Column(Integer, default=1)
-    active = Column(Integer, default=1)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
-
-class Fact(Base):
-    """Verified pieces of information and truth-anchors."""
-
-    __tablename__ = "facts"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), default="global")
-    subject = Column(String(255), nullable=False)
-    predicate = Column(String(255))
-    object = Column(Text, nullable=False)
-    source = Column(String(255))
-    confidence = Column(Float, default=1.0)
-    last_verified = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+from .models import GovernanceRule, Fact
 
 
 class MnemosyneRationalStore:
@@ -55,7 +31,7 @@ class MnemosyneRationalStore:
         self.engine = create_engine(
             db_url, connect_args={"check_same_thread": False, "timeout": 30}
         )
-        Base.metadata.create_all(self.engine)
+        MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def add_rule(self, rule_id: str, description: str, agent_id: str = "system", severity: int = 3):

@@ -70,3 +70,50 @@ Traceback (most recent call last):
   File "D:\Hank\src\lachesis\file_watchdog.py", line 8, in <module>
     from .snapshot_manager import SnapshotManager, WATCH_DIRS, IGNORE_DIRS, WATCH_PATTERNS
 ImportError: attempted relative import with no known parent package
+2026-05-15 22:09:31,255 - __main__ - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-15 22:47:46,890 - __main__ - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-15 22:49:08,886 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 22:49:08,937 - __main__ - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-15 22:49:08,968 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 22:49:39,204 - __main__ - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-15 22:49:39,251 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:22:00,360 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/graph_manager.py: Mutation detected. ROLLBACK!
+2026-05-15 23:22:00,627 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:23:21,440 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/ast_parser.py: Mutation detected. ROLLBACK!
+2026-05-15 23:23:21,484 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:24:01,860 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/ast_parser.py: Mutation detected. ROLLBACK!
+2026-05-15 23:24:01,899 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:25:02,476 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/ast_parser.py: Mutation detected. ROLLBACK!
+2026-05-15 23:25:02,522 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:25:42,921 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/ast_parser.py: Mutation detected. ROLLBACK!
+2026-05-15 23:25:42,963 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:31:36,518 - __main__ - ERROR - [SOVEREIGN VIOLATION] .antigravity/walkthroughs/main_walkthrough.md: Mutation detected. ROLLBACK!
+2026-05-15 23:31:36,563 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:55:41,350 - __main__ - ERROR - [SOVEREIGN VIOLATION] CHANGELOG.md: Mutation detected. ROLLBACK!
+2026-05-15 23:55:41,399 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:55:51,573 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/ast_parser.py: Mutation detected. ROLLBACK!
+2026-05-15 23:55:51,618 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:58:13,049 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/utils/service_locator.py: Mutation detected. ROLLBACK!
+2026-05-15 23:58:13,093 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:58:23,196 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/synergeia.py: Mutation detected. ROLLBACK!
+2026-05-15 23:58:23,236 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:58:33,331 - __main__ - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/hephaestus.py: Mutation detected. ROLLBACK!
+2026-05-15 23:58:33,374 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:58:43,488 - __main__ - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/hephaestus.py: Mutation detected. ROLLBACK!
+2026-05-15 23:58:43,531 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-15 23:59:44,159 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/clotho/orchestrator.py: Mutation detected. ROLLBACK!
+2026-05-15 23:59:44,196 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-16 00:23:58,013 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/atropos/context_pruner.py: Mutation detected. ROLLBACK!
+2026-05-16 00:23:58,066 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-16 00:53:13,536 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/graph_manager.py: Mutation detected. ROLLBACK!
+2026-05-16 00:53:13,584 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-16 00:53:33,785 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/lachesis/mapper/graph_manager.py: Mutation detected. ROLLBACK!
+2026-05-16 00:53:33,821 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-16 02:58:51,697 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/atropos/context_pruner.py: Mutation detected. ROLLBACK!
+2026-05-16 02:58:51,761 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-16 02:59:11,933 - __main__ - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/semantic_store.py: Mutation detected. ROLLBACK!
+2026-05-16 02:59:11,970 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-16 02:59:22,055 - __main__ - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/semantic_store.py: Mutation detected. ROLLBACK!
+2026-05-16 02:59:22,095 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)
+2026-05-16 03:00:22,626 - __main__ - ERROR - [SOVEREIGN VIOLATION] src/atropos/context_pruner.py: Mutation detected. ROLLBACK!
+2026-05-16 03:00:22,667 - cognition.mnemosyne.temporal_store - ERROR - TemporalStore (Axis 4): record failed for session system (no such table: temporal_metrics)

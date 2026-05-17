@@ -53,7 +53,7 @@ async def test_evaluator_zones(base_state):
 @patch("cognition.morpheus.loader.ModelLoader.flush")
 async def test_critique_node_3_pass_flow(mock_flush, mock_run_critique, base_state):
     # Setup Pass 2 Mock
-    from cognition.sophia.hephaestus import CritiqueResult
+    from cognition.sophia.eidos import CritiqueResult
 
     mock_run_critique.side_effect = [
         CritiqueResult(

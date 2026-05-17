@@ -1,4 +1,4 @@
-from src.lachesis.output_guard import get_output_guard
+from src.lachesis.verifiers.output_guard import get_output_guard
 
 
 def test_timestamp_guard():

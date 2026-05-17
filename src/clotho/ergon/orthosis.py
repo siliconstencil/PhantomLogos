@@ -40,6 +40,15 @@ async def refine_node(state: Any):
             logger.warning("ergon: refine_node REJECTED final output via OutputGuard")
             final_output = state.get("draft", "Refine failed behavioral check. Draft retained.")
 
+        # [Step 3] Centralized Knowledge Extraction (Final Scavenger)
+        try:
+            import asyncio
+            from src.architrave.entity_extractor import EntityExtractor
+            session_id = state.get("session_id", "default")
+            await asyncio.to_thread(EntityExtractor.harvest_knowledge, final_output, session_id)
+        except Exception as e_ext:
+            logger.warning(f"ergon: Knowledge extraction failed in refine_node ({e_ext})")
+
         return {"final_output": final_output, "memory_sync": bool(final_output)}
     except Exception as e:
         logger.error(f"ergon: refine_node failed ({e})", exc_info=True)

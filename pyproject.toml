@@ -29,6 +29,7 @@ dependencies = [
     "qwed>=5.0.0",
     "gliner2>=1.3.1",
     "pydantic-settings>=2.0.0",
+    "alembic>=1.18.0",
 ]
 
 [project.optional-dependencies]

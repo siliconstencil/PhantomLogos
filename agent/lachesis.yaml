@@ -5,12 +5,12 @@ description: "Adversarial evaluator and codebase mapper. Audits drafts, maps dep
 capability: audit
 
 model:
-  primary: phi-4-mini-reasoning-ud-q5_k_xl:latest
+  primary: phi-4-mini-ud:latest
   fallback: null
 
 tier_config:
   tier: primary
-  model: phi-4-mini-reasoning-ud-q5_k_xl:latest
+  model: phi-4-mini-ud:latest
 
 response_format: json_object
 

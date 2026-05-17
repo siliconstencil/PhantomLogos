@@ -40,11 +40,50 @@ class EntityExtractor:
                     cls._instance = super().__new__(cls)
         return cls._instance
 
+    @staticmethod
+    def harvest_knowledge(text: str, session_id: str):
+        """
+        Centralized Knowledge Scavenger (Axis 6).
+        Extracts and persists knowledge from any text source.
+        """
+        if not text or len(text.strip()) < 10:
+            return
+
+        # Use singleton instance
+        extractor = EntityExtractor()
+        results = extractor.extract_unified(text)
+
+        if results.get("entities") or results.get("relations"):
+            from cognition.sophia.hephaestus import _get_reflection
+            store = _get_reflection()
+            
+            # Persistence (Sync calls wrapped in thread safety if needed)
+            if results.get("entities"):
+                store.store_entities(session_id, results["entities"])
+            if results.get("relations"):
+                store.store_relations(session_id, results["relations"])
+            
+            logger.info(
+                f"Scavenger: Harvested {len(results['entities'])} entities from session {session_id}"
+            )
+
     def __init__(self, model_name: str | None = None):
         if not hasattr(self, "initialized"):
             self.model_name = model_name or resolve_local_model("ner")
             self.model: Any | None = None
-            self._entity_labels = ["tech_term", "module", "duration", "constraint", "version"]
+            self._entity_schema = {
+                "tech_term": "Programming languages, frameworks, libraries, protocols, or technical concepts (e.g., Python, GLiNER2, SQLAlchemy, NER)",
+                "module": "Source code files, classes, or named internal components (e.g., orchestrator.py, ReflectionStore, EntityExtractor)",
+                "function": "Function or method names in code (e.g., extract_unified, store_entities, anchor_inject_node)",
+                "file_path": "File or directory paths (e.g., src/clotho/ergon/elenchos.py, data/mnemosyne.db)",
+                "version": "Version numbers and identifiers (e.g., v1.0.0, Phase 11.19, 1.0.28)",
+                "person": "Names of people, developers, or users (e.g., Hank, Tim Cook, Urchade)",
+                "organization": "Company, project, or team names (e.g., Fastino, OpenAI, Antigravity)",
+                "date": "Date or time references (e.g., May 15, 2026, 2024-03-15)",
+                "constraint": "System rules, hardware limits, or boundaries (e.g., 7GB VRAM, L0 Approval, NO_EMOJI, temp=0.6)",
+                "duration": "Time periods or frequencies (e.g., 30 days, 60s timeout, 24 months)",
+                "label": "Entity type labels or classification tags (e.g., tech_term, NER, tier_2)",
+            }
             self._relation_labels = [
                 "expires_in",
                 "belongs_to",
@@ -68,8 +107,7 @@ class EntityExtractor:
                         self.model = GLiNER2.from_pretrained(self.model_name)
                         logger.info(f"EntityExtractor: GLiNER2 loaded on CPU ({self.model_name})")
                     except Exception as e:
-                        logger.error(f"EntityExtractor: Failed to load GLiNER2 ({e})")
-                        raise
+                        raise RuntimeError(f"EntityExtractor: Failed to load GLiNER2 model '{self.model_name}' ({e})") from e
 
     def extract_unified(self, text: str) -> dict[str, Any]:
         """
@@ -82,40 +120,35 @@ class EntityExtractor:
             return {"entities": [], "relations": []}
 
         if self.model is None:
-            logger.error("EntityExtractor: Model failed to load, cannot extract.")
-            return {"entities": [], "relations": []}
+            raise RuntimeError("EntityExtractor: GLiNER2 model failed to load, cannot proceed with extraction.")
 
-        try:
-            # Phase 1.0.2: GLiNER2 Unified Schema
-            schema = (
-                self.model.create_schema()
-                .entities(self._entity_labels)
-                .relations(self._relation_labels)
-            )
+        # Phase 1.0.2: GLiNER2 Unified Schema
+        schema = (
+            self.model.create_schema()
+            .entities(self._entity_schema)
+            .relations(self._relation_labels)
+        )
 
-            # Perform extraction
-            results = self.model.extract(text, schema=schema)
+        # Perform extraction
+        results = self.model.extract(text, schema=schema)
 
-            # GLiNER2 results are structured: results['entities'] = {label: [texts...]}
-            # results['relations'] = {label: [[s, o], ...]}
+        # GLiNER2 results are structured: results['entities'] = {label: [texts...]}
+        # results['relations'] = {label: [[s, o], ...]}
 
-            entities = []
-            raw_entities = results.get("entities", {})
-            for label, texts in raw_entities.items():
-                for t in texts:
-                    entities.append({"text": t, "type": label})
+        entities = []
+        raw_entities = results.get("entities", {})
+        for label, texts in raw_entities.items():
+            for t in texts:
+                entities.append({"text": t, "type": label})
 
-            relations = []
-            raw_relations = results.get("relations", {})
-            for label, pairs in raw_relations.items():
-                for pair in pairs:
-                    if len(pair) == 2:
-                        relations.append({"s": pair[0], "p": label, "o": pair[1]})
+        relations = []
+        raw_relations = results.get("relations", {})
+        for label, pairs in raw_relations.items():
+            for pair in pairs:
+                if len(pair) == 2:
+                    relations.append({"s": pair[0], "p": label, "o": pair[1]})
 
-            return {"entities": entities, "relations": relations}
-        except Exception as e:
-            logger.error(f"EntityExtractor: Extraction failed ({e})")
-            return {"entities": [], "relations": []}
+        return {"entities": entities, "relations": relations}
 
     def extract_entities(self, text: str) -> list[dict[str, Any]]:
         """Legacy support for NER only."""

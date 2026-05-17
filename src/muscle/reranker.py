@@ -21,7 +21,7 @@ class JinaReranker:
         from src.architrave.model_registry import get_embedding_model
 
         self.embedding_model = get_embedding_model()
-        self.rerank_model = "jina-reranker-v3-q8_0:latest"
+        self.rerank_model = "jina-reranker-v3:latest"
 
     async def rerank_async(
         self, query: str, documents: list[str], top_n: int = 5
@@ -30,11 +30,7 @@ class JinaReranker:
         if not documents:
             return {"results": [], "integrity_warning": "Empty document set"}
 
-        try:
-            return await self._execute_pipeline(query, documents, top_n)
-        except Exception as e:
-            logger.error(f"JinaReranker: Pipeline crashed ({e}), emergency fallback triggered")
-            return self._fallback_rank(query, documents, top_n, f"Emergency fallback: {e!s}")
+        return await self._execute_pipeline(query, documents, top_n)
 
     def rerank(self, query: str, documents: list[str], top_n: int = 5) -> dict[str, Any]:
         """Backward compatible sync entry point using thread-safe loop access. [HH:MM AM/PM PT]"""
@@ -56,20 +52,19 @@ class JinaReranker:
     async def _execute_pipeline(
         self, query: str, documents: list[str], top_n: int
     ) -> dict[str, Any]:
+        embed_err = None
         # 1. Embeddings (Primary) - [TIER 2.4 BATCH OPTIMIZATION]
         try:
             return await self._rerank_embeddings(query, documents, top_n)
         except Exception as e:
+            embed_err = e
             logger.warning(f"JinaReranker: Embedding rank failed ({e})")
-
         # 2. Jina Reranker (Secondary)
-        if len(documents) <= 10:
-            try:
-                return await self._rerank_jina(query, documents, top_n)
-            except Exception as e:
-                logger.warning(f"JinaReranker: Jina rank failed ({e})")
-
-        return self._fallback_rank(query, documents, top_n, "Heuristic fallback active")
+        try:
+            return await self._rerank_jina(query, documents, top_n)
+        except Exception as jina_err:
+            logger.error(f"JinaReranker: Jina rank failed ({jina_err})")
+            raise RuntimeError(f"JinaReranker: All ranking methods failed. Embedding error: {embed_err}. Jina error: {jina_err}") from jina_err
 
     async def _rerank_embeddings(
         self, query: str, documents: list[str], top_n: int
@@ -114,14 +109,3 @@ class JinaReranker:
         scored.sort(key=lambda x: x["score"], reverse=True)
         return {"results": scored[:top_n], "integrity_warning": "Jina precision mode active"}
 
-    def _fallback_rank(
-        self, query: str, documents: list[str], top_n: int, reason: str | None = None
-    ) -> dict[str, Any]:
-        query_words = set(re.findall(r"\w+", query.lower()))
-        scored = []
-        for i, doc in enumerate(documents):
-            doc_words = set(re.findall(r"\w+", doc.lower()))
-            overlap = len(query_words & doc_words) / len(query_words) if query_words else 0
-            scored.append({"index": i, "score": float(overlap), "text": doc})
-        scored.sort(key=lambda x: x["score"], reverse=True)
-        return {"results": scored[:top_n], "integrity_warning": reason or "Heuristic fallback"}

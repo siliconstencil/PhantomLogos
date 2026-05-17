@@ -472,10 +472,10 @@ Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
 d-----          5/6/2026   9:58 PM                blobs
 d-----         4/13/2026   1:30 AM                manifests
--a----         4/28/2026   8:24 PM            130 deepscaler-1-5b-preview-q4_k_m.Modelfile
--a----         4/28/2026   8:24 PM            134 deepseek-r1-distill-qwen-1-5b-q8_0.Modelfile
+-a----         4/28/2026   8:24 PM            130 deepscaler-1.5b.Modelfile
+-a----         4/28/2026   8:24 PM            134 deepseek-r1-1.5b.Modelfile
 -a----          5/3/2026   1:01 PM            105 deepseek_r1_7b.Modelfile
--a----         4/28/2026   8:24 PM            126 functiongemma-270m-it-q8_0.Modelfile
+-a----         4/28/2026   8:24 PM            126 functiongemma-270m.Modelfile
 -a----          5/3/2026   1:11 PM            163 functiongemma.Modelfile
 -a----          5/3/2026   1:42 PM            226 gemma4_2b_adapter.Modelfile
 -a----          5/3/2026   1:24 PM            438 gemma4_e2b_double_from.Modelfile
@@ -484,28 +484,28 @@ d-----         4/13/2026   1:30 AM                manifests
 -a----          5/3/2026   1:20 PM            441 gemma4_e4b_master.Modelfile
 -a----          5/3/2026   1:02 PM            226 gemma4_e4b_patched.Modelfile
 -a----          5/3/2026   1:02 PM             96 glm_4_6v_flash.Modelfile
--a----         4/28/2026   8:24 PM            130 granite-3-0-2b-instruct-q4_k_m.Modelfile
+-a----         4/28/2026   8:24 PM            130 granite-3-2b.Modelfile
 -a----          5/3/2026   1:01 PM             96 granite_8b.Modelfile
--a----         4/28/2026   8:25 PM            128 hermes-3-llama-3-1-8b-q4_k_m.Modelfile
--a----         4/28/2026   8:25 PM            123 jina-embeddings-v3-q8_0.Modelfile
--a----         4/28/2026   8:25 PM            121 jina-reranker-v3-q8_0.Modelfile
--a----         4/28/2026   8:25 PM            132 llama-3-2-1b-instruct-ud-q5_k_xl.Modelfile
--a----         4/28/2026   8:25 PM            132 llama-3-2-3b-instruct-ud-q4_k_xl.Modelfile
--a----         4/28/2026   8:25 PM            133 meta-llama-3-1-8b-instruct-q4_k_m.Modelfile
+-a----         4/28/2026   8:25 PM            128 hermes-3-llama-3.1-8b.Modelfile
+-a----         4/28/2026   8:25 PM            123 jina-embeddings-v3.Modelfile
+-a----         4/28/2026   8:25 PM            121 jina-reranker-v3.Modelfile
+-a----         4/28/2026   8:25 PM            132 llama-3.2-1b-ud.Modelfile
+-a----         4/28/2026   8:25 PM            132 llama-3.2-3b-ud.Modelfile
+-a----         4/28/2026   8:25 PM            133 meta-llama-3.1-8b.Modelfile
 -a----         4/28/2026   8:25 PM            119 minimax-2-3b-q4_k_m.Modelfile
--a----         4/28/2026   8:25 PM            140 ministral-3-3b-reasoning-2512-ud-q4_k_xl.Modelfile
--a----         4/28/2026   8:25 PM            129 nemotron-3-nano-4b-ud-q6_k_xl.Modelfile
+-a----         4/28/2026   8:25 PM            140 ministral-3b-ud.Modelfile
+-a----         4/28/2026   8:25 PM            129 nemotron-3-nano-4b-ud.Modelfile
 -a----         4/28/2026   8:25 PM            129 nomic-embed-text-v2-moe-q16_0.Modelfile
 -a----         4/28/2026   8:25 PM            128 nomic-embed-text-v2-moe-q8_0.Modelfile
--a----         4/28/2026   8:25 PM            131 phi-4-mini-reasoning-ud-q5_k_xl.Modelfile
+-a----         4/28/2026   8:25 PM            131 phi-4-mini-ud.Modelfile
 -a----         4/28/2026   8:26 PM            132 qwen2-5-coder-3b-instruct-q4_k_m.Modelfile
--a----         4/28/2026   8:26 PM            130 qwen2-5-coder-3b-instruct-q6_k.Modelfile
--a----         4/28/2026   8:27 PM            132 qwen2-5-coder-7b-instruct-q4_k_m.Modelfile
+-a----         4/28/2026   8:26 PM            130 qwen2.5-coder-3b.Modelfile
+-a----         4/28/2026   8:27 PM            132 qwen2.5-coder-7b.Modelfile
 -a----         4/28/2026   8:28 PM            131 qwen2-5-math-7b-instruct-q4_k_m.Modelfile
--a----         4/28/2026   8:28 PM            119 qwen3-4b-ud-q6_k_xl.Modelfile
--a----         4/28/2026   8:28 PM            123 qwen3-5-0-8b-ud-q8_k_xl.Modelfile
--a----         4/28/2026   8:29 PM            121 qwen3-5-2b-ud-q6_k_xl.Modelfile
--a----         4/28/2026   8:29 PM            121 qwen3-5-4b-ud-q4_k_xl.Modelfile
+-a----         4/28/2026   8:28 PM            119 qwen3.5-4b-ud.Modelfile
+-a----         4/28/2026   8:28 PM            123 qwen3.5-0.8b-ud.Modelfile
+-a----         4/28/2026   8:29 PM            121 qwen3.5-2b-ud.Modelfile
+-a----         4/28/2026   8:29 PM            121 qwen3.5-4b-ud.Modelfile
 -a----          5/3/2026   1:01 PM             92 qwen3_5_9b.Modelfile
 -a----          5/3/2026   1:01 PM             86 qwen3_8b.Modelfile
 -a----          5/3/2026   1:20 PM            380 qwen3_vl_thinking.Modelfile
@@ -531,21 +531,21 @@ Harika, bu "alet cantası" (toolbelt) sistemi önemli ölçüde güçlendiriyor.
 1. Phantom Logos'ta Tanımlı Modeller vs Local Envanter
 Phantom Logos Rolü	Tanımlı Model	Local Karşılığı	Uyum Durumu
 L1 Strategist	Gemini Thinking (Cloud)	Yok (zaten cloud)	✅ N/A
-L2 Primary Executor	Qwen-7b	qwen2-5-coder-7b-instruct-q4_k_m.Modelfile	✅ Birebir eşleşiyor
-L2 Light Executor	Ministral-3b	ministral-3-3b-reasoning-2512-ud-q4_k_xl.Modelfile	✅ Birebir eşleşiyor
-L3 Auditor	Phi-4 Mini	phi-4-mini-reasoning-ud-q5_k_xl.Modelfile	✅ Birebir eşleşiyor
+L2 Primary Executor	Qwen-7b	qwen2.5-coder-7b.Modelfile	✅ Birebir eşleşiyor
+L2 Light Executor	Ministral-3b	ministral-3b-ud.Modelfile	✅ Birebir eşleşiyor
+L3 Auditor	Phi-4 Mini	phi-4-mini-ud.Modelfile	✅ Birebir eşleşiyor
 L2 Context Engineer	Deterministic/Tiktoken	(N/A)	✅
 L2 VRAM Manager	Deterministic/Nvidia-SMI	(N/A)	✅
 Retriever & Embedding Modelleri
 Phantom Logos Bileşeni	İhtiyaç	Local Karşılığı	Durum
-JinaReranker (ToolBridge)	Jina reranker v3	jina-reranker-v3-q8_0.Modelfile	✅ Var
-Hybrid Search Embedding	Jina embeddings v3	jina-embeddings-v3-q8_0.Modelfile	✅ Var
+JinaReranker (ToolBridge)	Jina reranker v3	jina-reranker-v3.Modelfile	✅ Var
+Hybrid Search Embedding	Jina embeddings v3	jina-embeddings-v3.Modelfile	✅ Var
 Alternatif Embedding	Nomic embed text	nomic-embed-text-v2-moe-q8_0.Modelfile	✅ Var (MOE)
 2. Local Envanterde Phantom Logos'a Entegre Edilebilecek "Fazladan" Modeller
 🟢 Doğrudan Entegre Edilebilir (Drop-in Replacement)
 Model	Boyut	Kullanım Önerisi	Axis
-qwen2-5-coder-3b-instruct-q6_k	3B	L2 Light alternatifi (daha kaliteli)	Axis 2
-deepseek-r1-distill-qwen-1-5b-q8_0	1.5B	Ultra-light L0 (hızlı yanıt)	Axis 10
+qwen2.5-coder-3b	3B	L2 Light alternatifi (daha kaliteli)	Axis 2
+deepseek-r1-1.5b	1.5B	Ultra-light L0 (hızlı yanıt)	Axis 10
 granite-3-0-2b-instruct	2B	Maliyet düşük, tool calling iyi	Axis 2
 llama-3-2-3b-instruct	3B	Reasoning kaliteli	Axis 8
 hermes-3-llama-3-1-8b	8B	L2 Primary alternatifi (function calling)	Axis 2
@@ -581,32 +581,32 @@ json
 {
   "tiers": {
     "L0_ultra_light": {
-      "primary": "deepseek-r1-distill-qwen-1-5b-q8_0",
+      "primary": "deepseek-r1-1.5b",
       "fallback": "smollm2-1-7b-instruct-q5_k_m",
       "max_context": 8192,
       "vram_mb": 1200
     },
     "L1_light": {
-      "primary": "ministral-3-3b-reasoning-2512-ud-q4_k_xl",
-      "alternative": "llama-3-2-3b-instruct-ud-q4_k_xl",
+      "primary": "ministral-3b-ud",
+      "alternative": "llama-3.2-3b-ud",
       "max_context": 32768,
       "vram_mb": 2400
     },
     "L2_primary": {
-      "primary": "qwen2-5-coder-7b-instruct-q4_k_m",
-      "alternative": "hermes-3-llama-3-1-8b-q4_k_m",
+      "primary": "qwen2.5-coder-7b",
+      "alternative": "hermes-3-llama-3.1-8b",
       "max_context": 32768,
       "vram_mb": 4200
     },
     "L3_auditor": {
-      "primary": "phi-4-mini-reasoning-ud-q5_k_xl",
-      "alternative": "granite-3-0-2b-instruct-q4_k_m",
+      "primary": "phi-4-mini-ud",
+      "alternative": "granite-3-2b",
       "max_context": 16384,
       "vram_mb": 1800
     },
     "math_verifier": {
       "primary": "qwen2-5-math-7b-instruct-q4_k_m",
-      "light": "deepscaler-1-5b-preview-q4_k_m",
+      "light": "deepscaler-1.5b",
       "max_context": 8192,
       "vram_mb": 4000
     },
@@ -617,12 +617,12 @@ json
       "vram_mb": 4500
     },
     "embedding": {
-      "primary": "jina-embeddings-v3-q8_0",
+      "primary": "jina-embeddings-v3",
       "alternative": "nomic-embed-text-v2-moe-q8_0",
       "dimension": 768
     },
     "reranker": {
-      "primary": "jina-reranker-v3-q8_0",
+      "primary": "jina-reranker-v3",
       "alternative": null,
       "cross_encoder": true
     }
@@ -640,7 +640,7 @@ Eğer blobs/ boş veya küçükse (<20GB), modeller Ollama tarafından çekilmem
 Ollama ile modelleri çekmek için:
 
 bash
-ollama create qwen2.5-coder:7b -f qwen2-5-coder-7b-instruct-q4_k_m.Modelfile
+ollama create qwen2.5-coder:7b -f qwen2.5-coder-7b.Modelfile
 ollama run qwen2.5-coder:7b
 6. Phantom Logos Tool Bridge Bağlantısı
 src/clotho/tool_bridge.py'de şu an sadece Ollama endpoint'ine generic çağrı var. Local model registry yok.
@@ -865,8 +865,8 @@ Models are grouped into three primary tiers to maintain system agility:
 
 | Tier | Role | Primary Model (Ollama/Muscle) | VRAM | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **Tier 1** | **Light** | `ministral-3-3b-reasoning-2512-ud-q4_k_xl:latest` | 2.2 GB | Rapid response, low latency. |
-| **Tier 2** | **Primary** | `qwen2-5-coder-7b-instruct-q4_k_m:latest` | 4.7 GB | Standard agentic loops and coding. |
+| **Tier 1** | **Light** | `ministral-3b-ud:latest` | 2.2 GB | Rapid response, low latency. |
+| **Tier 2** | **Primary** | `qwen2.5-coder-7b:latest` | 4.7 GB | Standard agentic loops and coding. |
 | **Tier 3** | **Expert** | `gemini-3.1-flash-thinking` | Cloud | Deep reasoning and complex architecture analysis. |
 
 ## 3. Vision Duo (Final Configuration)
@@ -879,16 +879,16 @@ Visual analysis tasks are specialized into two high-performance Qwen models:
 
 | Model Group | Version (Tag) | VRAM (GB) | Use Case |
 | :--- | :--- | :--- | :--- |
-| **Reasoning** | `phi-4-mini-reasoning-ud-q5_k_xl:latest` | 2.8 | Logical auditing and critique (Axis 11). |
-| **Verification (Primary)** | `qwen2-5-coder-3b-instruct-q6_k:latest` | 2.5 | Axis 11: Complex code logic audit (QWED). |
+| **Reasoning** | `phi-4-mini-ud:latest` | 2.8 | Logical auditing and critique (Axis 11). |
+| **Verification (Primary)** | `qwen2.5-coder-3b:latest` | 2.5 | Axis 11: Complex code logic audit (QWED). |
 | **Verification (Fallback)** | `qwen2.5-coder-0.5b:latest` | 0.5 | Axis 11: Rapid deterministic verification. |
-| **Small Agents** | `smollm2-1.7b:latest` | 1.2 | Multi-agent micro-tasks and orchestration. |
-| **Coding** | `qwen2-5-coder-7b-instruct-q4_k_m:latest` | 4.7 | Python/JS development and refactoring. |
-| **Vision (OCR)** | `qwen2-vl-ocr:latest` | 1.1 | Document reading and dense text extraction. |
-| **Vision (Gen)** | `qwen2.5-vl:latest` | 2.5 | Fast general vision and UI analysis. |
+| **Small Agents** | `smollm2-1.7b-q5:latest` | 1.2 | Multi-agent micro-tasks and orchestration. |
+| **Coding** | `qwen2.5-coder-7b:latest` | 4.7 | Python/JS development and refactoring. |
+| **Vision (OCR)** | `qwen2-vl-ocr-2b:latest` | 1.1 | Document reading and dense text extraction. |
+| **Vision (Gen)** | `qwen2.5-vl-3b:latest` | 2.5 | Fast general vision and UI analysis. |
 | **Embedding** | `nomic-moe-q8:latest` | 0.5 | Semantic memory search (Axis 6). |
-| **Reranker** | `jina-reranker-v3-q8_0:latest` | 0.6 | Search result refinement (Lachesis). |
-| **Router** | `granite-3-0-2b-instruct-q4_k_m:latest` | 1.6 | Fast capability-based routing. |
+| **Reranker** | `jina-reranker-v3:latest` | 0.6 | Search result refinement (Lachesis). |
+| **Router** | `granite-3-2b:latest` | 1.6 | Fast capability-based routing. |
 
 ## 5. Morpheus VRAM & Hygiene Policy
 - **Fragmentation**: Morpheus Sweeper triggers automatic cleanup at 30% fragmentation.
@@ -904,9 +904,9 @@ Harika, Vision Duo yapılandırmanızı görmemişim. Şimdi tüm ekosistemi don
 1. Konsolide Model Envanteri (Güncel)
 Rol	Model	VRAM	Tier
 L2 Light	ministral-3b-reasoning-ud-q4	2.2 GB	Tier 1
-L2 Primary	qwen2.5-coder-7b-q4	4.7 GB	Tier 2
-L3 Auditor	phi-4-mini-reasoning-ud-q5	2.8 GB	Verification
-Verification (Primary)	qwen2.5-coder-3b-q6	2.5 GB	Axis 11
+L2 Primary	qwen2.5-coder-7b	4.7 GB	Tier 2
+L3 Auditor	phi-4-mini-ud-ud-q5	2.8 GB	Verification
+Verification (Primary)	qwen2.5-coder-3b-ud	2.5 GB	Axis 11
 Verification (Fallback)	qwen2.5-coder-0.5b	0.5 GB	Axis 11
 Router	granite-3b-instruct-q4	1.6 GB	RuFlow
 Small Agents	smollm2-1.7b	1.2 GB	Multi-agent
@@ -971,8 +971,8 @@ python
 # src/clotho/tool_bridge.py - yeni vision handler
 
 VISION_MODELS = {
-    "ocr": "qwen2-vl-ocr:latest",      # 1.1 GB
-    "scene": "qwen2.5-vl:latest",      # 2.5 GB
+    "ocr": "qwen2-vl-ocr-2b:latest",      # 1.1 GB
+    "scene": "qwen2.5-vl-3b:latest",      # 2.5 GB
 }
 
 def handle_vision_task(image_path: str, task_type: str) -> str:

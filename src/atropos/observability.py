@@ -4,11 +4,14 @@ import inspect
 import os
 import time
 from collections.abc import Callable
+from src.utils.logging_config import setup_logger
+
+logger = setup_logger(__name__)
 
 try:
     from .token_budget import TokenBudgetGuard, get_token_guard
 except ImportError:
-    from token_budget import get_token_guard
+    from src.atropos.token_budget import get_token_guard
 
 
 class AtroposMonitor:

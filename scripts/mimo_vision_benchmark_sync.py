@@ -25,7 +25,7 @@ def benchmark_mimo(image_path: str):
     print("=== MiMo-VL Vision Benchmark (Sync Mode) ===")
     print(f"Image: {image_path}")
 
-    model_name = "mimo-vl:repaired"
+    model_name = "mimo-7b-vl-ud:repaired"
     client = ollama.Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
     # 1. Warm-up

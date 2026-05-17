@@ -6,36 +6,10 @@ from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
 
-try:
-    from cognition.mnemosyne.base import Base
-except ImportError:
-    from .base import Base
+# Standardized import for Phase 1.0.25
+from cognition.mnemosyne.models import MnemosyneBase, Episode, Event
 
 logger = setup_logger(__name__)
-
-
-class Episode(Base):
-    __tablename__ = "episodes"
-    id = Column(Integer, primary_key=True)
-    session_id = Column(String(64), nullable=False)
-    agent_id = Column(String(50), default="system")
-    action = Column(String(255), nullable=False)
-    detail = Column(Text)
-    outcome = Column(String(50), default="pending")
-    tokens_used = Column(Integer, default=0)
-    latency_ms = Column(Float, default=0)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
-
-class Event(Base):
-    __tablename__ = "events"
-    id = Column(Integer, primary_key=True)
-    session_id = Column(String(64), nullable=False)
-    seq_num = Column(Integer, nullable=False)
-    event_type = Column(String(50), nullable=False)
-    agent_id = Column(String(50), default="system")
-    payload = Column(Text)  # JSON payload
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class EpisodicStore:
@@ -59,7 +33,7 @@ class EpisodicStore:
             cursor.execute("PRAGMA cache_size=-65536;")
             cursor.close()
 
-        Base.metadata.create_all(self.engine)
+        MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
         # Phase 1.0.11: WAL Checkpoint State
@@ -192,6 +166,12 @@ class EpisodicStore:
 
 if __name__ == "__main__":
     import sys
+    import os
+
+    # Ensure project root is in PYTHONPATH for absolute imports
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
 
     if len(sys.argv) > 1 and sys.argv[1] == "--test":
         logger.info("=== Mnemosyne Episodic Store: Firmitas Test ===")

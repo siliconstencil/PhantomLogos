@@ -1,6 +1,5 @@
 from typing import Any
 
-from cognition.mnemosyne.meta_cognition import MetaCognitionStore
 from src.architrave.base_models import ROLE_TO_MODEL
 from src.utils.logging_config import setup_logger
 
@@ -14,6 +13,7 @@ class SelfTuner:
     """
 
     def __init__(self):
+        from cognition.mnemosyne.meta_cognition import MetaCognitionStore
         self.meta_store = MetaCognitionStore()
         self.failure_threshold = 0.3
 

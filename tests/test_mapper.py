@@ -56,7 +56,7 @@ def test_circular_dependency_detection():
     mock_session = MagicMock()
     mock_store.Session.return_value = mock_session
 
-    from cognition.mnemosyne.spatial_store import DependencyEdge
+    from cognition.mnemosyne.models import DependencyEdge
 
     edge1 = DependencyEdge(source_module="A", target_module="B", relationship="import")
     edge2 = DependencyEdge(source_module="B", target_module="A", relationship="import")

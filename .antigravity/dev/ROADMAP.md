@@ -145,8 +145,8 @@ AMAC: L2 executor modelini Qwen 3.5 UD'ye yukselterek kod kalitesini
   Qwen 3.5 4B UD (2.9 GB) ile 1.8 GB VRAM tasarrufu.
 
 UYGULAMA:
-  a) clotho.yaml primary: qwen2-5-coder-7b -> qwen3-5-4b-ud-q4_k_xl
-  b) clotho.yaml fallback: qwen3-8b -> qwen3-5-2b-ud-q6_k_xl
+  a) clotho.yaml primary: qwen2-5-coder-7b -> qwen3.5-4b-ud
+  b) clotho.yaml fallback: qwen3-8b -> qwen3.5-2b-ud
   c) rules.json agent_roles.clotho model ve alt_model guncelle
   d) tools.md model tablosunu guncelle (L2 satiri)
 

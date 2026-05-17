@@ -113,11 +113,11 @@ def sync(dry_run=False):
             desc = r["description"]
             sev = SEVERITY_MAP.get(r.get("severity", "MEDIUM"), 3)
             seen_ids.add(rid)
-            if not dry_run:
+            if not dry_run and store:
                 store.add_rule(rule_id=rid, description=desc, severity=sev)
             count += 1
 
-        if not dry_run:
+        if not dry_run and store:
             store.add_fact(
                 subject="Project Name",
                 obj=data.get("project", "Phantom Logos"),
@@ -140,7 +140,7 @@ def sync(dry_run=False):
         if r["id"] in seen_ids:
             continue
         seen_ids.add(r["id"])
-        if not dry_run:
+        if not dry_run and store:
             store.add_rule(
                 rule_id=r["id"],
                 description=r["description"],
@@ -158,7 +158,7 @@ def sync(dry_run=False):
             if rid in seen_ids:
                 continue
             seen_ids.add(rid)
-            if not dry_run:
+            if not dry_run and store:
                 store.add_rule(rule_id=rid[:50], description=desc[:200], severity=3)
             print(f"  {rid} (from {origin} - dynamic)")
             count += 1

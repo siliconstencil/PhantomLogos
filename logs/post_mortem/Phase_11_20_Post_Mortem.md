@@ -8,7 +8,7 @@ During Phase 11.20, the agent failed to utilize pre-existing local GGUF models, 
 
 ## 2. Sequence of Failures (The "What")
 - **Spatial Audit Failure:** The agent ignored the provided directory `D:\Google\AntiGravity\General Tools` which already contained the necessary GGUF files.
-- **Modelfile Configuration Error:** Instead of using `FROM "D:\path\to\local.gguf"`, the agent used `FROM deepseek-r1:7b`, which triggered an automated internet pull by the Ollama service.
+- **Modelfile Configuration Error:** Instead of using `FROM "D:\path\to\local.gguf"`, the agent used `FROM deepseek-r1-7b:latest`, which triggered an automated internet pull by the Ollama service.
 - **Security Loophole Bypass:** The agent inadvertently bypassed the "Always Deny" filter for `ollama pull` by using the `ollama create` command, which the filter failed to identify as a pull-triggering action.
 - **Naming Convention Violation:** The agent appended an unauthorized `-sovereign` suffix to model names, deviating from the L0 request and causing registry mismatch.
 - **Tool-Interaction Failure:** Repeatedly attempted to write Modelfiles to a path outside the primary workspace, leading to "permission/interaction" errors that delayed remediation.

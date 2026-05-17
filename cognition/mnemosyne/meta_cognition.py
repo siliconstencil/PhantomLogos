@@ -16,51 +16,7 @@ except ImportError:
 
 logger = setup_logger(__name__)
 
-ReliabilityBase = declarative_base()
-
-
-class MetaRecord(Base):
-    __tablename__ = "meta_cognition"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), default="system")
-    session_id = Column(String(100), default="")
-    task = Column(Text)
-    draft_quality = Column(Float, default=0.5)
-    critique_severity = Column(Float, default=0.5)
-    refinement_improvement = Column(Float, default=0)
-    num_iterations = Column(Integer, default=1)
-    pattern_notes = Column(Text)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
-
-class AgentReliability(ReliabilityBase):
-    __tablename__ = "agent_reliability"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), nullable=False, unique=True)
-    reliability_score = Column(Float, default=1.0)
-    total_violations = Column(Integer, default=0)
-    total_successes = Column(Integer, default=0)  # [Phase 1.0.21] Success metric
-    cycle_count = Column(Integer, default=0)  # [Phase 1.0.21] Watchdog cycles
-    last_violation_type = Column(String(50))
-    last_violation_at = Column(DateTime)
-    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
-
-class AgentExperience(Base):
-    __tablename__ = "agent_experience"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), nullable=False)
-    session_id = Column(String(64), default="")
-    task_pattern = Column(String(100), default="general")
-    total_tasks = Column(Integer, default=0)
-    success_count = Column(Integer, default=0)
-    failure_count = Column(Integer, default=0)
-    avg_quality = Column(Float, default=0.5)
-    best_model = Column(String(100), default="")
-    best_temperature = Column(Float, default=0.3)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
+from .models import MnemosyneBase, ReliabilityBase, MetaRecord, AgentReliability, AgentExperience
 
 RELIABILITY_THRESHOLD_LOCK = 0.3
 _RELIABILITY_CACHE = {}  # [SRC:axis_8] Process-level cache for reliability fallback
@@ -78,7 +34,7 @@ class MetaCognitionStore:
             db_url, connect_args={"check_same_thread": False, "timeout": 30}
         )
         try:
-            Base.metadata.create_all(self.engine)
+            MnemosyneBase.metadata.create_all(self.engine)
         except Exception as e:
             logger.warning(f"MetaCognitionStore: Primary DB init failed ({e})")
 
@@ -229,8 +185,8 @@ class MetaCognitionStore:
                     "task_pattern": r.task_pattern,
                     "total_tasks": r.total_tasks,
                     "failure_count": r.failure_count,
-                    "success_rate": round(r.success_count / max(r.total_tasks, 1), 2),
-                    "avg_quality": round(r.avg_quality, 2),
+                    "success_rate": round(float(r.success_count / max(r.total_tasks, 1)), 2),
+                    "avg_quality": round(float(r.avg_quality), 2),
                     "best_model": r.best_model,
                     "best_temperature": r.best_temperature,
                 }
@@ -300,7 +256,13 @@ class MetaCognitionStore:
     def adjust_reliability(
         self, agent_id: str, delta: float, violation_type: str = "", session_id: str = "default"
     ):
-        """Adjust agent reliability score. Delta can be negative (penalty) or positive (reward)."""
+        """
+        Adjust agent reliability score using EWMA (Exponentially Weighted Moving Average).
+        Backward compatible mapping:
+        - delta < 0: legacy penalty, maps to current_score = 0.0
+        - 0.0 < delta <= 0.1: legacy success/reward delta, maps to current_score = 1.0
+        - otherwise: treated directly as the target current_score [0.0, 1.0]
+        """
         ReliabilitySession = sessionmaker(bind=self._reliability_engine)
         session = ReliabilitySession()
         try:
@@ -314,14 +276,28 @@ class MetaCognitionStore:
                 session.add(entry)
 
             old_score = entry.reliability_score
-            entry.reliability_score = max(0.0, min(1.0, entry.reliability_score + delta))
+            ALPHA = 0.3
 
-            if delta < 0:
+            # Map delta to EWMA actual_score and classify outcome
+            if delta < 0.0:
+                actual_score = 0.0
+                is_penalty = True
+            elif 0.0 < delta <= 0.1:
+                actual_score = 1.0
+                is_penalty = False
+            else:
+                actual_score = delta
+                is_penalty = (actual_score < 0.5)
+
+            # EWMA formula: s_t = ALPHA * x_t + (1 - ALPHA) * s_{t-1}
+            entry.reliability_score = ALPHA * actual_score + (1.0 - ALPHA) * entry.reliability_score
+            entry.reliability_score = max(0.0, min(1.0, entry.reliability_score))
+
+            if is_penalty:
                 entry.total_violations = (entry.total_violations or 0) + 1
                 entry.last_violation_type = violation_type
                 entry.last_violation_at = datetime.datetime.now(datetime.UTC)
-            elif delta > 0:
-                # [Phase 1.0.21] Recovery Logic
+            else:
                 entry.total_successes = (entry.total_successes or 0) + 1
                 entry.last_violation_type = ""  # Clear on recovery
 
@@ -338,7 +314,7 @@ class MetaCognitionStore:
 
             logger.info(
                 f"MetaCognition: {agent_id} reliability -> {entry.reliability_score:.2f} "
-                f"(delta={delta:+.2f}, violation={violation_type}, session={session_id})"
+                f"(input={delta:+.2f}, mapped_score={actual_score:.2f}, violation={violation_type}, session={session_id})"
             )
 
             # [SRC:axis_4] Record truth update in Temporal Graph
@@ -367,9 +343,9 @@ class MetaCognitionStore:
                         f"MetaCognition: {count} consecutive shadow failures in {session_id}. TRIGGERING ROTATION."
                     )
                     try:
-                        from src.lachesis.self_tuner import SelfTuner
+                        from src.utils.service_locator import get_self_tuner
 
-                        SelfTuner().apply_rotation(session_id, agent_id, reason=violation_type)
+                        get_self_tuner().apply_rotation(session_id, agent_id, reason=violation_type)
                         # Reset counter after rotation
                         self._shadow_violation_counts[session_id] = 0
                     except Exception as re:

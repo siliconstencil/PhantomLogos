@@ -40,7 +40,7 @@ pip install pyyaml requests httpx keyring nvidia-ml-py
 
 | # | Model | Type | VRAM | Disk | Download |
 |---|---|---|---|---|---|
-| 1 | **phi-4-mini-reasoning-ud-q5_k_xl:latest** | Reasoning (Lachesis) | 2.8 GB | 2.5 GB | [unsloth/Phi-4-mini-reasoning-GGUF](https://huggingface.co/unsloth/Phi-4-mini-reasoning-GGUF) |
+| 1 | **phi-4-mini-ud:latest** | Reasoning (Lachesis) | 2.8 GB | 2.5 GB | [unsloth/Phi-4-mini-reasoning-GGUF](https://huggingface.co/unsloth/Phi-4-mini-reasoning-GGUF) |
 | 2 | **nomic-embed-text:latest** | Embedding (Axis 6) | 0.5 GB | 0.5 GB | `ollama pull nomic-embed-text` |
 | 3 | **functiongemma-270m-it-Q8_0** | Router | 0.3 GB | 0.3 GB | [functiongemma/functiongemma-270m-it-Q8_0.gguf](https://huggingface.co/functiongemma/functiongemma-270m-it-Q8_0.gguf) |
 | 4 | **jina-reranker-v3-Q8_0** | Reranker | 0.6 GB | 0.6 GB | [jinaai/jina-reranker-v3-Q8_0.gguf](https://huggingface.co/jinaai/jina-reranker-v3-Q8_0.gguf) |
@@ -60,8 +60,8 @@ After downloading GGUF files to your models directory (default: `D:\Google\AntiG
 
 ```powershell
 # Create a Modelfile for each model:
-echo "FROM D:\Google\AntiGravity\General Tools\phi-4-mini-reasoning-UD-Q5_K_XL.gguf" > Modelfile
-ollama create phi-4-mini-reasoning-ud-q5_k_xl -f Modelfile
+echo "FROM D:\Google\AntiGravity\General Tools\phi-4-mini-ud-UD-Q5_K_XL.gguf" > Modelfile
+ollama create phi-4-mini-ud -f Modelfile
 
 # Repeat for each GGUF model
 ```

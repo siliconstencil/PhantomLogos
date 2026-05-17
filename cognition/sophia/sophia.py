@@ -11,10 +11,8 @@ from src.utils.logging_config import setup_logger
 from src.utils.ollama_utils import get_ollama_client
 
 from .gnosis import get_dynamic_context
+from .eidos import CritiqueResult, ReasoningState, SophiaOutput
 from .hephaestus import (
-    CritiqueResult,
-    ReasoningState,
-    SophiaOutput,
     _get_episodic,
     _get_meta,
     _get_monitor,
@@ -82,7 +80,7 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
             if summary:
                 summaries.append(summary)
         if summaries:
-            skill_context = "ACTIVE SKILLS:\n" + "\n".join(summaries)
+            skill_context = "ACTIVE SKILLS:\n" + "\n".join([str(s) for s in summaries if s])
             logger.info(f"Sophia: Injected {len(summaries)} skill summaries into draft context.")
 
     inst = get_sophia_instructions(tools)
@@ -152,8 +150,8 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
             },
         )
 
-        # [Phase 1.0.21] Single point of reliability update
-        _delta = check["score_delta"] if check["violations"] else +0.02
+        # [Phase 1.0.21] Single point of reliability update (EWMA Model Success = 1.0)
+        _delta = check["score_delta"] if check["violations"] else 1.0
         _get_meta().adjust_reliability(
             agent_id="sophia",
             delta=_delta,
@@ -228,7 +226,7 @@ async def run_critique(
                 loader.get_skill_summary(s) for s in skills_list if loader.get_skill_summary(s)
             ]
             if summaries:
-                skill_context = "ACTIVE SKILLS:\n" + "\n".join(summaries)
+                skill_context = "ACTIVE SKILLS:\n" + "\n".join([str(s) for s in summaries if s])
     except Exception:
         pass
 
@@ -237,12 +235,9 @@ async def run_critique(
     from src.clotho.bootstrap import get_scheduler
 
     scheduler = get_scheduler()
-    # Morpheus: Request a fitting model for the critique role
-    model_name = (
-        model_name
-        or scheduler.request_model("critique")
-        or "phi-4-mini-reasoning-ud-q5_k_xl:latest"
-    )
+    # Morpheus: Request a fitting model for the critique role (Axis 7 SSOT)
+    from src.architrave.model_registry import resolve_local_model
+    model_name = model_name or resolve_local_model("critique", "primary")
 
     response = await asyncio.wait_for(
         get_ollama_client().chat(
@@ -260,7 +255,7 @@ async def run_critique(
 
     # Axis 2: Procedural Log (Tool Tracking)
     _get_procedural().record_usage(
-        tool_name="phi-4-mini-reasoning",
+        tool_name="phi-4-mini-ud",
         task_type="critique",
         success=True,
         latency_ms=round((time.time() - critique_start) * 1000, 1),
@@ -335,8 +330,8 @@ async def run_refine(
         agent_id="sophia",
         context={"function": "run_refine", "require_timestamp": True, "session_id": session_id},
     )
-    # [Phase 1.0.21] Single point of reliability update with Reward Path
-    _delta = check["score_delta"] if check["violations"] else +0.02
+    # [Phase 1.0.21] Single point of reliability update with EWMA Success = 1.0
+    _delta = check["score_delta"] if check["violations"] else 1.0
     _get_meta().adjust_reliability(
         agent_id="sophia",
         delta=_delta,

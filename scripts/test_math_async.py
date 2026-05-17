@@ -14,7 +14,7 @@ async def test_math_async():
     print("[TEST] Testing LLMMathEngine.verify_math_llm (async)...")
     # Simple problem to check async flow
     problem = "What is 2+2?"
-    result = await engine.verify_math_llm(problem, light=True)
+    result = await engine.verify_math_llm(problem, tier="light")
 
     print(f"[RESULT] is_valid: {result.get('is_valid')}")
     print(f"[RESULT] content: {result.get('result')}")

@@ -59,9 +59,10 @@ def _ensure_governance_sync(store: MnemosyneRationalStore):
         # Alternatively, we could check mtime, but simple check for now.
         if len(store.get_secure_rules("system")) < 5:
             logger.info("Hephaestus: Axis 10 rules missing or incomplete. Triggering sync...")
-            from scripts.sync_governance import sync
+            import importlib
 
-            sync()
+            sync_mod = importlib.import_module("scripts.sync_governance")
+            sync_mod.sync()
     except Exception as e:
         logger.warning(f"Hephaestus: Governance sync failed ({e})")
 
@@ -200,9 +201,9 @@ def _get_sweeper():
     global _vram_sweeper
     with _init_lock:
         if _vram_sweeper is None:
-            from ..morpheus.sweeper import VRAMSweeper
+            from src.utils.service_locator import get_sweeper
 
-            _vram_sweeper = VRAMSweeper()
+            _vram_sweeper = get_sweeper()
     return _vram_sweeper
 
 
@@ -210,9 +211,9 @@ def _get_loader():
     global _model_loader
     with _init_lock:
         if _model_loader is None:
-            from ..morpheus.loader import ModelLoader
+            from src.utils.service_locator import get_model_loader
 
-            _model_loader = ModelLoader()
+            _model_loader = get_model_loader()
     return _model_loader
 
 

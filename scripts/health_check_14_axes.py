@@ -25,12 +25,7 @@ from cognition.sophia.gnosis.axis_14_visual import _build_axis_14
 # --- Known-broken axes from audit_022.log ---
 # These axes have 0 write callers at runtime. Their content is structurally
 # returned by gnosis builders, but reflects stale or no runtime data.
-KNOWN_BROKEN = {
-    "Axis 3 (Goals)": "GoalStore.add() has 0 callers at runtime.",
-    "Axis 8 (Meta)": "record_experience() has 0 callers at runtime.",
-    "Axis 9 (Tone)": "record_tone() has 0 callers at runtime.",
-    "Axis 12 (Cache)": "ContextCacheStore.set/get() has 0 callers at runtime.",
-}
+KNOWN_BROKEN = {}
 
 # Minimum non-trivial content threshold (lines).
 # An axis returning 0 or 1 lines is considered EMPTY/BROKEN.

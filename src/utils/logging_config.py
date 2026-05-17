@@ -185,3 +185,39 @@ def setup_logger(name: str) -> logging.Logger:
             print(f"Failed to initialize RotatingFileHandler (JSON): {e}")
 
     return logger
+
+
+def log_system_event(level: str, message: str, extra: dict = None):
+    """
+    Directly writes system-level events to the SQLite operational_logs_v2 table.
+    Bypasses the standard logger chain for integrity and infrastructure events.
+    """
+    from .project_path import get_project_root
+
+    db_path = os.path.join(get_project_root(), "data/mnemosyne.db")
+    try:
+        handler = SQLiteHandler(db_path)
+        # Create a LogRecord manually
+        level_no = getattr(logging, level.upper(), logging.INFO)
+        record = logging.LogRecord(
+            name="system.event",
+            level=level_no,
+            pathname="internal",
+            lineno=0,
+            msg=message,
+            args=(),
+            exc_info=None,
+        )
+        # Map fields to match record expectations in SQLiteHandler
+        record.levelname = level.upper()
+        record.session_id = "system"
+        record.agent_id = "SovereignEngine"
+        if extra:
+            for k, v in extra.items():
+                setattr(record, k, v)
+
+        handler.emit(record)
+        handler.close()
+    except Exception as e:
+        # Fallback to console if DB write fails
+        print(f"FAILED to log_system_event: {message} (Error: {e})")
