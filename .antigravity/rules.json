@@ -165,32 +165,32 @@
     "sophia": {
       "description": "L1 Strategist / Expert Reasoning",
       "model": "antigravity-strategic-gateway",
-      "local_alt": "qwen3-5-9b-ud-q4_k_xl:latest"
+      "local_alt": "qwen3.5-9b-ud:latest"
     },
     "clotho": {
       "description": "L2 Executor / Tools / Orchestration",
-      "model": "qwen3-5-4b-ud-q4_k_xl:latest",
-      "alt_model": "hermes-3-llama-3-1-8b-q4_k_m:latest"
+      "model": "qwen3.5-4b-ud:latest",
+      "alt_model": "hermes-3-llama-3.1-8b:latest"
     },
     "lachesis": {
       "description": "L3 Auditor / Verification",
-      "model": "phi-4-mini-reasoning-ud-q5_k_xl:latest"
+      "model": "phi-4-mini-ud:latest"
     },
     "vision_flagship": {
-      "model": "qwen2.5-vl:latest",
+      "model": "qwen2.5-vl-3b:latest",
       "runtime": "ollama",
       "temperature": 0.1,
       "top_p": 0.95,
       "note": "Qwen2.5-VL replaces MiMo-VL for stability. Fast and efficient 2.5B parameter vision model."
     },
     "r1_reasoning": {
-      "model": "deepseek-r1:7b",
-      "temperature": 0.6,
+      "model": "deepseek-r1-7b:latest",
+      "temperature": 0.1,
       "top_p": 0.95,
       "note": "R1 chain-of-thought reasoning. Requires <think> prefix. No system prompt. (Phase 11.20)"
     },
     "math_verifier_alt": {
-      "model": "deepseek-math:7b",
+      "model": "deepseek-math-7b:latest",
       "temperature": 0.0,
       "context": 4096,
       "note": "DeepSeekMath alternative. Requires \\boxed{} in prompt. No system prompt. (Phase 11.20)"

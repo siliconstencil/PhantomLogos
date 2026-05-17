@@ -5,12 +5,12 @@ description: "Tool execution agent. Runs commands, invokes tools, manages skill 
 capability: execution
 
 model:
-  primary: qwen3-5-4b-ud-q4_k_xl:latest
-  fallback: qwen3-5-2b-ud-q6_k_xl:latest
+  primary: qwen3.5-4b-ud:latest
+  fallback: qwen3.5-2b-ud:latest
 
 tier_config:
   tier: primary
-  model: qwen3-5-4b-ud-q4_k_xl:latest
+  model: qwen3.5-4b-ud:latest
 
 response_format: tool_call
 

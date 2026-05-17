@@ -111,6 +111,9 @@ def start_morpheus():
     with _morpheus_lock:
         scheduler = get_scheduler()
         if not getattr(scheduler, "_running", False):
+            from cognition.mnemosyne.temporal_store import initialize_temporal_schema
+            initialize_temporal_schema()
+
             scheduler.start()
             logger.info("Bootstrap: MorpheusScheduler daemon started (30s interval).")
             return True
@@ -290,7 +293,7 @@ def _handle_oom(model_name: str):
     time.sleep(2)
 
     # Try to load ultra-light model as a fallback to keep the system responsive
-    recovery_model = "deepscaler-1-5b-preview-q4_k_m:latest"
+    recovery_model = "deepscaler-1.5b:latest"
     logger.info(f"Bootstrap: Attempting to load recovery model {recovery_model}")
     if loader.load(recovery_model):
         logger.info("Bootstrap: Recovery model loaded successfully.")
@@ -305,6 +308,9 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 1 and sys.argv[1] == "--daemon":
         logger.info("=== Clotho Bootstrap: Starting Morpheus Daemon ===")
+        from cognition.mnemosyne.temporal_store import initialize_temporal_schema
+        initialize_temporal_schema()
+
         start_morpheus()
         start_telemetry(interval_s=30.0)
         start_shield(project_root)

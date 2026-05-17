@@ -13,7 +13,7 @@ async def main():
     try:
         print("Testing MiMo-VL (Text-only mode)...")
         res = await client.generate(
-            model="mimo-vl:repaired", prompt="Who are you? Respond in one sentence.", stream=False
+            model="mimo-7b-vl-ud:repaired", prompt="Who are you? Respond in one sentence.", stream=False
         )
         print(f"Response: {res.get('response')}")
     except Exception as e:

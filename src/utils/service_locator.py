@@ -57,3 +57,26 @@ def get_sweeper():
 
         _registry["sweeper"] = VRAMSweeper()
     return _registry["sweeper"]
+
+
+def get_bootstrap_loader():
+    """Proxy to Clotho Bootstrap singleton loader."""
+    import importlib
+    _mod = importlib.import_module("src.clotho.bootstrap")
+    return _mod.get_loader()
+
+
+def get_bootstrap_sweeper():
+    """Proxy to Clotho Bootstrap singleton sweeper."""
+    import importlib
+    _mod = importlib.import_module("src.clotho.bootstrap")
+    return _mod.get_sweeper()
+
+
+def get_matryoshka():
+    """Lazy loader for MatryoshkaService (Axis 4)."""
+    if "matryoshka" not in _registry:
+        from src.atropos.matryoshka_service import MatryoshkaService
+
+        _registry["matryoshka"] = MatryoshkaService()
+    return _registry["matryoshka"]

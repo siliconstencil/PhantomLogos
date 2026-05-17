@@ -18,12 +18,12 @@ class ToolBridge:
     """
 
     LOCAL_MODEL_MAP = {
-        "qwen-7b": "qwen3-5-4b-ud-q4_k_xl:latest",
-        "ministral-3b": "ministral-3-3b-reasoning-2512-ud-q4_k_xl:latest",
-        "phi-4-mini": "phi-4-mini-reasoning-ud-q5_k_xl:latest",
-        "jina-reranker": "jina-reranker-v3-q8_0:latest",
+        "qwen-7b": "qwen3.5-4b-ud:latest",
+        "ministral-3b": "ministral-3b-ud:latest",
+        "phi-4-mini": "phi-4-mini-ud:latest",
+        "jina-reranker": "jina-reranker-v3:latest",
         "nomic-embed": "nomic-embed-text-v2-moe-q8:latest",
-        "qwen-math": "qwen2.5-math-7b:latest",
+        "qwen-math": "qwen2.5-math-7b-q4:latest",
     }
 
     def __init__(self, session_id: str, log: SessionLog | None = None, agent_id: str = "system"):
@@ -173,7 +173,11 @@ class ToolBridge:
 
     async def _vram(self, input_data: Any) -> Any:
         try:
-            from ..bootstrap import quick_vram_check
+            from ..bootstrap import get_loader, quick_vram_check
+
+            if isinstance(input_data, dict) and input_data.get("flush"):
+                get_loader().flush()
+                logger.info("ToolBridge: Manual VRAM flush triggered via tool.")
 
             actual_vram = await asyncio.to_thread(quick_vram_check)
             if isinstance(input_data, dict) and "claimed_free_gb" in input_data:

@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 # [SRC:axis_6] Mnemosyne Semantic Vector Store
@@ -27,6 +28,14 @@ class SemanticStore:
         self._ensure_table()
         self._cache_hits = 0
         self._cache_misses = 0
+
+        # Phase 1.0.29: Matryoshka Integration
+        try:
+            from src.utils.service_locator import get_matryoshka
+
+            self.matryoshka = get_matryoshka()
+        except Exception:
+            self.matryoshka = None
 
     def _ensure_table(self) -> None:
         """Initializes the table with a schema supporting Matryoshka embeddings and Session Isolation."""
@@ -122,20 +131,24 @@ class SemanticStore:
             results_fts = []
 
             # 1. Vector Search
-            if mode in ("vector", "hybrid") and query_vector is not None:
-                try:
-                    if hasattr(query_vector, "shape") and query_vector.shape[0] > 256:
-                        query_vector = query_vector[:256]
+            if mode in ("vector", "hybrid"):
+                if query_vector is None and query_text and self.matryoshka:
+                    # Generate embedding from text if vector is missing
+                    query_vector = asyncio.run(self.matryoshka.embed_query(query_text))
 
-                    results_vec = (
-                        table.search(query_vector.tolist())
-                        .where(f"session_id = '{safe_session_id}'")
-                        .limit(limit * 2 if mode == "hybrid" else limit)
-                        .to_list()
-                    )
-                except Exception as ve:
-                    logger.warning(f"SemanticStore: Vector search failed ({ve})")
-                    results_vec = []
+                if query_vector is not None:
+                    try:
+                        # Standardized 256-dim Matryoshka Vector
+                        vec_list = query_vector.tolist()
+                        results_vec = (
+                            table.search(vec_list)
+                            .where(f"session_id = '{safe_session_id}'")
+                            .limit(limit * 2 if mode == "hybrid" else limit)
+                            .to_list()
+                        )
+                    except Exception as ve:
+                        logger.warning(f"SemanticStore: Vector search failed ({ve})")
+                        results_vec = []
 
             # 2. FTS Search
             if mode in ("fts", "hybrid") and query_text:
@@ -296,11 +309,10 @@ class FailureMemoryStore:
         """Adds a failure rule vector for semantic retrieval."""
         try:
             table = self.db.open_table(self.table_name)
-            if vector.shape[0] > 256:
-                vector = vector[:256]
-
+            
+            vec_list = vector.tolist()
             record = {
-                "vector": vector.tolist(),
+                "vector": vec_list,
                 "prevention_rule": prevention_rule,
                 "error_type": error_type,
                 "context_hash": context_hash,
@@ -320,10 +332,9 @@ class FailureMemoryStore:
         """Finds prevention rules related to the current task context."""
         try:
             table = self.db.open_table(self.table_name)
-            if query_vector.shape[0] > 256:
-                query_vector = query_vector[:256]
-
-            return table.search(query_vector.tolist()).limit(limit).to_list()
+            
+            vec_list = query_vector.tolist()
+            return table.search(vec_list).limit(limit).to_list()
         except Exception as e:
             logger.error(f"FailureMemoryStore: search_similar_failures failed ({e})")
             return []

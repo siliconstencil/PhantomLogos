@@ -1,0 +1,2 @@
+# Test write
+print("test")

@@ -6,7 +6,7 @@ capability: strategic
 
 model:
   primary: strategic-gateway
-  fallback: qwen3-5-4b-ud-q4_k_xl:latest
+  fallback: qwen3.5-4b-ud:latest
 
 tier_config:
   tier: expert

@@ -32,7 +32,7 @@ Insight:"""
         # [TIER 3.2 FIX] Use dynamic registry instead of hardcoded string [HH:MM AM/PM PT]
         critique_model = resolve_local_model("critique", "primary")
         resp = await client.generate(model=critique_model, prompt=prompt)
-        insight = resp.response.strip()
+        insight = (resp.response or "").strip()
         return insight if len(insight) > 10 else ""
     except Exception as e:
         logger.debug(f"theoria: LLM reflection extraction failed ({e})")
@@ -101,7 +101,7 @@ async def reflection_node(state: Any):
         if (score > 0 and score < 0.5) or error:
             error_type = "logic_failure" if error is None else "runtime_error"
             flaws = critique.get("flaws", ["No specific flaws documented"])
-            root_cause = str(error) if error else "; ".join(flaws)
+            root_cause = str(error) if error else "; ".join([str(f) for f in flaws if f])
 
             primary_flaw = flaws[0] if flaws else "Review task constraints more deeply"
             prevention_rule = (
@@ -147,15 +147,13 @@ async def reflection_node(state: Any):
             store.store_reflection(session_id, insight, category="automatic")
             # Mirror to LanceDB for semantic search (P5/M6)
             try:
-                model_name = resolve_local_model("embedding")
+                from src.utils.service_locator import get_matryoshka
+
+                matryoshka = get_matryoshka()
                 try:
-                    resp = await asyncio.wait_for(
-                        get_ollama_client().embeddings(model=model_name, prompt=insight),
-                        timeout=10.0,
-                    )
-                    vec = np.array(resp.embedding)[:256]
+                    vec = await matryoshka.embed_document(insight)
                 except Exception as ee:
-                    logger.warning(f"theoria: Embedding generation failed ({ee}), using fallback.")
+                    logger.warning(f"theoria: Matryoshka embedding failed ({ee}), using fallback.")
                     vec = np.zeros(256)
 
                 _get_semantic().add_memories(

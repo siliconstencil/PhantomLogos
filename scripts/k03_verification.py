@@ -8,7 +8,8 @@ import uuid
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 os.environ["PYTHONPATH"] = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-from cognition.sophia.hephaestus import ReasoningState, _get_episodic
+from cognition.sophia.eidos import ReasoningState
+from cognition.sophia.hephaestus import _get_episodic
 from cognition.sophia.sophia import run_draft
 from src.architrave.model_registry import LOCAL_REASONING_MODEL
 from src.utils.ollama_utils import get_ollama_client

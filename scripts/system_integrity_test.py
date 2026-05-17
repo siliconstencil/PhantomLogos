@@ -50,11 +50,11 @@ class SystemStabilityAudit:
                 print(f"Checking Axis {axis_id}: {name}...", end=" ")
                 status = "[OK]"
                 if axis_id == 7:
-                    from src.cognition.mnemosyne.operational_store import OperationalStore
+                    from cognition.mnemosyne.operational_store import OperationalStore
 
                     OperationalStore().get_usage_report()
                 elif axis_id == 8:
-                    from src.cognition.mnemosyne.meta_cognition import MetaCognitionStore
+                    from cognition.mnemosyne.meta_cognition import MetaCognitionStore
 
                     MetaCognitionStore().get_reliability("sophia")
                 elif axis_id == 11:
@@ -62,7 +62,7 @@ class SystemStabilityAudit:
 
                     SympyVerifier().verify_math("1+1=2")
                 elif axis_id == 14:
-                    from src.cognition.mnemosyne.visual_store import VisualStore
+                    from cognition.mnemosyne.visual_store import VisualStore
 
                     VisualStore().get_recent("audit_session")
 

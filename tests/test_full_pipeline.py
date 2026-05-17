@@ -48,7 +48,7 @@ async def test_temperature_profiles():
 async def test_context_pruner():
     pruner = ContextPruner()
     mems = [{"text": "important", "importance": 1.0, "timestamp": time.time()}]
-    pruned = pruner.prune_context(mems, token_limit=10)
+    pruned = await pruner.prune_context(mems, token_limit=10)
     assert len(pruned) == 1
 
 

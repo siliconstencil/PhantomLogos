@@ -104,7 +104,7 @@ async def test_functiongemma():
     try:
         client = get_ollama_client()
         models = await client.list()
-        found = any(m.model.startswith("functiongemma") for m in models.models)
+        found = any(m.model and m.model.startswith("functiongemma") for m in models.models)
         if found:
             print("OK (Loaded in Ollama)")
             return True

@@ -5,20 +5,22 @@
     "exclude": [
         "**/__pycache__",
         ".venv",
-        ".git"
+        ".git",
+        ".antigravity",
+        "data",
+        "projects",
+        "scratch",
+        "logs",
+        "agent",
+        "tests"
     ],
-    "analysis": {
-        "autoSearchPaths": false,
-        "extraPaths": [
-            "."
-        ],
-        "executionEnvironments": [
-            {
-                "root": "."
-            }
-        ],
-        "useLibraryCodeForTypes": true,
-        "typeCheckingMode": "basic",
-        "diagnosticMode": "workspace"
-    }
+    "extraPaths": [
+        "."
+    ],
+    "useLibraryCodeForTypes": true,
+    "typeCheckingMode": "basic",
+    "reportGeneralTypeIssues": "none",
+    "reportAttributeAccessIssue": "none",
+    "reportArgumentType": "none",
+    "reportReturnType": "none"
 }

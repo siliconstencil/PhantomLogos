@@ -25,7 +25,7 @@ Optimizes context injection by executing a hybrid search cascade across all 14 c
     - **Vector Path**: Execute a semantic query using LanceDB + Nomic-Embed-V1.5 (Axis 6).
     - **FTS Path**: Execute a keyword search using BM25/FTS on the target tables.
 2.  **RRF Merge**: Combine results from both paths using Reciprocal Rank Fusion (RRF) to normalize disparate scoring systems.
-3.  **Jina Rerank**: Dispatch the top 20 RRF results to the `jina-reranker-v3-q8_0` (via local runtime) for final semantic validation against the goal.
+3.  **Jina Rerank**: Dispatch the top 20 RRF results to the `jina-reranker-v3` (via local runtime) for final semantic validation against the goal.
 4.  **Temporal Filter**: Filter out results that have been superseded by more recent events (Axis 4).
 5.  **Inject**: Present the final top-tier fragments with [SRC:axis_N] citations.
 

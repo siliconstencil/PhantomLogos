@@ -10,7 +10,6 @@ from src.utils.logging_config import setup_logger
 logger = setup_logger(__name__)
 
 # Matryoshka & Atropos Configuration
-DEFAULT_MATRYOSHKA_DIMS = (768, 512, 256, 128, 64)
 DEFAULT_TOKEN_ENCODING = os.getenv("TOKEN_ENCODING", "cl100k_base")
 
 DEFAULT_TIER_LIMITS = {
@@ -18,47 +17,6 @@ DEFAULT_TIER_LIMITS = {
     "task": int(os.getenv("TOKEN_TIER_TASK", "8000")),
     "global": int(os.getenv("TOKEN_TIER_GLOBAL", "20000")),
 }
-
-
-class MatryoshkaEmbedding:
-    """
-    Matryoshka Representation Learning adapter.
-    Wraps an embedding model and supports slicing to lower dimensions
-    at query time without re-embedding. The embedding model MUST be
-    Matryoshka-trained (e.g. Nomic Embed v2, OpenAI text-embedding-3).
-
-    Reference: Kusupati et al. "Matryoshka Representation Learning" (NeurIPS 2022)
-    """
-
-    def __init__(
-        self,
-        embed_fn,
-        full_dim: int = 768,
-        matryoshka_dims: Sequence[int] = DEFAULT_MATRYOSHKA_DIMS,
-    ):
-        self._embed_fn = embed_fn
-        self.full_dim = full_dim
-        self.matryoshka_dims = sorted(matryoshka_dims, reverse=True)
-
-    def embed(self, texts: list[str], target_dim: int | None = None) -> np.ndarray:
-        dim = target_dim or self.full_dim
-        if dim not in self.matryoshka_dims:
-            raise ValueError(f"Target dim {dim} not in supported dims: {self.matryoshka_dims}")
-        vectors = self._embed_fn(texts)
-        if not isinstance(vectors, np.ndarray):
-            vectors = np.array(vectors, dtype=np.float32)
-        if vectors.ndim == 1:
-            vectors = vectors.reshape(1, -1)
-        sliced = vectors[:, :dim].copy()
-        norms = np.linalg.norm(sliced, axis=1, keepdims=True)
-        norms[norms == 0] = 1.0
-        return sliced / norms
-
-    def embed_query(self, text: str, target_dim: int = 256) -> np.ndarray:
-        return self.embed([text], target_dim=target_dim)[0]
-
-    def embed_documents(self, texts: list[str], target_dim: int = 256) -> np.ndarray:
-        return self.embed(texts, target_dim=target_dim)
 
 
 class ContextPruner:
@@ -77,6 +35,15 @@ class ContextPruner:
             6: float(os.getenv("CONTEXT_PRIORITY_AXIS_6", "0.7")),
             12: float(os.getenv("CONTEXT_PRIORITY_AXIS_12", "0.9")),
         }
+
+        # Phase 1.0.29: Semantic Awareness (Axis 4)
+        try:
+            from src.utils.service_locator import get_matryoshka
+            self.matryoshka = get_matryoshka()
+        except Exception as e:
+            self.matryoshka = None
+            logger.warning(f"ContextPruner: Matryoshka initialization failed ({e})")
+
         try:
             from cognition.mnemosyne.memory_arbitrator import MemoryArbitrator
 
@@ -105,42 +72,58 @@ class ContextPruner:
         """
         return len(self.encoder.encode(text))
 
-    def prune_context(
-        self, memories: list[dict[str, Any]], token_limit: int = 4000, agent_id: str = "system"
+    async def prune_context(
+        self, memories: list[dict[str, Any]], token_limit: int = 4000, agent_id: str = "system", query_text: str = None
     ) -> list[dict[str, Any]]:
         """
-        Prunes memories based on FIR scores and Anchor Protection.
+        Prunes memories based on FIR scores and Semantic Similarity (Axis 4).
         Includes meta-cognitive reliability weighting.
         """
         reliability = 1.0
         if self.meta_store:
             reliability = self.meta_store.get_reliability(agent_id)
 
-        if self.arbitrator:
-            scored_items = []
-            for mem in memories:
-                # Check for Anchor Protection (Axis 5/6/12)
-                axis = mem.get("axis", 0)
-                importance = mem.get("importance", 0.5)
-                is_protected = importance >= self.axis_priority_map.get(axis, 1.1)
+        # Phase 1.0.30: Semantic Ranking via Matryoshka
+        query_vec = None
+        if query_text and self.matryoshka:
+            try:
+                query_vec = await self.matryoshka.embed_query(query_text)
+            except Exception as ee:
+                logger.warning(f"ContextPruner: Semantic embedding failed ({ee})")
 
-                score = self.arbitrator.score(
-                    importance=importance if not is_protected else 1.0,  # Boost protected
+        scored_items = []
+        for mem in memories:
+            # 1. Base FIR Score (Axis 6: Memory Arbitrator)
+            axis = mem.get("axis", 0)
+            importance = mem.get("importance", 0.5)
+            is_protected = importance >= self.axis_priority_map.get(axis, 1.1)
+
+            fir_score = 1.0
+            if self.arbitrator:
+                fir_score = self.arbitrator.score(
+                    importance=importance if not is_protected else 1.0,
                     timestamp=mem.get("timestamp", 0),
                     frequency=mem.get("frequency", 1),
                     reliability=reliability,
                 )
-                scored_items.append((score, mem))
+            
+            # 2. Semantic Similarity Score (Axis 4)
+            semantic_score = 0.5 # Default if no query
+            if query_vec is not None and self.matryoshka and mem.get("text"):
+                try:
+                    # We use embed_document for memories to match prefix
+                    mem_vec = await self.matryoshka.embed_document(mem["text"])
+                    semantic_score = float(np.dot(query_vec, mem_vec))
+                except Exception:
+                    semantic_score = 0.0
 
-            sorted_memories = [
-                item[1] for item in sorted(scored_items, key=lambda x: x[0], reverse=True)
-            ]
-        else:
-            sorted_memories = sorted(
-                memories,
-                key=lambda x: (x.get("importance", 0.5), x.get("timestamp", 0)),
-                reverse=True,
-            )
+            # 3. Combined Ranking (Weighted FIR 40% + Semantic 60%)
+            final_score = (fir_score * 0.4) + (semantic_score * 0.6)
+            scored_items.append((final_score, mem))
+
+        sorted_memories = [
+            item[1] for item in sorted(scored_items, key=lambda x: x[0], reverse=True)
+        ]
 
         pruned = []
         current_tokens = 0
@@ -150,15 +133,15 @@ class ContextPruner:
                 pruned.append(mem)
                 current_tokens += mem_tokens
 
-        # Consolidate budget consumption for the resulting context
+        # Consolidate budget consumption
         if self.budget_guard:
             self.budget_guard.consume(current_tokens)
 
         return pruned
 
-    def prune_by_tier(self, memories: list[dict[str, Any]], tier: str) -> list[dict[str, Any]]:
+    async def prune_by_tier(self, memories: list[dict[str, Any]], tier: str, query_text: str = None) -> list[dict[str, Any]]:
         limit = self.tier_limits.get(tier, 4000)
-        return self.prune_context(memories, token_limit=limit)
+        return await self.prune_context(memories, token_limit=limit, query_text=query_text)
 
     def slice_context_window(self, full_context: str, tier: str) -> str:
         """

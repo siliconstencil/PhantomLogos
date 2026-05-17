@@ -31,7 +31,7 @@ SMT-LIB2:"""
         client = get_ollama_client()
         model = resolve_local_model("critique", "primary")
         resp = await client.generate(model=model, prompt=prompt)
-        return resp.response.strip().replace("```smt2", "").replace("```", "")
+        return (resp.response or "").strip().replace("```smt2", "").replace("```", "")
     except Exception as e:
         logger.warning(f"deigma: Logic extraction failed ({e})")
         return ""
@@ -42,6 +42,8 @@ async def verify_node(state: Any):
     [SRC:axis_6/11] Neuro-Symbolic Verification Hook.
     Implements QWED 2-pass code audit, Qwen Math LLM, and Z3 SAT bridge. [HH:MM AM/PM PT]
     """
+    draft = state.get("draft", "")
+    retry_count = state.get("verification_retry", 0)
 
     def sync_verify(draft, retry_count):
         if not draft or len(draft.strip()) < 10:
@@ -71,11 +73,12 @@ async def verify_node(state: Any):
 
             qwed_expert = QWEDEngine(model=get_qwed_models()["fallback"])
             audit = qwed_expert.audit_code_logic(draft)
+        return audit
 
     # Core checks in sync pool (BA-01 & QWED)
     results = await asyncio.to_thread(sync_verify, draft, retry_count)
 
-    if results.get("audit_fail"):
+    if results and results.get("audit_fail"):
         return {"draft": "", "verification_retry": retry_count + 1, "memory_sync": False}
 
     # Step 3: Math Verification [TIER 1.4 FIX] - Moved to async body [Phase 1.0.24]
@@ -102,12 +105,45 @@ async def verify_node(state: Any):
                 "memory_sync": False,
             }
 
+    # Layer 4: Constraint Guardian - Determinisitic rule verification via GLiNER2
+    try:
+        from src.architrave.entity_extractor import EntityExtractor
+        extractor = EntityExtractor()
+        extract_res = await asyncio.to_thread(extractor.extract_unified, draft)
+        
+        constraints = [e["text"] for e in extract_res.get("entities", []) if e["type"] == "constraint"]
+        if constraints:
+            logger.info(f"deigma: Detected {len(constraints)} constraints in draft. Verifying...")
+            # For each constraint, check if it's violated in the draft (simple keyword search for now)
+            violations = []
+            for c in constraints:
+                # Rule: "NO_EMOJI" or "No emojis"
+                if "emoji" in c.lower() and re.search(r"[\U00010000-\U0010ffff]", draft):
+                    violations.append(f"Emoji constraint violation: {c}")
+                # Rule: "7GB VRAM"
+                if "vram" in c.lower() and "7" in c and re.search(r"\b[8-9]\s*GB\b|\b[1-9][0-9]\s*GB\b", draft):
+                     violations.append(f"VRAM constraint violation: {c}")
+
+            if violations:
+                logger.warning(f"deigma: Constraint Guardian REJECTED draft: {violations}")
+                return {
+                    "partial_correction": {
+                        "error_type": "axis_11_constraint",
+                        "details": f"Deterministic rule violation: {', '.join(violations)}",
+                        "hint": "Ensure your output strictly follows all system constraints and NO_EMOJI rules.",
+                    },
+                    "verification_retry": retry_count + 1,
+                    "memory_sync": False,
+                }
+    except Exception as e_guard:
+        logger.warning(f"deigma: Constraint Guardian failed ({e_guard})")
+
     # Step 4: Z3 SAT Bridge (Async due to LLM extraction) [TIER 1.2 FIX]
     smt_problem = await extract_logic_llm(draft)
     if smt_problem:
         from src.lachesis.verifiers.z3_engine import verify_logic as z3_verify
 
-        z3_res = z3_verify(smt_problem)
+        z3_res = await z3_verify(smt_problem)
         if not z3_res.get("is_valid", False):
             logger.warning(f"deigma: Z3 Logic UNSAT/Unknown: {z3_res.get('result', 'Error')}")
             return {

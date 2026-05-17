@@ -45,37 +45,44 @@ class LLMMathEngine:
         except Exception as e:
             logger.warning(f"LLMMathEngine: Lazy model check failed ({e})")
 
-    async def verify_math_llm(self, problem: str, light: bool = False) -> dict[str, Any]:
+    async def verify_math_llm(self, problem: str, tier: str = "light") -> dict[str, Any]:
         await self._check_models_lazy()
         from src.architrave.model_registry import resolve_local_model
 
-        if light:
-            light_model = resolve_local_model("math", "light")
-            return await self._call_math_ollama(problem, light_model)
+        role_map = {
+            "expert": "high",
+            "primary": "primary",
+            "medium": "medium",
+            "light": "light",
+            "ultra_light": "ultra_light"
+        }
+        
+        role = role_map.get(tier, "light")
+        model = resolve_local_model("math", role)
+        
+        # Determine weights and necessity of flushing
+        is_heavy = tier in ("expert", "primary", "high")
+        logic_score = 0.95 if is_heavy else (0.70 if tier == "ultra_light" else 0.85)
 
-        if self.deepseek_available:
-            res = await self._call_deepseek_math(problem)
-            if res.get("is_valid"):
-                return res
-
-        if self.qwen_math_available:
+        if is_heavy:
             # Morpheus flush in async context [Phase 1.0.24]
             try:
                 from src.clotho.bootstrap import get_loader
-
                 loader = get_loader()
                 if loader:
                     await asyncio.to_thread(loader.flush)
             except Exception:
                 pass
+            
+            if self.deepseek_available and tier == "expert":
+                res = await self._call_deepseek_math(problem)
+                if res.get("is_valid"):
+                    res["logic_score"] = 0.98
+                    return res
 
-            qw_math = resolve_local_model("math", "primary")
-            res = await self._call_math_ollama(problem, qw_math)
-            if res.get("is_valid"):
-                return res
-
-        fallback_model = resolve_local_model("math", "light")
-        return await self._call_math_ollama(problem, fallback_model)
+        res = await self._call_math_ollama(problem, model)
+        res["logic_score"] = logic_score
+        return res
 
     async def _call_math_ollama(self, problem: str, model: str) -> dict[str, Any]:
         try:

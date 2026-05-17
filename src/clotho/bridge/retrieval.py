@@ -54,9 +54,14 @@ async def _semantic(bridge, input_data):
             logger.warning("retrieval: Semantic search aborted due to unhealthy embedding model.")
             return {"status": "degraded", "message": "Embedding model unavailable"}
 
-        model_name = bridge._resolve_model("embedding")
-        resp = await get_ollama_client().embeddings(model=model_name, prompt=query)
-        vec = np.array(resp["embedding"])
+        try:
+            from src.utils.service_locator import get_matryoshka
+            matryoshka = get_matryoshka()
+            vec = await matryoshka.embed_query(query)
+        except Exception as e:
+            logger.warning(f"retrieval: Matryoshka embedding failed ({e}). Falling back to Keyword search if supported.")
+            vec = None
+
         store = SemanticStore()
         candidates = store.search(
             vec, session_id=bridge.session_id, limit=100, mode="hybrid", query_text=query
@@ -131,34 +136,17 @@ async def _prune(bridge, input_data):
 def _rerank_results(query: str, candidates: list[dict]) -> dict[str, Any]:
     if not candidates:
         return {"results": [], "integrity_warning": None}
-    try:
-        from src.muscle.reranker import JinaReranker
 
-        reranker = JinaReranker()
-        texts = [doc.get("text", "") for doc in candidates]
-        results = reranker.rerank(query, texts, top_n=len(candidates))
-        reranked_docs = []
-        for res in results.get("results", []):
-            idx = res["index"]
-            if idx < len(candidates):
-                doc = candidates[idx].copy()
-                doc["rerank_score"] = res["score"]
-                reranked_docs.append(doc)
-        return {"results": reranked_docs, "integrity_warning": results.get("integrity_warning")}
-    except Exception as e:
-        logger.warning(f"ToolBridge: Jina Reranking failed ({e}), using heuristic fallback")
-        query_words = set(re.findall(r"\w+", query.lower()))
-        if not query_words:
-            return {"results": candidates, "integrity_warning": str(e)}
-        scored_results = []
-        for doc in candidates:
-            text = doc.get("text", "").lower()
-            doc_words = set(re.findall(r"\w+", text))
-            overlap = len(query_words.intersection(doc_words))
-            score = overlap / len(query_words)
-            scored_results.append((score, doc))
-        scored_results.sort(key=lambda x: x[0], reverse=True)
-        return {
-            "results": [item[1] for item in scored_results],
-            "integrity_warning": f"Heuristic fallback active: {e!s}",
-        }
+    from src.muscle.reranker import JinaReranker
+
+    reranker = JinaReranker()
+    texts = [doc.get("text", "") for doc in candidates]
+    results = reranker.rerank(query, texts, top_n=len(candidates))
+    reranked_docs = []
+    for res in results.get("results", []):
+        idx = res["index"]
+        if idx < len(candidates):
+            doc = candidates[idx].copy()
+            doc["rerank_score"] = res["score"]
+            reranked_docs.append(doc)
+    return {"results": reranked_docs, "integrity_warning": results.get("integrity_warning")}

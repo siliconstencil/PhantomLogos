@@ -41,28 +41,24 @@ async def anchor_inject_node(state: Any):
                 matched = await asyncio.to_thread(loader.match_for_agent, agent_id)
 
                 # AXIS 2/5: Jina Reranking for Skills
-                try:
-                    from src.muscle.reranker import JinaReranker
+                from src.muscle.reranker import JinaReranker
 
-                    reranker = JinaReranker()
-                    skill_texts = []
-                    for m in matched:
-                        ctx_test = await asyncio.to_thread(loader.get_context, m)
-                        skill_texts.append(ctx_test or m)
+                reranker = JinaReranker()
+                skill_texts = []
+                for m in matched:
+                    ctx_test = await asyncio.to_thread(loader.get_context, m)
+                    skill_texts.append(ctx_test or m)
 
-                    reranked = await asyncio.to_thread(
-                        reranker.rerank, state["task"], skill_texts, top_n=3
-                    )
-                    top_skills = []
-                    if reranked and "results" in reranked:
-                        for res in reranked["results"]:
-                            idx = res["index"]
-                            top_skills.append(matched[idx])
-                    else:
-                        top_skills = matched[:3]
-                except Exception as e:
-                    logger.warning(f"ergon: skill reranking failed ({e})")
-                    top_skills = matched[:3]
+                reranked = await asyncio.to_thread(
+                    reranker.rerank, state["task"], skill_texts, top_n=3
+                )
+                top_skills = []
+                if reranked and "results" in reranked:
+                    for res in reranked["results"]:
+                        idx = res["index"]
+                        top_skills.append(matched[idx])
+                else:
+                    raise RuntimeError("ergon: Jina reranking returned no results for skills.")
 
                 for sk_name in top_skills:
                     ctx = await asyncio.to_thread(loader.get_context, sk_name)

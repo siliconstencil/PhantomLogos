@@ -14,28 +14,7 @@ from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
-SpatialBase = declarative_base()
-
-
-class ModuleNode(SpatialBase):
-    __tablename__ = "spatial_modules"
-    id = Column(Integer, primary_key=True)
-    module_name = Column(String(255), nullable=False, unique=True)
-    file_path = Column(String(512))
-    line_count = Column(Integer, default=0)
-    num_functions = Column(Integer, default=0)
-    content_hash = Column(String(64))
-    last_indexed = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-
-
-class DependencyEdge(SpatialBase):
-    __tablename__ = "spatial_edges"
-    id = Column(Integer, primary_key=True)
-    source_module = Column(String(255), nullable=False, index=True)
-    target_module = Column(String(255), nullable=False, index=True)
-    relationship = Column(String(50), default="imports")
-    depth = Column(Integer, default=1)
-
+from .models import SpatialBase, ModuleNode, DependencyEdge
 
 class SpatialStore:
     AXIS_ID = 5

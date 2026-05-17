@@ -26,7 +26,7 @@ async def benchmark_mimo(image_path: str):
     print("=== MiMo-VL Vision Benchmark (Axis 14) ===")
     print(f"Image: {image_path}")
 
-    model_name = "mimo-vl:repaired"
+    model_name = "mimo-7b-vl-ud:repaired"
     client = get_ollama_client()
 
     # 1. Warm-up / Load check

@@ -11,6 +11,7 @@ This directory contains the machine-readable governance, technical inventory, an
 ### Documentation Structure
 - **[tools.md](tools.md):** Comprehensive model inventory and VRAM matrix (performance authority).
 - **[topography.md](topography.md):** System architecture, data flow, and agent hierarchy.
+- **[topography_standards.md](topography_standards.md):** 2026 Q2 Agentic OS codebase topography standards and alignment.
 - **[AGENTS.md](../AGENTS.md):** Operational protocols for Sophia, Clotho, and Lachesis.
 - **[rules.json](rules.json):** Machine-readable governance and enforcement rules.
 - **[CONSTITUTION.md](CONSTITUTION.md):** Core system laws (BA-01, Emoji Ban).

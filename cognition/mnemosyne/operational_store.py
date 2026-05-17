@@ -5,21 +5,12 @@ from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
 
-from .base import Base
+from .models import MnemosyneBase, OperationalLog
 
 logger = setup_logger(__name__)
 
 
-class OperationalLog(Base):
-    __tablename__ = "operational_logs_v2"
-    id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=lambda: datetime.now(UTC))
-    session_id = Column(String(100), default="default")
-    agent_id = Column(String(50), default="system")
-    tool_name = Column(String(50))
-    name = Column(String(100))
-    level = Column(String(20))
-    message = Column(Text)
+from .models import OperationalLog
 
 
 class OperationalStore:
@@ -37,7 +28,7 @@ class OperationalStore:
         self.engine = create_engine(
             db_url, connect_args={"check_same_thread": False, "timeout": 30}
         )
-        Base.metadata.create_all(self.engine)
+        MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def record_event(

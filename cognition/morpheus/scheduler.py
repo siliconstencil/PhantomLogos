@@ -114,10 +114,10 @@ class MorpheusScheduler:
 
             # Use bootstrap to get singletons safely
             try:
-                from src.clotho.bootstrap import get_loader, get_sweeper
+                from src.utils.service_locator import get_bootstrap_loader, get_bootstrap_sweeper
 
-                sweeper = get_sweeper()
-                loader = get_loader()
+                sweeper = get_bootstrap_sweeper()
+                loader = get_bootstrap_loader()
                 # Sprint C: Soru 1 Approved - Trigger autonomous re-sharding
                 sweeper.check_and_sweep(loader)
             except Exception as e:

@@ -68,6 +68,12 @@ class PollingGuardian:
             f.write(f"[{ts}] VIOLATION: {rel_path} | {reason} | Rollback executed.\n")
 
         try:
+            from src.utils.logging_config import log_system_event
+
+            log_system_event(
+                "ERROR", f"SOVEREIGN VIOLATION: {rel_path} | {reason} | ROLLBACK executed."
+            )
+
             from cognition.mnemosyne.episodic_store import EpisodicStore
             from cognition.mnemosyne.temporal_store import TemporalStore
 

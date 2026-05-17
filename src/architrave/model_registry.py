@@ -36,7 +36,7 @@ def get_embedding_model(variant: str = "primary") -> str:
 
 def get_qwed_models() -> dict:
     """Returns the primary and fallback models for QWED verification. [HH:MM AM/PM PT]"""
-    return {"primary": "qwen3-5-2b-ud-q6_k_xl:latest", "fallback": "qwen3-5-4b-ud-q4_k_xl:latest"}
+    return {"primary": "qwen3.5-2b-ud:latest", "fallback": "qwen3.5-4b-ud:latest"}
 
 
 def get_vision_routing(variant: str = "primary") -> dict:
@@ -51,9 +51,9 @@ def get_vram_requirement(model_name: str) -> float:
 def find_fitting_model(role: str, available_vram_gb: float) -> str:
     # Consult SelfTuner for Axis 8 performance-based selection
     try:
-        from ..lachesis.self_tuner import SelfTuner
+        from src.utils.service_locator import get_self_tuner
 
-        tuner = SelfTuner()
+        tuner = get_self_tuner()
         best_model = tuner.get_best_model_for_role(role)
         if best_model and get_vram_requirement(best_model) <= available_vram_gb:
             return best_model

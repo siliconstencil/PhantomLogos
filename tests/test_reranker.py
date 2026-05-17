@@ -28,4 +28,4 @@ def test_reranker_fallback_normalization():
 def test_registry_alignment():
     from src.architrave.model_registry import ROLE_TO_MODEL
 
-    assert ROLE_TO_MODEL["reranker"]["primary"] == "jina-reranker-v3-q8_0:latest"
+    assert ROLE_TO_MODEL["reranker"]["primary"] == "jina-reranker-v3:latest"

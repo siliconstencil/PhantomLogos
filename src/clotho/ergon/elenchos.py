@@ -75,11 +75,10 @@ async def critique_node(state: Any):
             from cognition.mnemosyne.meta_cognition import MetaCognitionStore
 
             meta = MetaCognitionStore()
-            # API Fix: L0 mandates adjust_reliability
-            delta = (overall_score - 0.7) * 0.1
+            # EWMA Model Transition: Pass overall_score directly as current_score
             meta.adjust_reliability(
                 agent_id=agent_id,
-                delta=delta,
+                delta=overall_score,
                 violation_type="low_critique_score" if overall_score < 0.5 else "",
                 session_id=session_id,
             )
@@ -96,6 +95,13 @@ async def critique_node(state: Any):
         final_critique["is_pass"] = final_critique.get(
             "is_valid", final_critique.get("is_pass", False)
         )
+
+        # [Step 3] Centralized Knowledge Extraction (Axis 8)
+        try:
+            from src.architrave.entity_extractor import EntityExtractor
+            await asyncio.to_thread(EntityExtractor.harvest_knowledge, draft, session_id)
+        except Exception as e_ext:
+            logger.warning(f"ergon: Knowledge extraction failed in critique_node ({e_ext})")
 
         return {"critique": final_critique, "memory_sync": True}
 

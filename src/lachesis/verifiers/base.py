@@ -41,35 +41,30 @@ class SympyVerifier:
 
         return validate_algebraic_solution(problem, proposed_solution)
 
-    def verify_math_expression(self, problem: str) -> str:
-        """Complexity detection for routing."""
+    def verify_math_expression(self, problem: str) -> dict[str, Any]:
+        """Complexity detection for routing (Axis 11). [HH:MM AM/PM PT]"""
         math_keywords = [
-            "solve",
-            "calculate",
-            "find",
-            "determine",
-            "what",
-            "how",
-            "evaluate",
-            "hesapla",
-            "nedir",
+            "solve", "calculate", "find", "determine", "evaluate", "hesapla", "nedir"
         ]
         has_keywords = any(kw in problem.lower() for kw in math_keywords)
-        if (
-            not has_keywords
-            and re.search(r"^[0-9xyzXYZ\s\+\-\*\/\=\(\)\.]+$", problem)
-            and len(problem) < 50
-        ):
-            return "simple"
-        if len(problem) < 400 and not any(
-            kw in problem.lower()
-            for kw in ["explain", "describe", "proof", "step-by-step", "adim adim"]
-        ):
-            return "medium"
-        return "complex"
+        is_pure_math = bool(re.search(r"^[0-9xyzXYZ\s\+\-\*\/\=\(\)\.\^]+$", problem))
+        length = len(problem)
 
-    async def verify_math_llm(self, problem: str, light: bool = False) -> dict[str, Any]:
-        return await self.llm_engine.verify_math_llm(problem, light)
+        if is_pure_math and length < 30:
+            return {"category": "deterministic", "score": 0.1}
+        
+        if length < 100 and not any(kw in problem.lower() for kw in ["explain", "proof", "step-by-step"]):
+            if is_pure_math:
+                return {"category": "ultra_light", "score": 0.3}
+            return {"category": "light", "score": 0.5}
+        
+        if length > 500 or any(kw in problem.lower() for kw in ["proof", "theorem", "lemma", "derivative", "integral"]):
+            return {"category": "expert", "score": 0.9}
+            
+        return {"category": "medium", "score": 0.7}
+
+    async def verify_math_llm(self, problem: str, tier: str = "light") -> dict[str, Any]:
+        return await self.llm_engine.verify_math_llm(problem, tier)
 
     def audit_code_logic(self, code: str) -> dict[str, Any]:
         return self.qwed_engine.audit_code_logic(code)
