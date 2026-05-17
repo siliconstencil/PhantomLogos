@@ -50,6 +50,9 @@ Changelog = "https://github.com/siliconstencil/phantom-logos/blob/main/CHANGELOG
 asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "smoke: Smoke tests for verifying basic build status",
+]
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::FutureWarning",
