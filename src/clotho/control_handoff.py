@@ -66,6 +66,13 @@ def _register_signals() -> None:
     except (ValueError, AttributeError) as e:
         logger.warning(f"clotho_handoff: SIGBREAK registration failed ({e})")
 
+    try:
+        # SIGTERM — portable, works on both Windows (Python 3.12+) and Unix
+        signal.signal(signal.SIGTERM, _signal_handler)
+        logger.debug("clotho_handoff: SIGTERM handler registered.")
+    except (ValueError, AttributeError) as e:
+        logger.warning(f"clotho_handoff: SIGTERM registration failed ({e})")
+
     # Hook into the event loop exception handler
     try:
         loop = asyncio.get_running_loop()

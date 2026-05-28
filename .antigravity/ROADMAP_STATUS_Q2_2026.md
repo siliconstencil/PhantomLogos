@@ -55,7 +55,7 @@ KADEME K1 (Critical Stability) - 5 madde
 | Madde  | Baslik                             | Durum              |
 |--------|------------------------------------|--------------------|
 | K1.1   | Gateway Circuit Breaker Iyilestirmesi | KISMEN (Faz 1.1.25 gateway refactoring yapildi; kratos.py circuit breaker yeniden yapilandirildi; random.uniform jitter codebase'de YOK, dogrulanmadi) |
-| K1.2   | Resilient Shutdown & Recovery      | ACIK [KRITIK] (SIGTERM handler codebase'de yok; sadece SIGINT+SIGBREAK var; checkpoint flush, session recovery yapilmamis) |
+| K1.2   | Resilient Shutdown & Recovery      | YAPILDI (Faz 1.1.32: signal.signal(SIGTERM) eklendi; SIGINT+SIGBREAK+SIGTERM; WAL+checkpoint flush onceki fazlarda mevcuttu) [SRC:axis_1] |
 | K1.3   | WAL Checkpoint Optimizasyonu       | YAPILDI (episodic_store.py:37-67 periyodik WAL TRUNCATE checkpoint; temporal/trajectory/hypergraph_store'da da WAL aktif) |
 | K1.4   | Embedding Zero-Vector Fix + Health | KISMEN (SLM entegrasyonu Nomic+Jina stack'ini degistirdi; zero-vector path kontrol edilmeli) |
 | K1.5   | .env Token Tier Variables          | ACIK (token tier'lari hala hardcoded olmasi kuvvetle muhtemel) |
@@ -94,12 +94,12 @@ KADEME K2 (Code Health) - 16 madde
 | K2.8   | ReflectionStore raw sqlite3 -> SQLAlchemy | ACIK (tutarsiz pattern devam ediyor) |
 | K2.9   | Duplicate Import Cleanup           | YAPILDI (Faz 1.1.26, cogu temizlendi) |
 | K2.10  | BLACKLISTED_MODELS Leak Fix        | YAPILDI (Faz 1.1.26, instance variable'a tasindi) |
-| K2.11  | Observability Quality (Axis 4)     | ACIK (temporal metrics var ama dashboard/alerting yok) |
+| K2.11  | Observability Quality (Axis 4)     | YAPILDI (Faz 1.1.32: TemporalStore.query_last_24h() + query_weekly_summary(); gnosis inline SQL refactor; dashboard/alerting sonraki fazlara kaldi) [SRC:axis_4] |
 | K2.12  | Test Infrastructure Expansion      | KISMEN (conftest.py eklendi, smoke marker eklendi commit 99ce61e; coverage %10 civarinda) |
 | K2.13  | Documentation Gap                  | KISMEN (SYSTEM_REPORT.md olusturuldu; docs/unused_modules.md yok) |
-| K2.14  | Periodic DB Backup                 | ACIK (Mnemosyne yedekleme yok; en kritik eksiklerden biri) |
-| K2.15  | Memory Leak Monitoring             | ACIK (tracemalloc entegrasyonu yok) |
-| K2.16  | Disk Space Monitoring              | ACIK (shutil.disk_usage() kontrolu yok) |
+| K2.14  | Periodic DB Backup                 | YAPILDI (Faz 1.1.32: sweeper._backup_databases ile 3 SQLite VACUUM INTO + LanceDB tar.gz + 5-gen rotation) [SRC:axis_7] |
+| K2.15  | Memory Leak Monitoring             | YAPILDI (Faz 1.1.32: monitor.py MemoryLeakMonitor tracemalloc nframe=25, 300s interval, sweeper entegrasyonu) [SRC:axis_7] |
+| K2.16  | Disk Space Monitoring              | YAPILDI (Faz 1.1.32: sweeper._check_disk_space shutil.disk_usage <500MB sys.exit(1)) [SRC:axis_7] |
 
 K2 Ozeti: 6 YAPILDI, 1 KISMEN, 1 GEREKSIZ, 8 ACIK
 

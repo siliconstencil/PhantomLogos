@@ -1,5 +1,25 @@
 # Phantom Logos: Walkthrough — Sovereign Skill Architecture
 
+## Phase 1.1.32: K1/K2 Roadmap Cleanup [11:44 AM - 11:50 AM PT]
+
+**Status**: COMPLETED (2026-05-28)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | K1.2 SIGTERM Handler ekleme | `control_handoff.py` | `signal.signal(SIGTERM, handler)` try/except ile Windows uyumlu. 3 sinyal de (SIGINT+SIGBREAK+SIGTERM) ayni handler'a yonlendirildi. [SRC:axis_1] |
+| 2 | K2.14 DB Backup (VACUUM INTO) | `sweeper.py` | `_backup_databases()`: 3 SQLite DB icin VACUUM INTO + LanceDB tar.gz + 5-gen rotation. `prune_databases()` icinde tetiklenir. [SRC:axis_7] |
+| 3 | K2.15 Memory Leak Monitoring | `monitor.py`, `sweeper.py` | `MemoryLeakMonitor(tracemalloc, nframe=25, 300s)`. `_check_memory_leaks()` ile >1MB buyume uyarisi. [SRC:axis_7] |
+| 4 | K2.16 Disk Space Monitoring | `sweeper.py` | `_check_disk_space()`: shutil.disk_usage, MIN_DISK_FREE_MB=500 env var, altinda sys.exit(1). [SRC:axis_7] |
+| 5 | K2.11 TemporalStore Helper Metotlari | `temporal_store.py`, `axis_4_temporal.py` | `query_last_24h()` + `query_weekly_summary()` metotlari. `axis_4_temporal.py` inline SQL yerine bu metotlari cagiriyor. [SRC:axis_4] |
+| 6 | Status Dokumantasyon Guncellemesi | `ROADMAP_STATUS_Q2_2026.md` | K1.2/K2.11/K2.14/K2.15/K2.16 ACIK->YAPILDI. |
+
+### Test Sonuclari (PASSED)
+
+- Core unit tests: 17/17 PASSED
+- Import verification: control_handoff, monitor (tracemalloc calisiyor), sweeper, temporal_store, axis_4_temporal — ALL OK
+
+---
+
 ## Phase 1.1.31: Morpheus Kod Temizliği & Filesystem MCP Entegrasyonu [11:15 AM - 11:30 AM PT]
 
 **Status**: COMPLETED (2026-05-28)

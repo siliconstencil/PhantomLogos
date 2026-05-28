@@ -133,6 +133,58 @@ def get_fragmentation_estimate() -> float:
     return max(0.0, 1.0 - ratio) if info.get("utilization_pct", 0) < 50 else 0.3
 
 
+class MemoryLeakMonitor:
+    def __init__(self, top_n: int = 10, interval_s: int = 300):
+        self._top_n = top_n
+        self._interval_s = interval_s
+        self._snapshot = None
+        self._enabled = False
+
+    def start(self):
+        try:
+            import tracemalloc
+
+            tracemalloc.start(25)
+            self._snapshot = tracemalloc.take_snapshot()
+            self._enabled = True
+            logger.info("MemoryLeakMonitor: tracemalloc started (nframe=25).")
+        except Exception as e:
+            logger.warning(f"MemoryLeakMonitor: tracemalloc not available ({e})")
+            self._enabled = False
+
+    def check(self) -> list[dict]:
+        if not self._enabled:
+            return []
+        try:
+            import tracemalloc
+
+            new_snap = tracemalloc.take_snapshot()
+            if self._snapshot is None:
+                self._snapshot = new_snap
+                return []
+            stats = new_snap.compare_to(self._snapshot, "lineno")
+            top = stats[: self._top_n]
+            result = []
+            for stat in top:
+                frame = stat.traceback[0]
+                result.append(
+                    {
+                        "file": frame.filename,
+                        "line": frame.lineno,
+                        "size_diff_b": stat.size_diff,
+                        "count_diff": stat.count_diff,
+                    }
+                )
+            self._snapshot = new_snap
+            return result
+        except Exception as e:
+            logger.debug(f"MemoryLeakMonitor: check failed ({e})")
+            return []
+
+    def should_warn(self, leaks: list[dict], threshold_b: int = 1_048_576) -> bool:
+        return any(l["size_diff_b"] > threshold_b for l in leaks)
+
+
 if __name__ == "__main__":
     import json
 

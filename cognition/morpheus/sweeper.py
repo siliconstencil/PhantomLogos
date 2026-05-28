@@ -345,6 +345,101 @@ class VRAMSweeper:
             except Exception:
                 pass
 
+    _BACKUP_DIR = "data/backups"
+    _BACKUP_MAX_GEN = 5
+
+    def _backup_sqlite(self, db_rel: str, ts: str) -> str | None:
+        import sqlite3
+        from src.utils.project_path import to_absolute_path
+
+        src = to_absolute_path(db_rel)
+        if not os.path.exists(src):
+            return None
+        name = os.path.splitext(os.path.basename(db_rel))[0]
+        dst = to_absolute_path(f"{self._BACKUP_DIR}/{name}_{ts}.db")
+        try:
+            conn = sqlite3.connect(str(src))
+            conn.execute(f"VACUUM INTO ?", (str(dst),))
+            conn.close()
+            logger.info(f"DBBackup: {db_rel} -> {dst}")
+            return str(dst)
+        except Exception as e:
+            logger.warning(f"DBBackup: VACUUM INTO failed for {db_rel} ({e})")
+            return None
+
+    def _backup_lancedb(self, ts: str) -> str | None:
+        import shutil
+        from src.utils.project_path import to_absolute_path
+
+        src = to_absolute_path("data/lancedb")
+        if not os.path.isdir(str(src)):
+            return None
+        dst = to_absolute_path(f"{self._BACKUP_DIR}/lancedb_{ts}")
+        try:
+            path = shutil.make_archive(str(dst), "gztar", str(src))
+            logger.info(f"DBBackup: lancedb/ -> {path}")
+            return path
+        except Exception as e:
+            logger.warning(f"DBBackup: LanceDB tar.gz failed ({e})")
+            return None
+
+    def _rotate_backups(self, prefix: str):
+        import glob
+        from src.utils.project_path import to_absolute_path
+
+        pattern = str(to_absolute_path(f"{self._BACKUP_DIR}/{prefix}_*"))
+        files = sorted(glob.glob(pattern))
+        while len(files) > self._BACKUP_MAX_GEN:
+            old = files.pop(0)
+            try:
+                os.remove(old)
+                logger.info(f"DBBackup: Rotated out {old}")
+            except Exception as e:
+                logger.warning(f"DBBackup: Rotation remove failed ({e})")
+
+    def _backup_databases(self):
+        ts = _dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+        from src.utils.project_path import to_absolute_path
+
+        os.makedirs(str(to_absolute_path(self._BACKUP_DIR)), exist_ok=True)
+        dbs = ["data/mnemosyne.db", "data/spatial.db", "data/reliability.db"]
+        backed = []
+        for db_rel in dbs:
+            p = self._backup_sqlite(db_rel, ts)
+            if p:
+                backed.append(p)
+        p = self._backup_lancedb(ts)
+        if p:
+            backed.append(p)
+        for b in backed:
+            bname = os.path.basename(b)
+            prefix = bname.rsplit("_", 1)[0]
+            self._rotate_backups(prefix)
+        logger.info(f"DBBackup: {len(backed)} backups created at {ts}")
+
+    def _check_disk_space(self) -> bool:
+        import shutil
+        from src.utils.project_path import to_absolute_path
+
+        root = to_absolute_path(".")
+        try:
+            usage = shutil.disk_usage(str(root))
+            free_mb = usage.free / (1024 * 1024)
+            threshold = int(os.getenv("MIN_DISK_FREE_MB", "500"))
+            if free_mb < threshold:
+                logger.critical(
+                    f"DiskSpace: CRITICAL — only {free_mb:.0f}MB free "
+                    f"(threshold {threshold}MB). Emergency halt."
+                )
+                import sys
+
+                sys.exit(1)
+            logger.debug(f"DiskSpace: {free_mb:.0f}MB free (threshold {threshold}MB)")
+            return True
+        except Exception as e:
+            logger.warning(f"DiskSpace: check failed ({e})")
+            return False
+
     def _prune_lancedb(self, gov: dict, stats: dict) -> None:
         try:
             from ..mnemosyne.semantic_store import FailureMemoryStore, SemanticStore
@@ -403,6 +498,22 @@ class VRAMSweeper:
         """,
             (now, cutoff),
         )
+
+    _MEMORY_MONITOR = None
+
+    def _check_memory_leaks(self):
+        if VRAMSweeper._MEMORY_MONITOR is None:
+            from .monitor import MemoryLeakMonitor
+
+            VRAMSweeper._MEMORY_MONITOR = MemoryLeakMonitor()
+            VRAMSweeper._MEMORY_MONITOR.start()
+        leaks = VRAMSweeper._MEMORY_MONITOR.check()
+        if VRAMSweeper._MEMORY_MONITOR.should_warn(leaks):
+            logger.warning(
+                f"MemoryLeakMonitor: {len(leaks)} growing allocations detected. "
+                f"Top: {leaks[0]['file']}:{leaks[0]['line']} "
+                f"(+{leaks[0]['size_diff_b'] / 1024:.1f}KB)"
+            )
 
     def _retention_sweep(self) -> int:
         """[SRC:axis_4] Tiered retention: Aggregate old raw data into summaries before deletion."""
@@ -467,6 +578,9 @@ class VRAMSweeper:
             except Exception as ce:
                 logger.warning(f"VRAMSweeper: Context cache purge skipped ({ce})")
 
+            self._check_disk_space()
+            self._check_memory_leaks()
+            self._backup_databases()
             self._prune_sqlite(gov, stats)
             self._prune_files(gov, stats)
             self._prune_lancedb(gov, stats)
