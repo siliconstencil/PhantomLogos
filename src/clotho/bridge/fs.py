@@ -143,7 +143,16 @@ async def _write_file(_bridge, input_data: dict[str, Any]) -> str | None:
 
         await asyncio.to_thread(write_sync)
 
-        # 3. Audit (Manual trigger of changelog if needed, but Guardian will pick it up)
+        # 3. Auto-snapshot after write (prevent watchdog rollback)
+        try:
+            from src.lachesis.snapshot_manager import SnapshotManager
+
+            sm = SnapshotManager(str(get_project_root()))
+            await asyncio.to_thread(sm.scan_all)
+            logger.debug(f"Auto-snapshot updated after write to {rel_path}")
+        except Exception as snap_e:
+            logger.warning(f"Auto-snapshot failed after write ({snap_e})")
+
         logger.info(f"ToolBridge: Successfully wrote {rel_path} (atomic)")
         return f"Success: Wrote to {rel_path}"
     except Exception as e:
@@ -194,6 +203,15 @@ async def _replace_content(_bridge, input_data: dict[str, Any]):
             return "Success"
 
         result = await asyncio.to_thread(replace_sync)
+        if result == "Success":
+            try:
+                from src.lachesis.snapshot_manager import SnapshotManager
+
+                sm = SnapshotManager(str(get_project_root()))
+                await asyncio.to_thread(sm.scan_all)
+                logger.debug(f"Auto-snapshot updated after replace in {rel_path}")
+            except Exception as snap_e:
+                logger.warning(f"Auto-snapshot failed after replace ({snap_e})")
         return result
     except Exception as e:
         logger.error(f"ToolBridge: replace_content failed ({e})")
