@@ -11,6 +11,8 @@
 | 3 | ASCII Dışı Karakter (Em-dash) Temizliği | `config.py`, `krisis.py`, `mcp_registry.py` | Tüm em-dash (`—`) karakterleri standart tire (`-`) ile değiştirilerek kod tabanının ASCII-only olması sağlandı. |
 | 4 | Pyright `psutil` Tip Uyarılarının Giderilmesi | `scheduler.py`, `mcp_registry.py` | `import psutil` satırlarına `# type: ignore` eklenerek Pyright/IDE tip uyarıları tamamen giderildi. [SRC:axis_8] |
 | 5 | Filesystem MCP Server Entegrasyonu | `mcp_config.json` | `@modelcontextprotocol/server-filesystem` sunucusu D:\Hank yetkisiyle eklenerek platformun 800 satır dayatması olmaksızın token tasarruflu okuma/yazma sağlandı. [SRC:axis_8] |
+| 6 | Sovereign Kurallarının İngilizceye Çevrilmesi | `rules.json` | Kurallardaki tüm Türkçe açıklamalar (RULE-030 ile RULE-039 arası) tamamen İngilizce ASCII-only standardına çevrildi. [SRC:axis_8] |
+| 7 | view_file Aracının Kural Düzeyinde Yasaklanması | `rules.json`, `AGENTS.md` | `RULE-038` güncellenerek native `view_file` aracı yasaklandı; yerine MCP Filesystem araçlarının kullanımı zorunlu kılındı. |
 
 ### Test & Derleme Sonuçları (SUCCESS)
 

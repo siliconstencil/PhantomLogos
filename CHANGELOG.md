@@ -6,6 +6,8 @@
 
 ### Fixed
 
+- **Sovereign Rules & Guidelines English Standardization**: `D:\Hank\.antigravity\rules.json` içerisindeki tüm Türkçe açıklamalar ve kural detayları (RULE-030 ile RULE-039 arası) tamamen İngilizce ASCII-only standardına çevrildi. [SRC:axis_8]
+- **view_file Kural Düzeyinde Yasaklanması**: `rules.json` (`RULE-038`) ve `AGENTS.md` dosyaları güncellenerek native `view_file` aracı kural düzeyinde tamamen yasaklandı; yerine MCP Filesystem araçlarının (`read_file` / `read_text_file`) kullanımı zorunlu kılındı.
 - **Morpheus Launcher Türkçe Kelime ve Karakter İhlali**: `run_morpheus.bat` dosyasındaki tüm Türkçe kelimeler ve loglama formatları (Yeni oturum basliyo -> New session starting, HATA -> ERROR vb.) tamamen ASCII-only İngilizce olarak temizlendi. [SRC:axis_1]
 - **Kod İçi Türkçe Açıklamalar ve Docstring'ler**: `src/architrave/mcp/mcp_tool_bridge.py` içerisindeki Türkçe docstring ve `cognition/morpheus/scheduler.py` içerisindeki Türkçe yorum satırları İngilizce açıklamalarla değiştirildi. [SRC:axis_1]
 - **ASCII Dışı Karakter Temizliği (Em-dash)**: `src/utils/config.py`, `src/clotho/krisis.py` ve `src/architrave/mcp/mcp_registry.py` içerisindeki tüm em-dash (`—`) karakterleri standart ASCII tire (`-`) ile değiştirildi.
