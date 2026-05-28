@@ -3,8 +3,6 @@ import atexit
 import concurrent.futures
 import contextlib
 import os
-import subprocess
-import sys
 import threading
 import time
 from enum import Enum
@@ -50,51 +48,11 @@ class MCPSession:
         self._lock = threading.Lock()
         self._reconnect_lock = threading.Lock()
 
-        self._patch_create_windows_process()
-
         self._tools_cache: list[Any] = []
         self._tools_cache_time = 0.0
         self._tools_cache_ttl = 300.0
 
         atexit.register(self.shutdown)
-
-    def _patch_create_windows_process(self) -> None:
-        if sys.platform != "win32":
-            return
-        try:
-            from pathlib import Path
-            from typing import TextIO
-
-            from mcp.os.win32 import utilities as win32_utils
-
-            async def _patched(
-                command: str,
-                args: list[str],
-                env: dict[str, str] | None = None,
-                errlog: TextIO | None = None,
-                cwd: Path | str | None = None,
-            ) -> Any:
-                # Force CREATE_NO_WINDOW and FallbackProcess to prevent any visible console windows
-                from mcp.os.win32.utilities import (
-                    _create_job_object,
-                    _create_windows_fallback_process,
-                    _maybe_assign_process_to_job,
-                )
-
-                job = _create_job_object()
-                process = await _create_windows_fallback_process(
-                    command, args, env, errlog or subprocess.DEVNULL, cwd
-                )
-                _maybe_assign_process_to_job(process, job)
-                job_attached = hasattr(process, "_job_object")
-                logger.info(
-                    f"MCPSession: spawned slm pid={process.pid} job_attached={job_attached}"
-                )
-                return process
-
-            win32_utils.create_windows_process = _patched
-        except Exception as e:
-            logger.debug(f"MCPSession: win32 process patch skipped ({e})")
 
     def _ensure_thread_running(self) -> None:
         if not self.enabled:
