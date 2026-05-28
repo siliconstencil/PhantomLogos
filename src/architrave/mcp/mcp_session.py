@@ -86,6 +86,10 @@ class MCPSession:
                     command, args, env, errlog or subprocess.DEVNULL, cwd
                 )
                 _maybe_assign_process_to_job(process, job)
+                job_attached = hasattr(process, "_job_object")
+                logger.info(
+                    f"MCPSession: spawned slm pid={process.pid} job_attached={job_attached}"
+                )
                 return process
 
             win32_utils.create_windows_process = _patched
