@@ -1,3 +1,21 @@
+## Phase 1.1.32 - K1/K2 Roadmap Cleanup (Dogru Uygulama) - 2026-05-28 [11:44 AM PT]
+
+### Added
+
+- **K1.2 Resilient Shutdown — SIGTERM Handler**: `signal.signal(signal.SIGTERM, handler)` added to `control_handoff.py:_register_signals()`. Now handles SIGINT + SIGBREAK + SIGTERM. [SRC:axis_1]
+- **K2.14 Periodic DB Backup**: `sweeper.py`'da 3 yeni metot: `_backup_sqlite()` (VACUUM INTO for mnemosyne.db, spatial.db, reliability.db), `_backup_lancedb()` (shutil.make_archive tar.gz), `_rotate_backups()` (5-gen rotation). `prune_databases()` icinde her 10. sweepte tetiklenir. [SRC:axis_7]
+- **K2.15 Memory Leak Monitoring**: `monitor.py`'da `MemoryLeakMonitor` sinifi (tracemalloc nframe=25, 300s interval, >1MB threshold warning). `sweeper._check_memory_leaks()` ile entegre. [SRC:axis_7]
+- **K2.16 Disk Space Monitoring**: `sweeper._check_disk_space()` metodu (shutil.disk_usage, <500MB threshold, sys.exit(1) emergency halt). `prune_databases()` icinde calisir. [SRC:axis_7]
+- **K2.11 TemporalStore Observability Helpers**: `temporal_store.py`'a `query_last_24h()` ve `query_weekly_summary()` metotlari. `axis_4_temporal.py` inline SQL refactor edilerek bu metotlara yonlendirildi. [SRC:axis_4]
+
+### Changed
+
+- **ROADMAP_STATUS_Q2_2026.md**: K1.2/K2.11/K2.14/K2.15/K2.16 statusleri ACIK -> YAPILDI olarak guncellendi.
+
+### Tests
+
+- Core unit tests: 17/17 PASSED
+
 ## Phase 1.1.31 - Morpheus Kod Temizliği & Filesystem MCP Entegrasyonu - 2026-05-28 [11:15 AM PT]
 
 ### Added

@@ -310,6 +310,44 @@ class TemporalStore:
         finally:
             conn.close()
 
+    def query_last_24h(
+        self, event_type: str | None = None, limit: int = 20
+    ) -> list[dict[str, Any]]:
+        one_day_ago = time.time() - 86400
+        conn = sqlite3.connect(self._db_path, timeout=30)
+        conn.row_factory = sqlite3.Row
+        try:
+            sql = "SELECT * FROM temporal_metrics WHERE timestamp > ?"
+            params: list[Any] = [one_day_ago]
+            if event_type:
+                sql += " AND event_type = ?"
+                params.append(event_type)
+            sql += " ORDER BY timestamp DESC LIMIT ?"
+            params.append(limit)
+            rows = conn.execute(sql, params).fetchall()
+            return [dict(r) for r in rows]
+        except Exception as e:
+            logger.error(f"TemporalStore: query_last_24h failed ({e})")
+            return []
+        finally:
+            conn.close()
+
+    def query_weekly_summary(self, limit: int = 3) -> list[dict[str, Any]]:
+        conn = sqlite3.connect(self._db_path, timeout=30)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                "SELECT event_type, avg_latency, total_count, period "
+                "FROM weekly_summary ORDER BY created_at DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+            return [dict(r) for r in rows]
+        except Exception as e:
+            logger.error(f"TemporalStore: query_weekly_summary failed ({e})")
+            return []
+        finally:
+            conn.close()
+
     def optimize(self) -> None:
         """SQLite VACUUM equivalent. Drops deprecated LanceDB data if present."""
         try:
