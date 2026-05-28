@@ -99,42 +99,64 @@ class MCPRegistry:
         return default_config
 
     def _kill_orphaned_slm(self) -> None:
-        """Kill any orphaned slm.exe processes before spawning a new one.
+        """Kill orphaned slm.exe processes before spawning a new one.
 
-        On Windows, atexit handlers don't fire on force-kill, leaving stdio-attached
-        SLM child processes as orphans. These hold DB locks and cause 30s timeouts.
+        Uses psutil to surgically detect true orphans: an slm.exe whose parent PID
+        is dead, not a python process, or was born after the SLM itself (PID reuse).
+        This preserves healthy SLM children owned by other live IDE windows.
         """
+        import sys
+
+        if sys.platform != "win32":
+            return
         try:
-            import subprocess
+            import psutil
+        except ImportError:
+            logger.debug("MCPRegistry: psutil unavailable, orphan SLM cleanup skipped")
+            return
 
-            result = subprocess.run(  # noqa: S603
-                ["tasklist", "/FI", "IMAGENAME eq slm.exe", "/FO", "CSV", "/NH"],  # noqa: S607
-                capture_output=True,
-                text=True,
-                timeout=5,
-                check=False,
-            )
-            killed = 0
-            for line in result.stdout.strip().splitlines():
-                line = line.strip().strip('"')
-                if not line:
+        killed = 0
+        try:
+            for proc in psutil.process_iter(["pid", "name", "ppid", "create_time"]):
+                try:
+                    if (proc.info["name"] or "").lower() != "slm.exe":
+                        continue
+                    ppid = proc.info["ppid"]
+                    slm_create_time = proc.info["create_time"] or 0.0
+
+                    is_orphan = False
+                    if ppid is None or not psutil.pid_exists(ppid):
+                        is_orphan = True
+                    else:
+                        try:
+                            parent = psutil.Process(ppid)
+                            parent_name = parent.name().lower()
+                            parent_create_time = parent.create_time()
+                            if "python" not in parent_name:
+                                # Parent is not python — reparented or unrelated
+                                is_orphan = True
+                            elif parent_create_time > slm_create_time:
+                                # Parent was born after SLM — Windows PID reuse, not our owner
+                                is_orphan = True
+                        except psutil.NoSuchProcess:
+                            is_orphan = True
+
+                    if is_orphan:
+                        try:
+                            proc.kill()
+                            killed += 1
+                            logger.info(
+                                f"MCPRegistry: Killed orphaned SLM pid={proc.pid} "
+                                f"(parent pid={ppid} is dead or non-python)"
+                            )
+                        except (psutil.NoSuchProcess, psutil.AccessDenied) as _e:
+                            logger.debug(
+                                f"MCPRegistry: Could not kill orphaned SLM pid={proc.pid} ({_e})"
+                            )
+                except (psutil.NoSuchProcess, psutil.ZombieProcess, psutil.AccessDenied):
                     continue
-                parts = line.split('","')
-                if len(parts) >= 2:
-                    try:
-                        pid = int(parts[1])
-                        subprocess.run(  # noqa: S603
-                            ["taskkill", "/F", "/PID", str(pid)],  # noqa: S607
-                            capture_output=True,
-                            timeout=3,
-                            check=False,
-                        )
-                        killed += 1
-                    except Exception as _e:
-                        logger.debug(f"MCPRegistry: taskkill failed for PID {pid} ({_e})")
-            if killed:
-                import time
 
+            if killed:
                 time.sleep(0.5)
                 logger.info(
                     f"MCPRegistry: Cleaned up {killed} orphaned SLM process(es) before init."
