@@ -64,6 +64,19 @@
       "env": {
         "PYTHONPATH": "D:\\Hank"
       }
+    },
+    "filesystem": {
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "D:\\Hank"
+      ],
+      "command": "cmd",
+      "env": {
+        "PYTHONPATH": "D:\\Hank"
+      }
     }
   }
 }
