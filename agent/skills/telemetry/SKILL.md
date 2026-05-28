@@ -4,13 +4,12 @@ description: Collecting and reporting operational metrics for system performance
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Generating post-session performance reports.
-  - Analyzing model latency patterns.
-metadata:
-  audience: developers
-  tier: Morpheus
-  workflow: telemetry
+model_role: light
+allowed_tools:
+- report
+- mcp_slm_remember
+- ls
+tier: 1
 ---
 # Skill: Telemetry (Sovereign Edition)
 

@@ -3,10 +3,12 @@ from typing import Any
 
 from src.utils.logging_config import setup_logger
 
+from .koinonia import record_step
+
 logger = setup_logger(__name__)
 
 
-async def vision_node(state: Any):
+async def vision_node(state: Any) -> dict[str, Any]:
     """Pre-processing node: run vision analysis before draft for image tasks."""
     image_path = state.get("image_path")
     if not image_path:
@@ -32,6 +34,7 @@ async def vision_node(state: Any):
         res = await bridge.execute("vision", {"image_path": image_path, "prompt": prompt})
 
         analysis = res.get("output", "")
+        await asyncio.to_thread(record_step, state, "vision")
         logger.info(f"ergon: Vision analysis completed (mode={prompt.split(':')[0]})")
         return {"vision_analysis": analysis, "memory_sync": True}
     except asyncio.CancelledError:

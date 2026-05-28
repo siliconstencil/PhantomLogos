@@ -9,7 +9,7 @@ _debounce_timer: asyncio.Task | None = None
 _debounce_lock = asyncio.Lock()
 
 
-async def schedule_remap(changed_file: str):
+async def schedule_remap(changed_file: str) -> None:
     """
     Phase 11.18.10: True Debounce Pattern (Duzeltme 4).
     Cancels previous pending remaps to ensure only the final write triggers a scan.
@@ -22,7 +22,7 @@ async def schedule_remap(changed_file: str):
     _debounce_timer = asyncio.create_task(_debounce_remap(changed_file))
 
 
-async def _debounce_remap(changed_file: str):
+async def _debounce_remap(changed_file: str) -> None:
     try:
         # Pillar 3: 1s debounce is sufficient for AST parse
         await asyncio.sleep(1.0)

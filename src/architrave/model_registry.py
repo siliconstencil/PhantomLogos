@@ -34,6 +34,15 @@ def get_embedding_model(variant: str = "primary") -> str:
     return ROLE_TO_MODEL.get("embedding", {}).get(variant, "nomic-embed-text-v2-moe-q8:latest")
 
 
+def resolve_slm_endpoint() -> str:
+    """Returns the SLM endpoint from environment or default (SSOT)."""
+    import os
+
+    return os.getenv(
+        "SLM_ENDPOINT", ROLE_TO_MODEL.get("slm", {}).get("endpoint", "http://localhost:8081")
+    )
+
+
 def get_qwed_models() -> dict:
     """Returns the primary and fallback models for QWED verification. [HH:MM AM/PM PT]"""
     return {"primary": "qwen3.5-2b-ud:latest", "fallback": "qwen3.5-4b-ud:latest"}
@@ -67,7 +76,7 @@ def find_fitting_model(role: str, available_vram_gb: float) -> str:
     sorted_variants = sorted(
         variants.items(), key=lambda kv: get_vram_requirement(kv[1]), reverse=True
     )
-    for variant_name, model in sorted_variants:
+    for _variant_name, model in sorted_variants:
         if model and get_vram_requirement(model) <= available_vram_gb:
             return model
     return variants.get("light", variants.get("primary", LOCAL_REASONING_MODEL))

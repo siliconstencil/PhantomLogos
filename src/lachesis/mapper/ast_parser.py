@@ -7,26 +7,89 @@ from src.utils.logging_config import setup_logger
 logger = setup_logger(__name__)
 
 STDLIB_MODULES = {
-    "os", "sys", "re", "json", "math", "time", "datetime",
-    "typing", "collections", "functools", "pathlib", "hashlib",
-    "subprocess", "threading", "asyncio", "abc", "copy", "enum",
-    "io", "itertools", "logging", "random", "statistics",
-    "string", "textwrap", "uuid", "warnings", "weakref",
-    "inspect", "dataclasses",
+    "os",
+    "sys",
+    "re",
+    "json",
+    "math",
+    "time",
+    "datetime",
+    "typing",
+    "collections",
+    "functools",
+    "pathlib",
+    "hashlib",
+    "subprocess",
+    "threading",
+    "asyncio",
+    "abc",
+    "copy",
+    "enum",
+    "io",
+    "itertools",
+    "logging",
+    "random",
+    "statistics",
+    "string",
+    "textwrap",
+    "uuid",
+    "warnings",
+    "weakref",
+    "inspect",
+    "dataclasses",
 }
 
 KNOWN_ORM_BASES = {
-    "Base", "MnemosyneBase", "SpatialBase", "ReliabilityBase",
-    "DeclarativeBase", "declarative_base",
+    "Base",
+    "MnemosyneBase",
+    "SpatialBase",
+    "ReliabilityBase",
+    "DeclarativeBase",
+    "declarative_base",
 }
 
 LAYER_RULES = {
     "cognition.mnemosyne": {"allow": ["src.utils", "cognition.mnemosyne", "src.architrave"]},
-    "cognition.sophia": {"allow": ["src.utils", "cognition.mnemosyne", "src.architrave", "src.lachesis", "src.clotho", "scripts", "cognition.morpheus"]},
-    "cognition.morpheus": {"allow": ["src.utils", "cognition.mnemosyne", "src.muscle", "src.architrave", "src.clotho"]},
-    "src.clotho": {"allow": ["src.utils", "cognition.sophia", "cognition.mnemosyne", "src.architrave", "src.lachesis", "src.muscle", "src.tools", "src.clotho", "cognition.morpheus"]},
-    "src.lachesis": {"allow": ["src.utils", "cognition.mnemosyne", "src.architrave", "src.lachesis", "src.clotho", "cognition.morpheus"]},
-    "src.architrave": {"allow": ["src.utils", "cognition.mnemosyne", "cognition.sophia", "src.lachesis"]},
+    "cognition.sophia": {
+        "allow": [
+            "src.utils",
+            "cognition.mnemosyne",
+            "src.architrave",
+            "src.lachesis",
+            "src.clotho",
+            "scripts",
+            "cognition.morpheus",
+        ]
+    },
+    "cognition.morpheus": {
+        "allow": ["src.utils", "cognition.mnemosyne", "src.muscle", "src.architrave", "src.clotho"]
+    },
+    "src.clotho": {
+        "allow": [
+            "src.utils",
+            "cognition.sophia",
+            "cognition.mnemosyne",
+            "src.architrave",
+            "src.lachesis",
+            "src.muscle",
+            "src.tools",
+            "src.clotho",
+            "cognition.morpheus",
+        ]
+    },
+    "src.lachesis": {
+        "allow": [
+            "src.utils",
+            "cognition.mnemosyne",
+            "src.architrave",
+            "src.lachesis",
+            "src.clotho",
+            "cognition.morpheus",
+        ]
+    },
+    "src.architrave": {
+        "allow": ["src.utils", "cognition.mnemosyne", "cognition.sophia", "src.lachesis"]
+    },
     "src.muscle": {"allow": ["src.utils", "src.architrave"]},
     "src.utils": {"allow": ["cognition.mnemosyne", "cognition.morpheus", "src.lachesis"]},
     "src.tools": {"allow": ["src.utils"]},
@@ -36,7 +99,6 @@ LAYER_RULES = {
 
 
 class ASTParser:
-
     @staticmethod
     def parse_full(file_path: str) -> dict:
         result = {
@@ -64,8 +126,7 @@ class ASTParser:
             result["functions"] = ASTParser._extract_functions(tree)
             result["imports"] = ASTParser._extract_imports(tree)
             result["orm_models"] = [
-                c for c in result["classes"]
-                if any(b in KNOWN_ORM_BASES for b in c["bases"])
+                c for c in result["classes"] if any(b in KNOWN_ORM_BASES for b in c["bases"])
             ]
         except SyntaxError as e:
             logger.warning(f"ASTParser: syntax error in {file_path}: {e}")
@@ -90,8 +151,9 @@ class ASTParser:
         module_name = ASTParser._file_to_module(file_path) if file_path else ""
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
-                for alias in node.names:
-                    deps.append((alias.name, ASTParser._classify_module(alias.name)))
+                deps.extend(
+                    (alias.name, ASTParser._classify_module(alias.name)) for alias in node.names
+                )
             elif isinstance(node, ast.ImportFrom):
                 resolved = ASTParser._resolve_import(module_name, node)
                 if resolved:
@@ -101,6 +163,7 @@ class ASTParser:
     @staticmethod
     def _file_to_module(file_path: str) -> str:
         from src.utils.project_path import get_project_root
+
         root = str(get_project_root())
         rel = os.path.relpath(file_path, root).replace("\\", "/")
         rel = rel[:-3] if rel.endswith(".py") else rel
@@ -113,14 +176,11 @@ class ASTParser:
         if not module_name:
             return node.module
         parts = module_name.split(".")
-        if parts[-1] == "__init__":
-            pkg_parts = parts[:-1]
-        else:
-            pkg_parts = parts[:-1]
+        pkg_parts = parts[:-1]
         level = node.level
         if level > len(pkg_parts) + 1:
             return node.module
-        base = pkg_parts[:-(level - 1)] if level > 1 else pkg_parts
+        base = pkg_parts[: -(level - 1)] if level > 1 else pkg_parts
         if node.module:
             return ".".join(base + node.module.split("."))
         return ".".join(base)
@@ -136,30 +196,33 @@ class ASTParser:
                         bases.append(base.attr)
                     elif isinstance(base, ast.Name):
                         bases.append(base.id)
-                    elif isinstance(base, ast.Call):
-                        if isinstance(base.func, ast.Name):
-                            bases.append(base.func.id)
-                classes.append({
-                    "name": node.name,
-                    "bases": bases,
-                    "lineno": node.lineno,
-                    "num_methods": sum(
-                        1 for n in ast.walk(node)
-                        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
-                    ),
-                })
+                    elif isinstance(base, ast.Call) and isinstance(base.func, ast.Name):
+                        bases.append(base.func.id)
+                classes.append(
+                    {
+                        "name": node.name,
+                        "bases": bases,
+                        "lineno": node.lineno,
+                        "num_methods": sum(
+                            1
+                            for n in ast.walk(node)
+                            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+                        ),
+                    }
+                )
         return classes
 
     @staticmethod
     def _extract_functions(tree: ast.Module) -> list[dict]:
-        funcs = []
-        for node in ast.iter_child_nodes(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                funcs.append({
-                    "name": node.name,
-                    "lineno": node.lineno,
-                    "is_async": isinstance(node, ast.AsyncFunctionDef),
-                })
+        funcs = [
+            {
+                "name": node.name,
+                "lineno": node.lineno,
+                "is_async": isinstance(node, ast.AsyncFunctionDef),
+            }
+            for node in ast.iter_child_nodes(tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        ]
         return funcs
 
     @staticmethod
@@ -167,19 +230,19 @@ class ASTParser:
         imports = []
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
-                for alias in node.names:
-                    imports.append({
-                        "module": alias.name,
-                        "alias": alias.asname,
-                        "lineno": node.lineno,
-                    })
+                imports.extend(
+                    {"module": alias.name, "alias": alias.asname, "lineno": node.lineno}
+                    for alias in node.names
+                )
             elif isinstance(node, ast.ImportFrom):
-                imports.append({
-                    "module": node.module or "",
-                    "names": [a.name for a in node.names],
-                    "level": node.level,
-                    "lineno": node.lineno,
-                })
+                imports.append(
+                    {
+                        "module": node.module or "",
+                        "names": [a.name for a in node.names],
+                        "level": node.level,
+                        "lineno": node.lineno,
+                    }
+                )
         return imports
 
     @staticmethod
@@ -226,9 +289,19 @@ class ASTParser:
 
     @staticmethod
     def _resolve_layer(module_name: str) -> str:
-        for prefix in ["cognition.mnemosyne", "cognition.sophia", "cognition.morpheus",
-                       "src.clotho", "src.lachesis", "src.architrave", "src.muscle",
-                       "src.utils", "src.tools", "scripts", "tests"]:
+        for prefix in [
+            "cognition.mnemosyne",
+            "cognition.sophia",
+            "cognition.morpheus",
+            "src.clotho",
+            "src.lachesis",
+            "src.architrave",
+            "src.muscle",
+            "src.utils",
+            "src.tools",
+            "scripts",
+            "tests",
+        ]:
             if module_name == prefix or module_name.startswith(prefix + "."):
                 return prefix
         return ""

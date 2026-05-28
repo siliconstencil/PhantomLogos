@@ -3,15 +3,17 @@ TokenBucket Rate Limiter.
 Provides thread-safe token bucket rate limiting for local LLM request orchestration.
 """
 
-import time
 import threading
+import time
+
 
 class TokenBucket:
     """
     Thread-safe Token Bucket Rate Limiter.
     Allows smooth token consumption with dynamic, time-based replenishment.
     """
-    def __init__(self, capacity: float, fill_rate: float):
+
+    def __init__(self, capacity: float, fill_rate: float) -> None:
         self.capacity = float(capacity)
         self.fill_rate = float(fill_rate)
         self.tokens = float(capacity)
@@ -27,10 +29,10 @@ class TokenBucket:
             now = time.time()
             elapsed = now - self.last_update
             self.last_update = now
-            
+
             # Replenish tokens based on elapsed time
             self.tokens = min(self.capacity, self.tokens + elapsed * self.fill_rate)
-            
+
             if self.tokens >= tokens:
                 self.tokens -= tokens
                 return True

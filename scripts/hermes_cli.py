@@ -13,6 +13,7 @@ from datetime import UTC, datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.utils.logging_config import setup_logger
+
 logger = setup_logger(__name__)
 
 

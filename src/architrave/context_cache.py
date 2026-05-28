@@ -23,7 +23,9 @@ class ContextCacheStore:
     AXIS_ID = 12
     MAX_TOTAL_SIZE_BYTES = 50 * 1024 * 1024
 
-    def __init__(self, db_path: str | None = None, start_sweep: bool = True, sweep_interval: float = 60.0):
+    def __init__(
+        self, db_path: str | None = None, start_sweep: bool = True, sweep_interval: float = 60.0
+    ) -> None:
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         self.db_path = db_path or os.path.join(base, "data", "mnemosyne.db")
         self._lock = threading.Lock()
@@ -35,14 +37,14 @@ class ContextCacheStore:
         if start_sweep:
             self._start_background_sweep(sweep_interval)
 
-    def _start_background_sweep(self, sweep_interval: float):
-        def sweep_loop():
+    def _start_background_sweep(self, sweep_interval: float) -> None:
+        def sweep_loop() -> None:
             while not self._stop_sweep.is_set():
                 try:
                     self.purge_expired()
                 except Exception as e:
                     logger.error(f"ContextCacheStore: Background sweep error ({e})")
-                
+
                 # Check stop event every 1 second to allow fast shutdown
                 slept = 0.0
                 while slept < sweep_interval and not self._stop_sweep.is_set():
@@ -52,13 +54,13 @@ class ContextCacheStore:
         self._sweep_thread = threading.Thread(target=sweep_loop, daemon=True)
         self._sweep_thread.start()
 
-    def close(self):
+    def close(self) -> None:
         """Stops the background sweeper thread."""
         self._stop_sweep.set()
         if self._sweep_thread and self._sweep_thread.is_alive():
             self._sweep_thread.join(timeout=2.0)
 
-    def _ensure_table(self):
+    def _ensure_table(self) -> None:
         with self._lock:
             conn = sqlite3.connect(self.db_path)
             try:
@@ -84,7 +86,9 @@ class ContextCacheStore:
             conn = sqlite3.connect(self.db_path)
             try:
                 cursor = conn.cursor()
-                cursor.execute("SELECT content, expires_at FROM context_cache WHERE key = ?", (key,))
+                cursor.execute(
+                    "SELECT content, expires_at FROM context_cache WHERE key = ?", (key,)
+                )
                 row = cursor.fetchone()
             finally:
                 conn.close()
@@ -92,6 +96,55 @@ class ContextCacheStore:
         if row:
             return row[0]
         return None
+
+    def get_by_key(self, key: str) -> str | None:
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT content, expires_at FROM context_cache WHERE key = ?", (key,)
+                )
+                row = cursor.fetchone()
+            finally:
+                conn.close()
+
+        if row and row[1] > time.time():
+            return row[0]
+        return None
+
+    def set_by_key(self, key: str, content: str, ttl_seconds: int = 3600) -> bool:
+        now = time.time()
+        entry_size = len(content.encode("utf-8"))
+        with self._lock:
+            conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM context_cache")
+                total_size = cursor.fetchone()[0]
+                while total_size + entry_size > self.MAX_TOTAL_SIZE_BYTES:
+                    cursor.execute(
+                        "SELECT key, size_bytes FROM context_cache ORDER BY created_at ASC LIMIT 1"
+                    )
+                    row = cursor.fetchone()
+                    if not row:
+                        break
+                    cursor.execute("DELETE FROM context_cache WHERE key = ?", (row[0],))
+                    total_size -= row[1]
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO context_cache (key, content, expires_at, created_at, size_bytes)
+                    VALUES (?, ?, ?, ?, ?)
+                """,
+                    (key, content, now + ttl_seconds, now, entry_size),
+                )
+                conn.commit()
+                return True
+            except Exception as e:
+                logger.error(f"ContextCacheStore: Failed to write cache by key ({e})")
+                return False
+            finally:
+                conn.close()
 
     def set(self, content: str, ttl_seconds: int = 3600) -> bool:
         key = self._hash_key(content)
@@ -127,7 +180,7 @@ class ContextCacheStore:
             finally:
                 conn.close()
 
-    def _delete_key(self, key: str):
+    def _delete_key(self, key: str) -> None:
         with self._lock:
             conn = sqlite3.connect(self.db_path)
             try:
@@ -167,11 +220,13 @@ class AnchorContextBuilder:
     Managed Agents Pattern: Supports pinning via XML tags.
     """
 
-    def __init__(self, project_root: str | None = None):
+    def __init__(self, project_root: str | None = None) -> None:
         self.project_root = project_root or str(get_project_root())
         self.fragments = []
 
-    def add_fragment(self, fragment_id: str, content: str, axis: int = 12, precedence: int = 100):
+    def add_fragment(
+        self, fragment_id: str, content: str, axis: int = 12, precedence: int = 100
+    ) -> None:
         """Adds an atomic anchor fragment."""
         self.fragments.append(
             {
@@ -191,11 +246,10 @@ class AnchorContextBuilder:
         # Sort by precedence (highest first)
         sorted_frags = sorted(self.fragments, key=lambda x: x["precedence"], reverse=True)
 
-        xml_blocks = []
-        for frag in sorted_frags:
-            xml_blocks.append(
-                f'<anchor id="{frag["id"]}" axis="{frag["axis"]}">\n{frag["content"]}\n</anchor>'
-            )
+        xml_blocks = [
+            f'<anchor id="{frag["id"]}" axis="{frag["axis"]}">\n{frag["content"]}\n</anchor>'
+            for frag in sorted_frags
+        ]
 
         return "\n".join(xml_blocks)
 

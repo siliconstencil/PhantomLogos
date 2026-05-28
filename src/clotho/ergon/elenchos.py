@@ -4,10 +4,12 @@ from typing import Any
 
 from src.utils.logging_config import setup_logger
 
+from .koinonia import record_step
+
 logger = setup_logger(__name__)
 
 
-async def critique_node(state: Any):
+async def critique_node(state: Any) -> dict[str, Any]:
     session_id = state.get("session_id", "default")
     agent_id = state.get("active_agent", "sophia")
     draft = state.get("draft", "")
@@ -23,9 +25,10 @@ async def critique_node(state: Any):
 
         anchor_path = "data/ankyra_anchor.md"
         anchors = ""
-        if os.path.exists(anchor_path):
-            with open(anchor_path, encoding="utf-8") as f:
-                anchors = f.read()
+        if await asyncio.to_thread(os.path.exists, anchor_path):
+            from pathlib import Path
+
+            anchors = await asyncio.to_thread(Path(anchor_path).read_text, "utf-8")
 
         # Pass 1: Heuristic (Stateless, 0 VRAM)
         result = await evaluator.evaluate(
@@ -96,13 +99,48 @@ async def critique_node(state: Any):
             "is_valid", final_critique.get("is_pass", False)
         )
 
+        # Centralized Mnemosyne Hypergraph edge addition
+        try:
+            from cognition.mnemosyne.hypergraph_models import Hyperedge, HypernodeRef
+            from cognition.mnemosyne.hypergraph_store import HypergraphStore
+
+            nodes = [
+                HypernodeRef(
+                    axis_id=8,
+                    entity_type="meta_cognition",
+                    entity_key=agent_id,
+                    label=f"Meta: {agent_id}",
+                ),
+                HypernodeRef(
+                    axis_id=3,
+                    entity_type="goals",
+                    entity_key=session_id,
+                    label=f"Goal: {session_id}",
+                ),
+                HypernodeRef(
+                    axis_id=6,
+                    entity_type="entity",
+                    entity_key=final_critique.get("zone", "yellow"),
+                    label=f"Critique Zone: {final_critique.get('zone')}",
+                ),
+            ]
+            edge = Hyperedge(nodes=nodes, relation_type="critique_outcome", weight=overall_score)
+            HypergraphStore().add_edge(edge)
+            logger.info(
+                f"HypergraphStore: Added critique hyperedge {edge.edge_id} connecting Axes 8, 3, 6."
+            )
+        except Exception as e_hg:
+            logger.warning(f"ergon: Hypergraph update failed in critique_node ({e_hg})")
+
         # [Step 3] Centralized Knowledge Extraction (Axis 8)
         try:
             from src.architrave.entity_extractor import EntityExtractor
+
             await asyncio.to_thread(EntityExtractor.harvest_knowledge, draft, session_id)
         except Exception as e_ext:
             logger.warning(f"ergon: Knowledge extraction failed in critique_node ({e_ext})")
 
+        await asyncio.to_thread(record_step, state, "critique")
         return {"critique": final_critique, "memory_sync": True}
 
     except asyncio.CancelledError:
@@ -114,8 +152,8 @@ async def critique_node(state: Any):
             from cognition.morpheus.loader import ModelLoader
 
             await asyncio.to_thread(ModelLoader().flush)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"ergon: VRAM flush skipped ({e})")
         return {
             "critique": {"is_pass": False, "overall_score": 0, "zone": "red", "flaws": [str(e)]},
             "memory_sync": False,

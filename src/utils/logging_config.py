@@ -12,7 +12,7 @@ class SessionFilter(logging.Filter):
     Defaults to 'unknown' if not provided by the caller.
     """
 
-    def filter(self, record):
+    def filter(self, record) -> bool:
         if not hasattr(record, "session_id"):
             record.session_id = "unknown"
         if not hasattr(record, "agent_id"):
@@ -85,14 +85,14 @@ class SQLiteHandler(logging.Handler):
     Uses persistent connection with WAL mode for performance.
     """
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str) -> None:
         super().__init__()
         self.db_path = db_path
         self._conn = sqlite3.connect(db_path, check_same_thread=False)
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._ensure_table()
 
-    def _ensure_table(self):
+    def _ensure_table(self) -> None:
         self._conn.execute("""
             CREATE TABLE IF NOT EXISTS operational_logs_v2 (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -110,7 +110,7 @@ class SQLiteHandler(logging.Handler):
         """)
         self._conn.commit()
 
-    def emit(self, record):
+    def emit(self, record) -> None:
         log_entry = self.format(record)
         agent = getattr(record, "agent_id", "system")
         tool = getattr(record, "tool_name", None)
@@ -124,7 +124,7 @@ class SQLiteHandler(logging.Handler):
         except Exception:
             self.handleError(record)
 
-    def close(self):
+    def close(self) -> None:
         """Cleanly close the database connection."""
         try:
             if hasattr(self, "_conn") and self._conn:
@@ -187,7 +187,7 @@ def setup_logger(name: str) -> logging.Logger:
     return logger
 
 
-def log_system_event(level: str, message: str, extra: dict = None):
+def log_system_event(level: str, message: str, extra: dict | None = None) -> None:
     """
     Directly writes system-level events to the SQLite operational_logs_v2 table.
     Bypasses the standard logger chain for integrity and infrastructure events.

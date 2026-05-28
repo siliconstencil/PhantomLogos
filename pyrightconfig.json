@@ -5,6 +5,7 @@
     "exclude": [
         "**/__pycache__",
         ".venv",
+        ".venv-linux",
         ".git",
         ".antigravity",
         "data",
@@ -17,6 +18,8 @@
     "extraPaths": [
         "."
     ],
+    "venvPath": ".",
+    "venv": ".venv",
     "useLibraryCodeForTypes": true,
     "typeCheckingMode": "basic",
     "reportGeneralTypeIssues": "none",

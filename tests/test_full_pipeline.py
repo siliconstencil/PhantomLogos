@@ -24,7 +24,7 @@ from src.atropos.token_budget import TokenBudgetGuard
 @pytest.mark.asyncio
 async def test_router_classification():
     router = TaskRouter()
-    cat, prompt = router.route("Write a python function to sort a list")
+    cat, _prompt = router.route("Write a python function to sort a list")
     assert cat in ("code", "chat")
 
 
@@ -40,7 +40,7 @@ async def test_tool_validator_json():
 
 @pytest.mark.asyncio
 async def test_temperature_profiles():
-    assert get_temperature("draft") == 0.4
+    assert get_temperature("draft") == 0.1
     assert get_temperature("critique") == 0.0
 
 

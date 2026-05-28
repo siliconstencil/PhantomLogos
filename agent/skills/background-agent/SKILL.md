@@ -1,20 +1,17 @@
 ---
 name: background-agent
-description: Managing persistent background daemons, scheduled tasks, and long-running maintenance processes.
+description: Managing persistent background daemons, scheduled tasks, and long-running
+  maintenance processes.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Running Morpheus sweeper daemon for VRAM management.
-  - Scheduling periodic maintenance (pruning, health checks).
-  - Managing background file integrity monitoring.
-  - Coordinating async daemon lifecycle with agent tasks.
-depends-on:
-  - resource-scheduling
-metadata:
-  audience: developers
-  tier: L2-Runner
-  workflow: automation
+model_role: light
+allowed_tools:
+- ls
+- vram
+- report
+- mcp_slm_remember
+tier: 1
 ---
 # Background Agent
 

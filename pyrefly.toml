@@ -1,0 +1,21 @@
+project-includes = ["."]
+project-excludes = [
+    "**/__pycache__",
+    ".venv",
+    ".venv-linux",
+    ".git",
+    ".antigravity",
+    "data",
+    "projects",
+    "scratch",
+    "logs",
+    "agent",
+    "tests",
+]
+search-path = ["."]
+infer-with-first-use = false
+
+[errors]
+bad-return = "ignore"
+missing-attribute = "ignore"
+bad-argument-type = "ignore"

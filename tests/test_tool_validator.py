@@ -1,8 +1,6 @@
-
-
-from cognition.sophia.tool_validator import ToolValidator
-from cognition.sophia.temperature_control import get_temperature, TEMPERATURE_PROFILES
 import pytest
+
+from cognition.sophia.sophia import TEMPERATURE_PROFILES, ToolValidator, get_temperature
 
 
 def test_valid_json():
@@ -28,7 +26,7 @@ def test_all_temperatures():
     for role in TEMPERATURE_PROFILES:
         t = get_temperature(role)
         assert 0.0 <= t <= 1.0, f"Invalid temperature {t} for role {role}"
-    assert get_temperature("unknown") == 0.3
+    assert get_temperature("unknown") == 0.1
 
 
 if __name__ == "__main__":

@@ -1,10 +1,21 @@
 import datetime
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, LargeBinary, Index, UniqueConstraint, ForeignKey
+
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    Index,
+    Integer,
+    LargeBinary,
+    String,
+    Text,
+)
 from sqlalchemy.orm import declarative_base
 
 MnemosyneBase = declarative_base()
 ReliabilityBase = declarative_base()
 SpatialBase = declarative_base()
+
 
 class Episode(MnemosyneBase):
     __tablename__ = "episodes"
@@ -23,6 +34,7 @@ class Episode(MnemosyneBase):
         Index("idx_agent_timestamp", "agent_id", "created_at"),
     )
 
+
 class Event(MnemosyneBase):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True)
@@ -33,9 +45,8 @@ class Event(MnemosyneBase):
     payload = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
-    __table_args__ = (
-        Index("idx_events_session", "session_id"),
-    )
+    __table_args__ = (Index("idx_events_session", "session_id"),)
+
 
 class ToolPath(MnemosyneBase):
     __tablename__ = "tool_paths"
@@ -49,9 +60,8 @@ class ToolPath(MnemosyneBase):
     last_used = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
     notes = Column(Text)
 
-    __table_args__ = (
-        Index("idx_tool_paths_task", "task_type"),
-    )
+    __table_args__ = (Index("idx_tool_paths_task", "task_type"),)
+
 
 class Goal(MnemosyneBase):
     __tablename__ = "goals"
@@ -67,9 +77,8 @@ class Goal(MnemosyneBase):
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
     completed_at = Column(DateTime, nullable=True)
 
-    __table_args__ = (
-        Index("idx_goals_active", "status", "priority"),
-    )
+    __table_args__ = (Index("idx_goals_active", "status", "priority"),)
+
 
 class OperationalLog(MnemosyneBase):
     __tablename__ = "operational_logs_v2"
@@ -81,6 +90,7 @@ class OperationalLog(MnemosyneBase):
     name = Column(String(100))
     level = Column(String(20))
     message = Column(Text)
+
 
 class MetaRecord(MnemosyneBase):
     __tablename__ = "meta_cognition"
@@ -95,9 +105,8 @@ class MetaRecord(MnemosyneBase):
     pattern_notes = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
-    __table_args__ = (
-        Index("idx_refl_session", "session_id"),
-    )
+    __table_args__ = (Index("idx_refl_session", "session_id"),)
+
 
 class AgentExperience(MnemosyneBase):
     __tablename__ = "agent_experience"
@@ -114,9 +123,8 @@ class AgentExperience(MnemosyneBase):
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
     updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
-    __table_args__ = (
-        Index("idx_exp_agent", "agent_id", "task_pattern"),
-    )
+    __table_args__ = (Index("idx_exp_agent", "agent_id", "task_pattern"),)
+
 
 class GovernanceRule(MnemosyneBase):
     __tablename__ = "governance_rules"
@@ -127,6 +135,7 @@ class GovernanceRule(MnemosyneBase):
     severity = Column(Integer, default=1)
     active = Column(Integer, default=1)
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+
 
 class Fact(MnemosyneBase):
     __tablename__ = "facts"
@@ -139,19 +148,19 @@ class Fact(MnemosyneBase):
     confidence = Column(Float, default=1.0)
     last_verified = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
-    __table_args__ = (
-        Index("idx_rel_subject", "subject"),
-    )
+    __table_args__ = (Index("idx_rel_subject", "subject"),)
+
 
 class ToneRecord(MnemosyneBase):
     __tablename__ = "tone_history"
     id = Column(Integer, primary_key=True)
     session_id = Column(String(64), nullable=False)
     tone = Column(String(50), default="neutral")
-    urgency = Column(Float, default=0.0)
-    verbosity = Column(String(20), default="normal")
+    urgency = Column(Float, default=0.5)
+    verbosity = Column(Float, default=0.5)
     original_message = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+
 
 class VisualMemory(MnemosyneBase):
     __tablename__ = "visual_memories"
@@ -165,6 +174,7 @@ class VisualMemory(MnemosyneBase):
     session_id = Column(String(100), index=True)
     timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
+
 class AgentReliability(ReliabilityBase):
     __tablename__ = "agent_reliability"
     id = Column(Integer, primary_key=True)
@@ -177,6 +187,7 @@ class AgentReliability(ReliabilityBase):
     last_violation_at = Column(DateTime)
     updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
+
 class ModuleNode(SpatialBase):
     __tablename__ = "spatial_modules"
     id = Column(Integer, primary_key=True)
@@ -186,6 +197,7 @@ class ModuleNode(SpatialBase):
     num_functions = Column(Integer, default=0)
     content_hash = Column(String(64))
     last_indexed = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+
 
 class DependencyEdge(SpatialBase):
     __tablename__ = "spatial_edges"

@@ -30,7 +30,11 @@ Automatic pre-write backup and atomic replacement for all ToolBridge file operat
 - **OS Margin**: 1.0 GB strictly reserved.
 - **Loading**: Sequential only; `Morpheus.flush()` mandatory between heavy models.
 
-### 2.4. Mnemosyne Integrity (14-Axis Memory)
+### 2.5. FUNCTIONAL_TOOL_PRIORITY
+- Agents MUST use `mapper`, `semantic_store`, `slm_*`, `verify`, and `report` tools for status checks, context scanning, and logging operations instead of raw `fs`/`bash` tools.
+- **Severity**: HIGH. Raw fs/bash is restricted to file creation/editing and execution tasks only.
+
+### 2.6. Mnemosyne Integrity (14-Axis Memory)
 - **Citation**: Every strategic claim must use `[SRC:axis_N]` format.
 - **Persistence**: DB-First persistence to SQLite/LanceDB.
 

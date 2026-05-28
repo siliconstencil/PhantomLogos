@@ -51,7 +51,7 @@ class TestAxis11Logic(unittest.TestCase):
             standard_transformations,
         )
 
-        transformations = standard_transformations + (implicit_multiplication,)
+        transformations = (*standard_transformations, implicit_multiplication)
         val = bool(parse_expr(problem, transformations=transformations))
         self.assertTrue(
             val, "VRAM feasibility check failed: 7.5GB does not fit in 7.5GB margin? Check floats."

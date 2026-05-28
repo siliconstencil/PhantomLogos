@@ -162,6 +162,18 @@ CREATE TABLE IF NOT EXISTS context_cache (
     size_bytes INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS axis_12_cache_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    session_id VARCHAR(64) NOT NULL,
+    prompt_hash VARCHAR(64),
+    cached_tokens INTEGER DEFAULT 0,
+    total_tokens INTEGER DEFAULT 0,
+    latency_ms FLOAT DEFAULT 0.0,
+    hit_status VARCHAR(20) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_axis12_session ON axis_12_cache_metrics(session_id);
+
 -- =============================================================
 -- 8. Creative/Tone (Axis 9) - Style Adaptation
 -- =============================================================
@@ -205,6 +217,9 @@ CREATE TABLE IF NOT EXISTS spatial_edges (
 -- Table: semantic_memory.lance (Axis 6)
 --   Fields: vector FLOAT[256], text TEXT, metadata JSON,
 --           importance FLOAT, timestamp FLOAT, session_id VARCHAR(64)
+--   Note: metadata JSON contains agent_id, category, error_type, context_hash
+--         agent_id and category are queryable via LanceDB JSON path.
+--         SLM tag format: meta:key:value (v1.1.21+), legacy m:json (pre-v1.1.21)
 -- =============================================================
 
 -- =============================================================
@@ -224,6 +239,16 @@ CREATE TABLE IF NOT EXISTS spatial_edges (
 --     metadata TEXT DEFAULT '{}'
 -- );
 -- CREATE INDEX IF NOT EXISTS idx_temp_session ON temporal_metrics(session_id, timestamp DESC);
+-- =============================================================
+
+-- =============================================================
+-- SLM Metadata Standard (AUDIT-01 v1.1.21)
+-- All SLM remember/recall operations use flattened meta:key:value tags
+-- instead of m:json tunneling. Legacy m:json tags are still readable
+-- via backward-compatible _normalize_result() parser.
+-- =============================================================
+-- Standard metadata keys (stored as meta:key:value tags):
+--   agent_id, category, error_type, context_hash, source, axis, tags
 -- =============================================================
 
 -- =============================================================
@@ -293,8 +318,13 @@ CREATE TABLE IF NOT EXISTS failure_memory (
     recurrence_count INTEGER DEFAULT 1,
     context_hash VARCHAR(16) NOT NULL UNIQUE,
     severity INTEGER DEFAULT 1,
-    status VARCHAR(20) DEFAULT 'active', -- active, archived, promoted
+    status VARCHAR(20) DEFAULT 'active',
+    agent_id VARCHAR(50) DEFAULT 'system',
+    category VARCHAR(100),
+    metadata TEXT DEFAULT '{}',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_failure_hash ON failure_memory(context_hash);
+CREATE INDEX IF NOT EXISTS idx_failure_agent ON failure_memory(agent_id);
+CREATE INDEX IF NOT EXISTS idx_failure_category ON failure_memory(category);

@@ -29,8 +29,9 @@ tools:
   - report
 
 skills:
+  - audit
+  - review-pipeline
   - persona-auditor
-  - autonomous-qa-evals
   - security-first-guardian
   - socratic-analyst
   - mnemosyne-high-fidelity-query
@@ -38,6 +39,8 @@ skills:
   - logic-deadlock-resolver
   - security-audit
   - temporal-validity
+  - sequential-thinking
+  - kg-mem
 
 memory_axes: [5, 8, 10, 14]
 

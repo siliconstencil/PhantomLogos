@@ -9,6 +9,7 @@ logger = setup_logger(__name__)
 
 _cached_gpu_info = {}
 _cached_gpu_time = 0.0
+_last_failure_time = 0.0
 
 
 def set_cached_gpu_info(info: dict):
@@ -29,6 +30,23 @@ def get_gpu_memory_info() -> dict:
     Returns {total_gb, used_gb, free_gb, utilization_pct}.
     Falls back to JSON parse of a subprocess call.
     """
+    global _last_failure_time
+    import os
+
+    # 1. Environment variable override check (DISABLE_NVIDIA_SMI / MOCK_GPU)
+    if os.getenv("DISABLE_NVIDIA_SMI") or os.getenv("MOCK_GPU"):
+        cached = get_cached_gpu_info(max_age=999999999.0)
+        if cached:
+            return cached
+        return _fallback()
+
+    # 2. Cooldown check after a failure / timeout (60 seconds)
+    if (time.time() - _last_failure_time) < 60.0:
+        cached = get_cached_gpu_info(max_age=999999999.0)
+        if cached:
+            return cached
+        return _fallback()
+
     try:
         creationflags = (
             0x08000000  # Phase 11.21.6: 30s timeout for high VRAM load/thermal throttling
@@ -45,28 +63,47 @@ def get_gpu_memory_info() -> dict:
             creationflags=creationflags,
         )
         if result.returncode != 0:
+            _last_failure_time = time.time()
+            cached = get_cached_gpu_info(max_age=999999999.0)
+            if cached:
+                return cached
             return _fallback()
+
         parts = re.split(r",\s*", result.stdout.strip())
         if len(parts) >= 3:
             total_mb = float(parts[0])
             used_mb = float(parts[1])
             free_mb = float(parts[2])
             util = float(parts[3]) if len(parts) >= 4 else 0.0
-            return {
+            info = {
                 "total_gb": round(total_mb / 1024, 2),
                 "used_gb": round(used_mb / 1024, 2),
                 "free_gb": round(free_mb / 1024, 2),
                 "utilization_pct": util,
             }
+            set_cached_gpu_info(info)
+            return info
     except subprocess.TimeoutExpired:
         logger.warning(
             "Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling."
         )
+        _last_failure_time = time.time()
+        cached = get_cached_gpu_info(max_age=999999999.0)
+        if cached:
+            return cached
         return _fallback()
     except Exception as e:
         logger.error(f"Morpheus: GPU monitoring failed ({e})", exc_info=True)
+        _last_failure_time = time.time()
+        cached = get_cached_gpu_info(max_age=999999999.0)
+        if cached:
+            return cached
         return _fallback()
 
+    _last_failure_time = time.time()
+    cached = get_cached_gpu_info(max_age=999999999.0)
+    if cached:
+        return cached
     return _fallback()
 
 

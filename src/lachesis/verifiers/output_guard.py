@@ -31,7 +31,7 @@ class OutputGuard:
     VIOLATION_VERIFY = "verification_failed"
     VIOLATION_SHADOW_VERIFY = "shadow_verification_failed"
 
-    def __init__(self, meta_store=None):
+    def __init__(self, meta_store=None) -> None:
         self._meta = meta_store
         self._violations = {
             v: 0
@@ -57,19 +57,22 @@ class OutputGuard:
         verifier = self._get_verifier()
         if not verifier:
             return []
-        violations = []
         code_blocks = re.findall(r"```(?:\w+)?\n(.*?)```", output, re.DOTALL)
-        for block in code_blocks[:3]:
-            if block.strip() and verifier.audit_code_logic(block).get("has_contradiction"):
-                violations.append("code_contradiction")
+        violations = [
+            "code_contradiction"
+            for block in code_blocks[:3]
+            if block.strip() and not verifier.audit_code_logic(block).get("is_valid", True)
+        ]
         math_exprs = re.findall(r"(\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+)", output)
-        for expr in math_exprs[:3]:
-            if not verifier.verify_math(expr).get("valid"):
-                violations.append(f"invalid_math: {expr}")
+        violations.extend(
+            f"invalid_math: {expr}"
+            for expr in math_exprs[:3]
+            if not verifier.verify_math(expr).get("valid")
+        )
         return violations
 
     def check(self, output: str, agent_id: str = "system", context: dict | None = None) -> dict:
-        session_id = context.get("session_id", "default") if context else "default"
+        context.get("session_id", "default") if context else "default"
         violations = []
         score_delta = 0.0
 
@@ -82,10 +85,13 @@ class OutputGuard:
             violations.append(self.VIOLATION_BA01)
             score_delta -= 0.1
 
-        if context and context.get("require_timestamp", False):
-            if not re.search(r"\[\d{1,2}:\d{2}\s*(AM|PM)\s*PT\]", output):
-                violations.append(self.VIOLATION_NO_TIMESTAMP)
-                score_delta -= 0.05
+        if (
+            context
+            and context.get("require_timestamp", False)
+            and not re.search(r"\[\d{1,2}:\d{2}\s*(AM|PM)\s*PT\]", output)
+        ):
+            violations.append(self.VIOLATION_NO_TIMESTAMP)
+            score_delta -= 0.05
 
         verify_issues = self._verify_output(output)
         if verify_issues:
@@ -115,7 +121,9 @@ class OutputGuard:
             "score_delta": score_delta,
         }
 
-    def record_shadow_violation(self, agent_id: str, detail: str, session_id: str = "default"):
+    def record_shadow_violation(
+        self, agent_id: str, detail: str, session_id: str = "default"
+    ) -> None:
         logger.error(f"OutputGuard [{agent_id}]: SHADOW VERIFICATION FAILED - {detail}")
         try:
             from cognition.mnemosyne.meta_cognition import MetaCognitionStore

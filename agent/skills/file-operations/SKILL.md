@@ -1,17 +1,18 @@
 ---
 name: file-operations
-description: Advanced filesystem management including moving, copying, and secure deletion.
+description: Advanced filesystem management including moving, copying, and secure
+  deletion.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Moving or restructuring directories (e.g., consolidating agent/skills).
-  - Cleaning up temporary files or legacy backups.
-  - Initializing new project structures.
-metadata:
-  audience: developers
-  tier: L2-Runner
-  workflow: execution
+model_role: primary
+allowed_tools:
+- write_file
+- replace_content
+- ls
+- run_code
+- mcp_slm_remember
+tier: 2
 ---
 # Skill: File Operations (Sovereign Edition)
 

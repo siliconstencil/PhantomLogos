@@ -3,10 +3,11 @@ import threading
 import time
 from dataclasses import dataclass
 
+from src.architrave.base_models import GPU_USABLE_VRAM_GB
+from src.architrave.model_registry import find_fitting_model
 from src.utils.logging_config import setup_logger
 
 from ..morpheus.monitor import get_gpu_memory_info, set_cached_gpu_info
-from ..morpheus.registry import GPU_USABLE_VRAM_GB, find_fitting_model
 
 logger = setup_logger(__name__)
 
@@ -39,14 +40,20 @@ class MorpheusScheduler:
         )
         self._lock = threading.Lock()
         self._active_model: str | None = None
-        self._last_request_time: float = time.time()
+        self._last_request_time = time.time()
         self._load_count: dict[str, int] = {}
         self._running = False
         self._thread: threading.Thread | None = None
+        self._last_traj_mining: float = 0.0
 
         # Sprint C: Injected dependencies for autonomous re-sharding
         self._loader = None
         self._sweeper = None
+
+        # Predictive Pre-load attributes [SRC:axis_1]
+        self._usage_history: dict[str, list[float]] = {}
+        self._session_patterns: dict[str, int] = {}
+        self._last_role: str | None = None
 
     def start(self):
         if self._running:
@@ -60,28 +67,123 @@ class MorpheusScheduler:
         self._running = False
         logger.info("MorpheusScheduler: Stop signal sent.")
 
+    def _predict_next_models(self) -> list[str]:
+        """
+        Predicts the next most likely roles (up to 2) based on transitions and usage frequencies.
+        Returns a list of role names.
+        """
+        predictions = []
+
+        # 1. Transition pattern: son 3 geçişte en sık görülen role1 -> role2 transition
+        if self._last_role:
+            prefix = f"{self._last_role}->"
+            transitions = {k: v for k, v in self._session_patterns.items() if k.startswith(prefix)}
+            if transitions:
+                sorted_transitions = sorted(transitions.items(), key=lambda x: x[1], reverse=True)
+                for pattern, _count in sorted_transitions:
+                    next_role = pattern.split("->")[1]
+                    if next_role not in predictions:
+                        predictions.append(next_role)
+                    if len(predictions) >= 2:
+                        break
+
+        # 2. Role frequency: son 24 saatteki kullanım sıklığına göre doldur
+        if len(predictions) < 2:
+            now = time.time()
+            twenty_four_hours_ago = now - 86400
+            frequencies = {}
+            for r, ts_list in self._usage_history.items():
+                recent = [t for t in ts_list if t >= twenty_four_hours_ago]
+                frequencies[r] = len(recent)
+
+            sorted_freqs = sorted(frequencies.items(), key=lambda x: x[1], reverse=True)
+            for r, _freq in sorted_freqs:
+                if r not in predictions:
+                    predictions.append(r)
+                if len(predictions) >= 2:
+                    break
+
+        return predictions
+
+    def _preload_model_in_background(self, model_name: str):
+        """Asynchronously pre-loads a predicted next model into VRAM if enough budget exists."""
+        try:
+            from src.utils.service_locator import get_bootstrap_loader
+
+            loader = get_bootstrap_loader()
+            if not loader:
+                return
+
+            if model_name == loader.loaded:
+                return
+
+            gpu_info = get_gpu_memory_info()
+            free_gb = gpu_info.get("free_gb", 0.0)
+
+            from src.architrave.base_models import VRAM_CATALOG_GB
+
+            req_gb = VRAM_CATALOG_GB.get(model_name, 2.0)
+
+            # Predictive preload VRAM safety check: free_gb - req_gb >= 1.0 (safety budget)
+            if (free_gb - req_gb) >= 1.0:
+                logger.info(
+                    f"MorpheusScheduler: Pre-loading predicted model '{model_name}' (free: {free_gb}GB, req: {req_gb}GB)"
+                )
+                loader.load(model_name)
+            else:
+                logger.info(
+                    f"MorpheusScheduler: Skipping preload for '{model_name}' due to VRAM safety budget (free: {free_gb}GB, req: {req_gb}GB)"
+                )
+        except Exception as e:
+            logger.warning(f"MorpheusScheduler: Failed to preload model '{model_name}' ({e})")
+
     def request_model(self, role: str) -> str | None:
         """Request a model for a given role. Returns model name or None if no fit."""
-        gpu_info = get_gpu_memory_info()
-        free_gb = gpu_info.get("free_gb", 0)
-        model_name = find_fitting_model(role, available_vram_gb=free_gb)
-        if model_name:
-            self._last_request_time = time.time()
-            self._load_count[model_name] = self._load_count.get(model_name, 0) + 1
-            logger.info(f"MorpheusScheduler: Model {model_name} requested for role {role}")
-            return model_name
-        logger.warning(f"MorpheusScheduler: No fitting model for role {role} ({free_gb}GB free)")
-        return None
+        with self._lock:
+            now = time.time()
+            if role not in self._usage_history:
+                self._usage_history[role] = []
+            self._usage_history[role].append(now)
+
+            # Record role transition
+            if self._last_role:
+                pattern = f"{self._last_role}->{role}"
+                self._session_patterns[pattern] = self._session_patterns.get(pattern, 0) + 1
+            self._last_role = role
+
+            gpu_info = get_gpu_memory_info()
+            free_gb = gpu_info.get("free_gb", 0)
+            model_name = find_fitting_model(role, available_vram_gb=free_gb)
+            if model_name:
+                self._last_request_time = now
+                self._load_count[model_name] = self._load_count.get(model_name, 0) + 1
+                logger.info(f"MorpheusScheduler: Model {model_name} requested for role {role}")
+
+                # Predict next models and trigger asynchronous background preloading
+                predicted_roles = self._predict_next_models()
+                for pred_role in predicted_roles:
+                    if pred_role == role:
+                        continue
+                    pred_model = find_fitting_model(pred_role, available_vram_gb=free_gb)
+                    if pred_model and pred_model != model_name:
+                        threading.Thread(
+                            target=self._preload_model_in_background,
+                            args=(pred_model,),
+                            daemon=True,
+                        ).start()
+
+                return model_name
+            logger.warning(
+                f"MorpheusScheduler: No fitting model for role {role} ({free_gb}GB free)"
+            )
+            return None
 
     def _run_loop(self):
-        """Internal tick loop for autonomous VRAM management."""
-        # Phase 11.18.15: Set E-core affinity for background Morpheus daemon
+        """Internal tick loop for autonomous VRAM management + weekly OTL mining."""
         try:
             import psutil
 
             p = psutil.Process()
-            # i7-13620H: 6 P-cores (0-11) + 4 E-cores (12-15)
-            # Correct Mask: 0xf000
             p.cpu_affinity([12, 13, 14, 15])
             logger.info("MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].")
         except Exception as e:
@@ -93,11 +195,34 @@ class MorpheusScheduler:
                 self._orchestrate_vram()
             except Exception as e:
                 logger.error(f"MorpheusScheduler: Tick error ({e})", exc_info=True)
+
+            # Weekly trajectory mining cron hook
+            now = time.time()
+            if now - self._last_traj_mining >= 604800:
+                self._last_traj_mining = now
+                logger.info("MorpheusScheduler: Running weekly OTL trajectory mining...")
+                try:
+                    import subprocess
+
+                    root = os.path.dirname(
+                        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                    )
+                    subprocess.Popen(
+                        [
+                            os.path.join(root, ".venv", "Scripts", "python.exe"),
+                            os.path.join(root, "scripts", "run_trajectory_mining.py"),
+                        ],
+                        cwd=root,
+                        creationflags=subprocess.CREATE_NO_WINDOW,
+                    )
+                except Exception as me:
+                    logger.error(f"MorpheusScheduler: Weekly trajectory mining failed ({me})")
+
             time.sleep(interval)
 
     def _orchestrate_vram(self):
         gpu_info = get_gpu_memory_info()
-        set_cached_gpu_info(gpu_info)  # Merge Attack: make VRAM data globally available
+        set_cached_gpu_info(gpu_info)
         used_gb = gpu_info.get("used_gb", 0)
         free_gb = gpu_info.get("free_gb", 0)
         idle_time = time.time() - self._last_request_time
@@ -112,13 +237,11 @@ class MorpheusScheduler:
                 f"MorpheusScheduler: Autonomous sweep triggered (Idle for {int(idle_time)}s, {used_gb}GB VRAM used)"
             )
 
-            # Use bootstrap to get singletons safely
             try:
                 from src.utils.service_locator import get_bootstrap_loader, get_bootstrap_sweeper
 
                 sweeper = get_bootstrap_sweeper()
                 loader = get_bootstrap_loader()
-                # Sprint C: Soru 1 Approved - Trigger autonomous re-sharding
                 sweeper.check_and_sweep(loader)
             except Exception as e:
                 logger.warning(f"MorpheusScheduler: Autonomous sweep failed to execute ({e})")
@@ -150,7 +273,6 @@ class MorpheusScheduler:
 
 
 if __name__ == "__main__":
-    # Firmitas Test: demonstrate scheduler instantiation
     logger.info("=== Morpheus Scheduler: Firmitas Test ===")
     scheduler = MorpheusScheduler(idle_cooldown_s=30)
     logger.info(f"Scheduler initialized. Idle cooldown: {scheduler.idle_cooldown_s}s")

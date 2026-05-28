@@ -15,18 +15,18 @@ MODEL_ALIASES = {
 # Local Model Role Assignments (Ollama/Muscle)
 LOCAL_REASONING_MODEL = "qwen3.5-4b-ud:latest"
 LOCAL_VISION_MODEL = "qwen2.5-vl-3b:latest"
-FALLBACK_MODEL = "tinyllama:latest"
+FALLBACK_MODEL = "deepscaler-1.5b:latest"
 
 ROLE_TO_MODEL = {
     "draft": {
         "primary": "qwen3.5-4b-ud:latest",
-        "expert": "qwen3.5-9b-ud:latest",
+        "expert": "qwen3.5-4b-ud:latest",
         "fallback": "qwen3.5-2b-ud:latest",
         "light": "ministral-3b-ud:latest",
     },
     "critique": {
         "primary": "qwen3.5-4b-ud:latest",
-        "expert": "qwen3.5-9b-ud:latest",
+        "expert": "qwen3.5-4b-ud:latest",
         "fallback": "phi-4-mini-ud:latest",
         "light": "ministral-3b-ud:latest",
     },
@@ -72,6 +72,10 @@ ROLE_TO_MODEL = {
     "ner": {
         "primary": "fastino/gliner2-base-v1",
     },
+    "slm": {
+        "primary": "slm-mcp:latest",
+        "endpoint": os.getenv("SLM_ENDPOINT", "http://localhost:8081"),
+    },
 }
 
 # Vision Routing (Runtime Classification - SSOT)
@@ -84,6 +88,7 @@ VISION_ROUTING = {
 
 # VRAM Requirements (GB)
 VRAM_CATALOG_GB = {
+    "slm-mcp:latest": 0.0,
     "granite-3-2b:latest": 1.6,
     "nomic-embed-text-v2-moe-q8:latest": 0.5,
     "nomic-embed-text-v2-moe-q16:latest": 1.0,

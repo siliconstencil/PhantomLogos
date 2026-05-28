@@ -4,18 +4,13 @@ description: Real-time tracking of hardware VRAM usage to maintain the 7.0 GB hy
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Before any heavy model inference.
-  - During periodic system health checks.
-metadata:
-  audience: developers
-  tier: L1-Morpheus
-  workflow: monitoring
-allowed-tools:
-  - vram
-  - report
+model_role: light
+allowed_tools:
+- vram
+- report
+- mcp_slm_remember
+tier: 1
 ---
-
 # Skill: VRAM Monitoring
 
 Ensures system stability by enforcing the 7.0 GB VRAM hard boundary.

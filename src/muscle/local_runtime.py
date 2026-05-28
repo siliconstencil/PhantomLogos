@@ -17,7 +17,7 @@ class LocalRuntime:
     Handles architecture-specific binary selection (e.g., llama-mtmd-cli for MiMo-VL).
     """
 
-    def __init__(self, binary_dir=None, base_model_dir=None):
+    def __init__(self, binary_dir: str | None = None, base_model_dir: str | None = None) -> None:
         root = get_project_root()
         self.binary_dir = (
             binary_dir or os.getenv("LLM_BINARY_DIR") or os.path.join(root, "bin", "llama_bin")
@@ -38,7 +38,7 @@ class LocalRuntime:
         self._validate_path(self.base_model_dir, "Model Dir")
         self.active_process = None
 
-    def _validate_path(self, path: str, label: str):
+    def _validate_path(self, path: str, label: str) -> None:
         """Ensures the path is absolute, exists and lies in safe directories (P3.11)."""
         if not path:
             raise ValueError(f"{label} path is empty")
@@ -55,7 +55,7 @@ class LocalRuntime:
             # We don't raise here in __init__ to avoid early crashes,
             # but we will check again in run_vision
 
-    def _get_binary(self, architecture):
+    def _get_binary(self, architecture: str) -> str:
         """Returns the correct binary path based on the architecture."""
         ext = ".exe" if sys.platform == "win32" else ""
         binaries = {
@@ -102,15 +102,15 @@ class LocalRuntime:
 
     def run_vision(
         self,
-        architecture,
-        model_rel_path,
-        mmproj_rel_path,
-        prompt,
-        image_path,
-        num_ctx=2048,
+        architecture: str,
+        model_rel_path: str,
+        mmproj_rel_path: str,
+        prompt: str,
+        image_path: str,
+        num_ctx: int = 2048,
         registry_name: str = "generic",
         layers: int = 32,
-    ):
+    ) -> str:
         """
         Executes Vision models using architecture-specific binaries.
         """
@@ -153,7 +153,7 @@ class LocalRuntime:
 
         creationflags = 0x08000000 if sys.platform == "win32" else 0
         try:
-            self.active_process = subprocess.Popen(
+            self.active_process = subprocess.Popen(  # noqa: S603
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -175,7 +175,7 @@ class LocalRuntime:
             self.active_process = None
 
     @staticmethod
-    def stop_active():
+    def stop_active() -> None:
         """Statically terminates all active llama processes (Sequential Loading Protocol)."""
         try:
             import subprocess
@@ -183,27 +183,27 @@ class LocalRuntime:
             creationflags = 0x08000000 if sys.platform == "win32" else 0
             if sys.platform == "win32":
                 subprocess.run(
-                    ["taskkill", "/F", "/IM", "llama*", "/T"],
+                    ["taskkill", "/F", "/IM", "llama*", "/T"],  # noqa: S607
                     capture_output=True,
                     creationflags=creationflags,
                 )
             else:
-                subprocess.run(["pkill", "-f", "llama"], capture_output=True)
+                subprocess.run(["pkill", "-f", "llama"], capture_output=True)  # noqa: S607
             logger.info("LocalRuntime: All active llama processes terminated.")
         except Exception as e:
             logger.warning(f"LocalRuntime: Failed to terminate processes ({e})")
 
     async def run_vision_async(
         self,
-        architecture,
-        model_rel_path,
-        mmproj_rel_path,
-        prompt,
-        image_path,
-        num_ctx=2048,
+        architecture: str,
+        model_rel_path: str,
+        mmproj_rel_path: str,
+        prompt: str,
+        image_path: str,
+        num_ctx: int = 2048,
         registry_name: str = "generic",
         layers: int = 32,
-    ):
+    ) -> str:
         """Async wrapper for run_vision to avoid blocking the event loop."""
         return await asyncio.to_thread(
             self.run_vision,

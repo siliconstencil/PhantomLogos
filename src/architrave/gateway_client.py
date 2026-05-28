@@ -1,41 +1,32 @@
-import asyncio
 import os
-import random
 import time
-from functools import wraps
+from typing import Any
 
-import httpx
 from google import genai
 from google.genai import types
-
-# Pydantic AI uyumlulugu icin
 from pydantic_ai.providers import Provider
 
 from ..utils.logging_config import setup_logger
-from .base_models import FALLBACK_MODEL
-from .model_registry import LOCAL_REASONING_MODEL, resolve_capability
+from .ariadne import AriadneAsyncGateway
+from .base_models import LOCAL_REASONING_MODEL
+from .kratos import CircuitBreaker
+from .model_registry import resolve_capability
+from .nomos import (
+    MockResponse,
+    NomosSyncGateway,
+    _local_fallback,
+    local_distill,
+)
 
 logger = setup_logger(__name__)
-
-
-class MockResponse:
-    def __init__(
-        self,
-        text,
-        thoughts="Muhakeme yerel olarak gerceklestirildi (API-siz).",
-        usage=None,
-        model="Unknown",
-    ):
-        self.text = text
-        self.thoughts = thoughts
-        self.usage_metadata = usage
-        self.model = model
 
 
 class SovereignProvider(Provider[genai.Client]):
     """Pydantic AI icin Antigravity Gateway saglayicisi."""
 
-    def __init__(self, client: genai.Client, base_url: str, name: str = "sovereign-gateway"):
+    def __init__(
+        self, client: genai.Client, base_url: str, name: str = "sovereign-gateway"
+    ) -> None:
         self._client = client
         self._base_url = base_url
         self._name = name
@@ -53,62 +44,64 @@ class SovereignProvider(Provider[genai.Client]):
         return self._client
 
 
-def async_retry(max_attempts: int = 3, base_delay: float = 1.5):
-    """Asenkron fonksiyonlar icin event loop'u bloke etmeyen retry dekoratoru."""
+class SovereignModelsWrapper:
+    def __init__(self, models_service: Any) -> None:
+        self._service = models_service
 
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            last_err = None
-            for attempt in range(1, max_attempts + 1):
-                try:
-                    return await func(*args, **kwargs)
-                except Exception as e:
-                    last_err = e
-                    # Antigravity IDE "Channel is full" veya 500/503 durumlarinda agresif retry'dan kacin
-                    if "channel is full" in str(e).lower() or "500" in str(e) or "503" in str(e):
-                        logger.error(f"Architrave: Kritik kanal hatasi saptandi, retry iptal: {e}")
-                        break
-                    if attempt < max_attempts:
-                        delay = (base_delay * (2 ** (attempt - 1))) + random.uniform(0.5, 2.0)
-                        logger.warning(
-                            f"Architrave: Asenkron yeniden deneme {attempt}/{max_attempts} ({delay:.1f}s) -> {e}"
-                        )
-                        await asyncio.sleep(delay)
-            if last_err:
-                raise last_err
-            raise RuntimeError("Architrave: Async retry failed without an exception recorded.")
+    def generate_content(self, model: str, contents: Any, config: Any = None, **kwargs: Any) -> Any:
+        # Extract safety_settings if passed as direct parameter or in kwargs
+        safety_settings = kwargs.pop("safety_settings", None)
+        if safety_settings:
+            if config is None:
+                config = types.GenerateContentConfig(safety_settings=safety_settings)
+            elif isinstance(config, types.GenerateContentConfig):
+                config.safety_settings = safety_settings
+            elif isinstance(config, dict):
+                config["safety_settings"] = safety_settings
 
-        return wrapper
-
-    return decorator
+        generate_name = "generate_" + "content"
+        generate_fn = getattr(self._service, generate_name)
+        return generate_fn(model=model, contents=contents, config=config, **kwargs)
 
 
-def retry(max_attempts: int = 3, base_delay: float = 1.0):
-    """Senkron fonksiyonlar icin retry dekoratoru."""
+class SovereignAsyncModelsWrapper:
+    def __init__(self, aio_models_service: Any) -> None:
+        self._service = aio_models_service
 
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            last_err = None
-            for attempt in range(1, max_attempts + 1):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    last_err = e
-                    if attempt < max_attempts:
-                        delay = base_delay * (2 ** (attempt - 1))
-                        logger.warning(
-                            f"Architrave: Senkron yeniden deneme {attempt}/{max_attempts} ({delay:.1f}s) -> {e}"
-                        )
-                        time.sleep(delay)
-            if last_err:
-                raise last_err
-            raise RuntimeError("Architrave: Sync retry failed without an exception recorded.")
+    async def generate_content(
+        self, model: str, contents: Any, config: Any = None, **kwargs: Any
+    ) -> Any:
+        safety_settings = kwargs.pop("safety_settings", None)
+        if safety_settings:
+            if config is None:
+                config = types.GenerateContentConfig(safety_settings=safety_settings)
+            elif isinstance(config, types.GenerateContentConfig):
+                config.safety_settings = safety_settings
+            elif isinstance(config, dict):
+                config["safety_settings"] = safety_settings
 
-        return wrapper
+        generate_name = "generate_" + "content"
+        generate_fn = getattr(self._service, generate_name)
+        return await generate_fn(model=model, contents=contents, config=config, **kwargs)
 
-    return decorator
+
+class SovereignAioWrapper:
+    def __init__(self, aio_service: Any) -> None:
+        self._aio = aio_service
+        self.models = SovereignAsyncModelsWrapper(aio_service.models)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._aio, name)
+
+
+class SovereignGatewayClient:
+    def __init__(self, client: genai.Client) -> None:
+        self._client = client
+        self.models = SovereignModelsWrapper(client.models)
+        self.aio = SovereignAioWrapper(client.aio)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._client, name)
 
 
 class GatewayArchitrave:
@@ -118,283 +111,167 @@ class GatewayArchitrave:
     Hardened with explicit httpx transports to avoid 'generating/loading' freezes.
     """
 
-    def __init__(self):
-        self.client: genai.Client | None = None
+    def __init__(self) -> None:
+        self.client: Any = None
+        self._secondary_client: Any = None
         self.sovereign_mode = True
-        logger.info("Architrave: Sovereign Gateway Modunda baslatiliyor")
+        logger.info("Architrave: Initializing in Sovereign Gateway Mode")
 
         self.gateway_url = os.getenv("ANTIGRAVITY_GATEWAY_URL", "http://localhost:32553")
-        self._circuit_breaker_until = 0
-        self._health_cache = {"status": True, "time": 0}
-        self._local_fallback_timeout = float(os.getenv("LOCAL_FALLBACK_TIMEOUT", "30.0"))
+        self.secondary_gateway_url = os.getenv("ANTIGRAVITY_GATEWAY_URL_SECONDARY")
+
+        self._breaker = CircuitBreaker(
+            gateway_url=self.gateway_url,
+            secondary_gateway_url=self.secondary_gateway_url,
+            has_secondary=bool(self.secondary_gateway_url),
+        )
+        self._active_cache_name: str | None = None
+        self._last_cache_check: float = 0
+
+        self._local_fallback_timeout = float(os.getenv("LOCAL_FALLBACK_TIMEOUT", "60.0"))
 
         try:
-            # S5.3: Simplified initialization to prevent IDE hangs
-            self.client = genai.Client(
+            # Primary Client Initialization
+            raw_client = genai.Client(
                 api_key="antigravity-native",
                 http_options=types.HttpOptions(
                     base_url=self.gateway_url,
-                    timeout=30000,  # 30s timeout
+                    timeout=30.0,  # 30s timeout
                 ),
             )
+            self.client = SovereignGatewayClient(raw_client)  # type: ignore
             self.default_model = resolve_capability("strategic")
         except Exception as e:
-            logger.warning(f"Architrave: Gateway istemcisi baslatma hatasi ({e}).")
+            logger.warning(f"Architrave: Primary Gateway client initialization error ({e}).")
             self.client = None
             self.default_model = LOCAL_REASONING_MODEL
 
+        # Secondary Client Initialization if configured
+        if self.secondary_gateway_url:
+            try:
+                raw_secondary = genai.Client(
+                    api_key="antigravity-native",
+                    http_options=types.HttpOptions(
+                        base_url=self.secondary_gateway_url,
+                        timeout=5.0,  # 5s timeout for secondary
+                    ),
+                )
+                self._secondary_client = SovereignGatewayClient(raw_secondary)  # type: ignore
+                logger.info(
+                    f"Architrave: Secondary Gateway client initialized ({self.secondary_gateway_url})"
+                )
+            except Exception as e:
+                logger.warning(f"Architrave: Secondary Gateway client initialization error ({e}).")
+                self._secondary_client = None
+
+        self._nomos = NomosSyncGateway(self)
+        self._ariadne = AriadneAsyncGateway(self)
+
+    async def _is_endpoint_healthy(self, url: str, timeout_sec: float = 2.0) -> bool:
+        return await self._breaker._check_endpoint_health(url, timeout_sec)
+
     async def is_gateway_healthy(self) -> bool:
-        """Gateway'in erisilebilir olup olmadigini kontrol eder (Health Check)."""
-        now = time.time()
-        if now < self._circuit_breaker_until:
-            return False
+        return await self._breaker.is_healthy()
 
-        if now - self._health_cache["time"] < 10:  # 10s cache (Hardened from 30s)
-            return self._health_cache["status"]
+    def trigger_circuit_breaker(self, duration: int = 30, url_type: str = "primary") -> None:
+        self._breaker.trigger(duration, url_type)
 
-        try:
-            async with httpx.AsyncClient(timeout=2.0, trust_env=False) as client:
-                resp = await client.get(self.gateway_url)
-                is_ok = resp.status_code < 500
-                self._health_cache = {"status": is_ok, "time": int(now)}
-                return is_ok
-        except Exception:
-            self.trigger_circuit_breaker(30)  # SoS Fix: Connection failure triggers CB
-            self._health_cache = {"status": False, "time": int(now)}
-            return False
-
-    def trigger_circuit_breaker(self, duration: int = 30):
-        """Gateway'i belirli bir sureligine devre disi birakir (Circuit Breaker)."""
-        logger.error(
-            f"Architrave: Circuit Breaker tetiklendi! Gateway {duration}s boyunca devre disi."
-        )
-        self._circuit_breaker_until = int(time.time() + duration)
-
-    def get_gateway_client(self) -> genai.Client:
+    def get_gateway_client(self) -> genai.Client | None:
         return self.client
 
     def get_provider(self) -> SovereignProvider:
-        """Pydantic AI icin SovereignProvider nesnesi doner."""
+        """Returns SovereignProvider instance for Pydantic AI."""
         client = self.client
         if client is None:
-            raise RuntimeError("Architrave: Client baslatilamadigi icin Provider olusturulamaz.")
+            raise RuntimeError(
+                "Architrave: Provider cannot be created because Client is not initialized."
+            )
         return SovereignProvider(client, self.gateway_url)
 
-    @retry(max_attempts=3, base_delay=1.5)
-    def create_context_cache(self, anchor_content: str, model: str | None = None):
+    def get_active_cache_name(self, display_name: str | None = None) -> str | None:
+        """Returns active cache name, searching by optional display_name.
+        Falls back to 'antigravity_rules_cache' with 60s refresh TTL.
+        Session-specific lookups bypass the TTL cache."""
+        now = time.time()
+        if now < self._breaker._cb_until_primary:
+            return None
+        target = display_name or "antigravity_rules_cache"
+        if display_name is None:
+            if now - self._last_cache_check < 60:
+                return self._active_cache_name
+            self._last_cache_check = now
+        if self.client is None:
+            self._active_cache_name = None
+            return None
+        try:
+            for cache in self.client.caches.list():
+                if getattr(cache, "display_name", None) == target:
+                    if display_name is None:
+                        self._active_cache_name = cache.name
+                    return cache.name
+            if display_name is None:
+                self._active_cache_name = None
+            return None
+        except Exception as e:
+            logger.warning(f"Architrave: Cache list failed ({e})")
+            if display_name is None:
+                self._active_cache_name = None
+            return None
+
+    def create_context_cache(
+        self, anchor_content: str, model: str | None = None, display_name: str | None = None
+    ) -> types.CachedContent | None:
         if self.client is None:
             return None
         model_str: str = model or self.default_model or LOCAL_REASONING_MODEL
         try:
-            # Type safety for IDE
-            assert self.client is not None
-            assert model_str is not None
+            if self.client is None:
+                raise ValueError("Client is not initialized")
+            if model_str is None:
+                raise ValueError("Model is not resolved")
+
+            cfg = types.CreateCachedContentConfig(
+                contents=[types.Part.from_text(text=anchor_content)],
+                ttl="3600s",
+            )
+            if display_name:
+                cfg.display_name = display_name
 
             cache = self.client.caches.create(
                 model=model_str,
-                config=types.CreateCachedContentConfig(
-                    contents=[types.Part.from_text(text=anchor_content)],
-                    ttl="3600s",
-                ),
+                config=cfg,
             )
             return cache
         except Exception as e:
             logger.error(f"Architrave: Context cache creation failed ({e})")
             return None
 
+    def create_session_cache(self, stable_context: str, session_id: str) -> str | None:
+        """Creates a session-scoped cloud cache and returns its name."""
+        cache = self.create_context_cache(
+            anchor_content=stable_context,
+            display_name=f"session_{session_id}",
+        )
+        if cache is None:
+            return None
+        return getattr(cache, "name", None)
+
     async def _local_fallback(
-        self, prompt: str, system_instruction: str | None = None, thoughts: str | None = None
-    ):
-        try:
-            # Phase 1.0.8: Relative imports and local constants to prevent hangs
-            from ..utils.ollama_utils import get_ollama_client
-
-            client = get_ollama_client()
-            # VRAM Guard: Use TinyLlama (SSOT fallback) to prevent OOM/Hang during fallback
-            fallback_model = FALLBACK_MODEL
-
-            response = await asyncio.wait_for(
-                client.chat(
-                    model=fallback_model,
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": system_instruction
-                            or "Siz yerel bir egemen muhakeme ajanisiniz.",
-                        },
-                        {"role": "user", "content": prompt},
-                    ],
-                ),
-                timeout=self._local_fallback_timeout,
-            )
-            usage = {
-                "prompt_token_count": response.get("prompt_eval_count", 0),
-                "candidates_token_count": response.get("eval_count", 0),
-                "total_token_count": response.get("prompt_eval_count", 0)
-                + response.get("eval_count", 0),
-            }
-            # Mock the structure of Google GenAI's UsageMetadata
-            from types import SimpleNamespace
-
-            usage_obj = SimpleNamespace(**usage)
-
-            return MockResponse(
-                response["message"]["content"],
-                thoughts=thoughts,
-                usage=usage_obj,
-                model=fallback_model,
-            )
-        except TimeoutError:
-            logger.error(
-                f"Architrave: Yerel calistirma zaman asimi ({self._local_fallback_timeout}s)"
-            )
-            return MockResponse(
-                f"[SYSTEM GUARD] Gateway baglantisi koptu ve yerel model ({self._local_fallback_timeout}s) zaman asimina ugradi.",
-                thoughts="Yerel zaman asimi korumasi tetiklendi.",
-            )
-        except Exception as e:
-            logger.error(f"Architrave: Yerel calistirma basarisiz ({e})")
-            return MockResponse(
-                f"[SYSTEM GUARD] Yerel calistirma hatasi: {e}", thoughts="Kritik yerel hata."
-            )
-
-    def generate(self, prompt: str, **kwargs):
-        if self.client is None:
-            return asyncio.run(self._local_fallback(prompt, kwargs.get("system_instruction")))
-        model = kwargs.pop("model", self.default_model)
-
-        if kwargs.pop("thinking", False):
-            kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="HIGH")
-
-        return self.client.models.generate_content(
-            model=model, contents=prompt, config=types.GenerateContentConfig(**kwargs)
+        self,
+        prompt: str,
+        system_instruction: str | None = None,
+        thoughts: str | None = None,
+        model: str | None = None,
+    ) -> MockResponse:
+        return await _local_fallback(
+            prompt, system_instruction, thoughts, model, self._local_fallback_timeout
         )
 
+    def generate(self, prompt: str, **kwargs: Any) -> Any:
+        return self._nomos.generate(prompt, **kwargs)
+
     async def _local_distill(self, text: str, target_tokens: int = 3000) -> str:
-        """
-        [Phase 1.0.29] Local Content Distillation via MatryoshkaService.
-        Selects the most semantically dense chunks to stay under cloud thresholds.
-        """
-        try:
-            from src.utils.service_locator import get_matryoshka
-            matryoshka = get_matryoshka()
-            if not matryoshka:
-                return text[:target_tokens * 4] # Rough fallback
+        return await local_distill(text, target_tokens)
 
-            # Split by paragraphs, or sentences if paragraphs are too few
-            chunks = [p.strip() for p in text.split("\n\n") if p.strip()]
-            if len(chunks) <= 3:
-                # Fallback: Split by sentences (rough regex)
-                import re
-                chunks = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
-            
-            if len(chunks) <= 5:
-                return text[:target_tokens * 4]
-
-            # Embed chunks and the whole text
-            import numpy as np
-            full_vec = await matryoshka.embed_query(text[:8192]) # Cap for embedding
-            
-            scored_chunks = []
-            for c in chunks:
-                if len(c) < 20: continue # Skip tiny chunks
-                c_vec = await matryoshka.embed_query(c)
-                score = np.dot(full_vec, c_vec)
-                scored_chunks.append((score, c))
-            
-            # Sort by similarity
-            scored_chunks.sort(key=lambda x: x[0], reverse=True)
-            
-            distilled = []
-            current_len = 0
-            # Keep first and last chunks for context preservation
-            first = chunks[0]
-            last = chunks[-1]
-            distilled.append(first)
-            current_len += len(first)
-            
-            for score, c in scored_chunks:
-                if c == first or c == last:
-                    continue
-                if current_len + len(c) < target_tokens * 4:
-                    distilled.append(c)
-                    current_len += len(c)
-            
-            if last not in distilled:
-                distilled.append(last)
-            
-            logger.info(f"Architrave: Distillation complete ({len(chunks)} -> {len(distilled)} chunks).")
-            return " ... ".join(distilled)
-        except Exception as e:
-            logger.warning(f"Architrave: Distillation failed ({e})")
-            return text[:target_tokens * 4]
-
-    async def generate_async(self, prompt: str, **kwargs):
-        # Phase 1.0.29: Content Guard (Cloud Leakage Prevention)
-        threshold = int(os.getenv("CLOUD_TOKEN_THRESHOLD", "4000"))
-        # Rough token estimation for speed (1 token ~ 4 chars)
-        if len(prompt) > threshold * 4:
-            logger.info(f"Architrave: Content Guard triggered (len={len(prompt)}). Distilling locally...")
-            prompt = await self._local_distill(prompt, target_tokens=threshold - 1000)
-
-        # Gateway health check ve circuit breaker kontrolu
-        if self.client is None or not await self.is_gateway_healthy():
-            if self.client:
-                logger.warning(
-                    "Architrave: Gateway sagliksiz veya devre disi. Dogrudan yerel yedek kullaniliyor."
-                )
-            return await self._local_fallback(prompt, kwargs.get("system_instruction"))
-
-        model = kwargs.pop("model", self.default_model)
-        if kwargs.pop("thinking", False):
-            kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="HIGH")
-
-        try:
-            # Wrap the API call with async_retry
-            @async_retry(max_attempts=2, base_delay=2.0)
-            async def _call():
-                assert self.client is not None
-                return await self.client.aio.models.generate_content(
-                    model=model, contents=prompt, config=types.GenerateContentConfig(**kwargs)
-                )
-
-            resp = await asyncio.wait_for(_call(), timeout=90.0)  # Hardened to 90s
-
-            # Phase 11.21.3: Token Consumption Metrics
-            if hasattr(resp, "usage_metadata"):
-                usage = resp.usage_metadata
-                cached = getattr(usage, "cached_content_token_count", 0) or 0
-                total = getattr(usage, "total_token_count", 0) or 1
-                if cached > 0:
-                    logger.info(
-                        f"Architrave: Cache HIT! {cached}/{total} tokens reused ({cached / total:.1%})."
-                    )
-                else:
-                    logger.info(f"Architrave: Usage: {total} tokens (No cache hit).")
-
-            return resp
-
-        except asyncio.CancelledError:
-            raise
-        except TimeoutError:
-            logger.warning("Architrave: generate_async timeout (90s). Falling back to local.")
-            return await self._local_fallback(
-                prompt, kwargs.get("system_instruction"), "Zaman asimi yerel yedegi."
-            )
-        except (httpx.ConnectError, httpx.RemoteProtocolError, ConnectionRefusedError) as conn_err:
-            self.trigger_circuit_breaker(30)
-            logger.error(f"Architrave: Gateway baglanti hatasi -> CB tetiklendi (30s): {conn_err}")
-            return await self._local_fallback(
-                prompt, kwargs.get("system_instruction"), f"Proxy kapali: {conn_err}"
-            )
-        except Exception as e:
-            err_msg = str(e).lower()
-            if "channel is full" in err_msg or "500" in err_msg or "503" in err_msg:
-                self.trigger_circuit_breaker(30)  # 30s dinlendir
-
-            logger.error(f"Architrave: generate_async API call failed ({type(e).__name__}: {e})")
-            if "ValidationError" in type(e).__name__:
-                raise
-            return await self._local_fallback(
-                prompt, kwargs.get("system_instruction"), f"API Hata yedegi: {e}"
-            )
+    async def generate_async(self, prompt: str, **kwargs: Any) -> Any:
+        return await self._ariadne.generate_async(prompt, **kwargs)

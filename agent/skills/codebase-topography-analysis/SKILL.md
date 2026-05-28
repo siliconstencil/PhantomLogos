@@ -4,6 +4,14 @@ description: Advanced structural analysis of the codebase via AST mapping and de
 version: 1.0.0
 license: MIT
 compatibility: opencode
+model_role: primary
+allowed_tools:
+  - ls
+  - mapper
+  - semantic
+  - mcp_slm_recall
+  - mcp_slm_search
+tier: 2
 when_to_use:
   - Planning structural refactoring or directory migration.
   - Identifying the side-effects of changing a core utility.

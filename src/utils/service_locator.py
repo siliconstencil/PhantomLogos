@@ -12,7 +12,7 @@ logger = setup_logger(__name__)
 _registry: dict[str, Any] = {}
 
 
-def register_service(name: str, service: Any):
+def register_service(name: str, service: Any) -> None:
     """Registers a service instance."""
     _registry[name] = service
     logger.debug(f"ServiceLocator: Registered '{name}'")
@@ -23,7 +23,7 @@ def get_service(name: str) -> Any | None:
     return _registry.get(name)
 
 
-def get_meta_store():
+def get_meta_store() -> Any:
     """Lazy loader for MetaCognitionStore (Axis 8)."""
     if "meta_store" not in _registry:
         from cognition.mnemosyne.meta_cognition import MetaCognitionStore
@@ -32,7 +32,7 @@ def get_meta_store():
     return _registry["meta_store"]
 
 
-def get_self_tuner():
+def get_self_tuner() -> Any:
     """Lazy loader for Lachesis SelfTuner."""
     if "self_tuner" not in _registry:
         from src.lachesis.self_tuner import SelfTuner
@@ -41,7 +41,7 @@ def get_self_tuner():
     return _registry["self_tuner"]
 
 
-def get_model_loader():
+def get_model_loader() -> Any:
     """Lazy loader for Morpheus ModelLoader."""
     if "model_loader" not in _registry:
         from cognition.morpheus.loader import ModelLoader
@@ -50,7 +50,7 @@ def get_model_loader():
     return _registry["model_loader"]
 
 
-def get_sweeper():
+def get_sweeper() -> Any:
     """Lazy loader for VRAMSweeper."""
     if "sweeper" not in _registry:
         from cognition.morpheus.sweeper import VRAMSweeper
@@ -59,21 +59,23 @@ def get_sweeper():
     return _registry["sweeper"]
 
 
-def get_bootstrap_loader():
+def get_bootstrap_loader() -> Any:
     """Proxy to Clotho Bootstrap singleton loader."""
     import importlib
+
     _mod = importlib.import_module("src.clotho.bootstrap")
     return _mod.get_loader()
 
 
-def get_bootstrap_sweeper():
+def get_bootstrap_sweeper() -> Any:
     """Proxy to Clotho Bootstrap singleton sweeper."""
     import importlib
+
     _mod = importlib.import_module("src.clotho.bootstrap")
     return _mod.get_sweeper()
 
 
-def get_matryoshka():
+def get_matryoshka() -> Any:
     """Lazy loader for MatryoshkaService (Axis 4)."""
     if "matryoshka" not in _registry:
         from src.atropos.matryoshka_service import MatryoshkaService

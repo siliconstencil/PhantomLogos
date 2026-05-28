@@ -1,13 +1,12 @@
-import pytest
+from cognition.sophia import verify_math
 from src.lachesis.verifiers import SympyVerifier
-from cognition.sophia import verify_math, verify_logic
 
 
 def _is_valid(res) -> bool:
     """Helper: handles both dict and VerificationResult objects."""
     if isinstance(res, dict):
         return bool(res.get("valid") or res.get("is_valid"))
-    return bool(getattr(res, 'verified', False) or getattr(res, 'is_verified', False))
+    return bool(getattr(res, "verified", False) or getattr(res, "is_verified", False))
 
 
 def test_sympy_consolidated_port():

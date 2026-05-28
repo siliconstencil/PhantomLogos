@@ -1,23 +1,16 @@
 ---
 name: mnemosyne-write-path
-description: Enforcing DB-first persistence via Mnemosyne Axis 1 Episodic Store write path logging.
+description: Enforcing DB-first persistence via Mnemosyne Axis 1 Episodic Store write
+  path logging.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Logging agent steps to EpisodicStore (Axis 1).
-  - Recording tool usage in ProceduralStore (Axis 2).
-  - Persisting operational findings to DB instead of flat files.
-  - Ensuring every agent action has a persistent record.
-depends-on:
-  - hermes-bridge
-metadata:
-  audience: developers
-  tier: L2-Clotho
-  workflow: persistence
-allowed-tools:
-  - semantic
-  - report
+model_role: light
+allowed_tools:
+- mcp_slm_remember
+- mcp_slm_observe
+- mcp_slm_report_outcome
+tier: 1
 ---
 # Mnemosyne Write Path
 

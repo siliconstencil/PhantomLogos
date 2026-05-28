@@ -1,15 +1,20 @@
 # Bridge to Lachesis (Axis 11 Consolidation)
+from src.architrave.model_registry import resolve_model
 from src.lachesis.verifiers import SympyVerifier
 
-from .gnosis import get_dynamic_context
 from .eidos import CritiqueResult, ReasoningState
+from .gnosis import get_dynamic_context
 from .hephaestus import extract_tool_calls, strip_thinking_block
 from .router import TaskRouter
-from .sophia import run_critique, run_draft, run_refine
-from src.architrave.model_registry import resolve_model
+from .sophia import (
+    TEMPERATURE_PROFILES,
+    ToolValidator,
+    get_temperature,
+    run_critique,
+    run_draft,
+    run_refine,
+)
 from .state_bus import StateBus, get_state_bus
-from .temperature_control import get_temperature
-from .tool_validator import ToolValidator
 
 _v = SympyVerifier()
 verify_math = _v.verify_math

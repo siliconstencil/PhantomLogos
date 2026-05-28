@@ -4,8 +4,9 @@ import json
 import os
 
 import numpy as np
-from sqlalchemy import Column, DateTime, Integer, LargeBinary, String, Text, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 from src.utils.logging_config import setup_logger
 
@@ -17,6 +18,7 @@ from .semantic_store import SemanticStore
 logger = setup_logger(__name__)
 from .models import MnemosyneBase, VisualMemory
 
+
 class VisualStore:
     AXIS_ID = 14
     MAX_RECORDS = 50
@@ -27,7 +29,7 @@ class VisualStore:
 
         db_url = db_url or f"sqlite:///{to_absolute_path('data/mnemosyne.db')}"
         self.engine = create_engine(
-            db_url, connect_args={"check_same_thread": False, "timeout": 30}
+            db_url, connect_args={"check_same_thread": False, "timeout": 30}, poolclass=NullPool
         )
         MnemosyneBase.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
@@ -156,6 +158,7 @@ class VisualStore:
         """[Phase 1.0.30] Standardized embedding via MatryoshkaService with Prefixes."""
         try:
             from src.utils.service_locator import get_matryoshka
+
             matryoshka = get_matryoshka()
             if not matryoshka:
                 raise RuntimeError("MatryoshkaService not available.")

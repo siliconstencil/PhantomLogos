@@ -1,21 +1,23 @@
 import threading
+from typing import Self
+
 
 class ActivityMonitor:
     _instance = None
     _lock = threading.Lock()
     _active_tools = 0
 
-    def __new__(cls):
+    def __new__(cls) -> "Self":
         with cls._lock:
             if cls._instance is None:
-                cls._instance = super(ActivityMonitor, cls).__new__(cls)
+                cls._instance = super().__new__(cls)
             return cls._instance
 
-    def increment(self):
+    def increment(self) -> None:
         with self._lock:
             self._active_tools += 1
 
-    def decrement(self):
+    def decrement(self) -> None:
         with self._lock:
             self._active_tools = max(0, self._active_tools - 1)
 

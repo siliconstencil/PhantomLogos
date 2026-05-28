@@ -1,21 +1,23 @@
 """initial_schema_consolidation
 
 Revision ID: cd5f6f979cb6
-Revises: 
+Revises:
 Create Date: 2026-05-15 21:02:24.386373
 
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+from typing import Union
+
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'cd5f6f979cb6'
-down_revision: Union[str, Sequence[str], None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "cd5f6f979cb6"
+down_revision: str | Sequence[str] | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

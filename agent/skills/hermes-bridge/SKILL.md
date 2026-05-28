@@ -4,20 +4,14 @@ description: Cross-system verification and DB-first persistence auditing protoco
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - An external L3 Hermes/OpenCode session is in progress.
-  - Verifying system state claims against Mnemosyne DB records.
-  - Ensuring operational findings are persisted correctly.
-metadata:
-  audience: developers
-  tier: L3-Auditor
-  workflow: auditing
-allowed-tools:
-  - semantic
-  - report
-  - mapper
+model_role: light
+allowed_tools:
+- verify
+- report
+- mcp_slm_remember
+- ls
+tier: 1
 ---
-
 # Hermes Bridge Audit Protocol
 
 ## 1. Claim Verification

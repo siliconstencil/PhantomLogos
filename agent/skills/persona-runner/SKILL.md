@@ -4,6 +4,16 @@ description: Focuses on operational execution, rapid coding, and deterministic t
 version: 1.1.0
 license: MIT
 compatibility: opencode
+model_role: primary
+allowed_tools:
+  - write_file
+  - replace_content
+  - run_code
+  - ls
+  - semantic
+  - mcp_slm_remember
+  - mcp_slm_recall
+tier: 2
 when_to_use:
   - Executing granular coding tasks defined by Sophia.
   - Running terminal commands and analyzing outputs.

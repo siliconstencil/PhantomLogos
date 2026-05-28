@@ -1,18 +1,17 @@
 ---
 name: token-budget
-description: Monitoring and enforcing token usage limits to ensure cost-efficiency and performance.
+description: Monitoring and enforcing token usage limits to ensure cost-efficiency
+  and performance.
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - High-volume reasoning loops (e.g., complex refactoring).
-  - Monitoring total session costs.
-metadata:
-  audience: developers
-  tier: L1-Atropos
-  workflow: monitoring
+model_role: primary
+allowed_tools:
+- report
+- mcp_slm_remember
+- ls
+tier: 2
 ---
-
 # Skill: Token Budget
 
 Ensures sustainable operation by monitoring and limiting token consumption.

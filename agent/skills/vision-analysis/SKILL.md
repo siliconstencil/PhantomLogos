@@ -4,14 +4,13 @@ description: Analyzing UI mockups, diagrams, and visual assets via multimodal mo
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - User provides a screenshot or mockup for UI implementation.
-  - Analyzing architectural diagrams (Mermaid, PNG).
-  - Debugging visual layout issues.
-metadata:
-  audience: designers
-  tier: L2-Runner
-  workflow: analysis
+model_role: primary
+allowed_tools:
+- vision
+- write_file
+- semantic
+- mcp_slm_remember
+tier: 2
 ---
 # Skill: Vision Analysis
 Bridges the gap between visual intent and technical implementation.

@@ -1,24 +1,17 @@
 ---
 name: sovereign-shield
-description: File integrity protection, snapshot management, and atomic rollback for the Sovereign Shield system.
+description: File integrity protection, snapshot management, and atomic rollback for
+  the Sovereign Shield system.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Protecting critical files from unauthorized modification or data loss.
-  - Managing SHA-256 snapshots and integrity verification.
-  - Handling atomic rollback on integrity violations.
-  - L0 Auth Token lifecycle management (60s TTL).
-depends-on:
-  - security-first-guardian
-metadata:
-  audience: developers
-  tier: L3-Auditor
-  workflow: protection
-allowed-tools:
-  - ls
-  - verify
-  - report
+model_role: primary
+allowed_tools:
+- verify
+- ls
+- report
+- mcp_slm_remember
+tier: 2
 ---
 # Skill: Sovereign Shield (Sovereign Edition)
 

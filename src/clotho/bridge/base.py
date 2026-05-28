@@ -1,6 +1,7 @@
 import asyncio
+import threading
 import time
-from typing import Any
+from typing import Any, ClassVar
 
 from cognition.mnemosyne.session_log import SessionLog
 
@@ -17,16 +18,29 @@ class ToolBridge:
     Decouples the brain (Sophia/Clotho) from tool execution (Muscle).
     """
 
-    LOCAL_MODEL_MAP = {
+    LOCAL_MODEL_MAP: ClassVar[dict] = {
         "qwen-7b": "qwen3.5-4b-ud:latest",
         "ministral-3b": "ministral-3b-ud:latest",
         "phi-4-mini": "phi-4-mini-ud:latest",
         "jina-reranker": "jina-reranker-v3:latest",
         "nomic-embed": "nomic-embed-text-v2-moe-q8:latest",
         "qwen-math": "qwen2.5-math-7b-q4:latest",
+        "slm": "slm-mcp:latest",
     }
 
-    def __init__(self, session_id: str, log: SessionLog | None = None, agent_id: str = "system"):
+    _mcp_handlers: ClassVar[dict] = {}
+    _warning_counter = 0
+    _warning_counter_lock = threading.Lock()
+
+    @classmethod
+    def register_mcp_tool(cls, server_name: str, tool_name: str, handler: Any) -> None:
+        ns_name = f"{server_name}_{tool_name}"
+        cls._mcp_handlers[ns_name] = handler
+        logger.info(f"ToolBridge: Dynamic MCP tool '{ns_name}' registered successfully.")
+
+    def __init__(
+        self, session_id: str, log: SessionLog | None = None, agent_id: str = "system"
+    ) -> None:
         self.session_id = session_id
         self.log = log or SessionLog(session_id)
         self.agent_id = agent_id
@@ -134,8 +148,8 @@ class ToolBridge:
                 ProceduralStore().record_usage(
                     tool_name=tool_name, task_type="execution", success=False
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"ToolBridge: procedural record skipped ({e})")
 
             ActivityMonitor().decrement()
             return {"output": f"Error: {e!s}", "anchor": {}}
@@ -156,7 +170,7 @@ class ToolBridge:
 
     def _record_operational(
         self, tool_name: str, level: str, message: str, agent_id: str = "system"
-    ):
+    ) -> None:
         try:
             from cognition.mnemosyne.operational_store import OperationalStore
 
@@ -170,6 +184,32 @@ class ToolBridge:
             )
         except Exception as e:
             logger.warning(f"ToolBridge: Operational event recording failed ({e})")
+
+        # SLM Observe Integration (ERROR always, WARNING every 5th event, INFO ignored)
+        should_observe = False
+        upper_level = level.upper()
+        if upper_level == "ERROR":
+            should_observe = True
+        elif upper_level == "WARNING":
+            with ToolBridge._warning_counter_lock:
+                ToolBridge._warning_counter += 1
+                if ToolBridge._warning_counter % 5 == 0:
+                    should_observe = True
+
+        if should_observe:
+            try:
+                from src.architrave.mcp import get_slm_client
+
+                slm = get_slm_client()
+                content = f"ToolBridge event: {tool_name} [{level}] {message}"
+                try:
+                    loop = asyncio.get_running_loop()
+                    loop.create_task(slm.aobserve(content=content, agent_id=agent_id))  # noqa: RUF006
+                except RuntimeError:
+                    # Fallback to sync observe if no running loop
+                    slm.observe(content=content, agent_id=agent_id)
+            except Exception as se:
+                logger.debug(f"ToolBridge: SLM observe logging failed ({se})")
 
     async def _vram(self, input_data: Any) -> Any:
         try:
@@ -188,7 +228,7 @@ class ToolBridge:
         except Exception as e:
             return f"VRAM check error: {e!s}"
 
-    async def _report(self, input_data: Any) -> Any:
+    async def _report(self, _input_data: Any) -> Any:
         try:
             from cognition.mnemosyne.operational_store import OperationalStore
 
@@ -198,7 +238,7 @@ class ToolBridge:
 
     async def _shadow_verify_claim(
         self, claim_type: str, claimed_val: Any, context: dict | None = None
-    ):
+    ) -> None:
         is_valid = True
         detail = ""
         context = context or {}
@@ -208,7 +248,7 @@ class ToolBridge:
                 is_valid = False
                 detail = f"Claimed {claimed_val} GB free VRAM, but actual is {actual_gb} GB"
         elif claim_type == "ngl":
-            model_name = context.get("model", "unknown")
+            context.get("model", "unknown")
             if int(claimed_val) > 100 or int(claimed_val) < 0:
                 is_valid = False
                 detail = f"Claimed impossible NGL layers: {claimed_val}"
@@ -256,9 +296,10 @@ class ToolBridge:
             "write_file": _write_file,
             "replace_content": _replace_content,
         }
-        handler = handlers.get(tool_name)
+        handler = handlers.get(tool_name) or self._mcp_handlers.get(tool_name)
         if handler is None:
-            return f"Unknown tool: {tool_name}. Available: {', '.join(handlers)}"
+            available = list(handlers.keys()) + list(self._mcp_handlers.keys())
+            return f"Unknown tool: {tool_name}. Available: {', '.join(available)}"
 
         import inspect
 
@@ -283,6 +324,6 @@ class ToolBridge:
                     agent_id=self.agent_id,
                     detail=f"Tool {tool_name} failed: {result.get('stderr', 'Unknown error')}",
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"ToolBridge: shadow violation record skipped ({e})")
         return result

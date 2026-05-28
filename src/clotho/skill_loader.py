@@ -20,7 +20,7 @@ class SkillLoader:
     Each skill is a Markdown file with YAML frontmatter for metadata.
     """
 
-    def __init__(self, skills_dir: str = SKILLS_ROOT):
+    def __init__(self, skills_dir: str = SKILLS_ROOT) -> None:
         self.skills_dir = skills_dir
         self._cache: dict[str, dict] = {}
         self._load_all()
@@ -35,7 +35,7 @@ class SkillLoader:
             logger.error(f"SkillLoader: YAML parse error in frontmatter: {e}")
             return {}
 
-    def _load_all(self):
+    def _load_all(self) -> None:
         if not os.path.isdir(self.skills_dir):
             logger.warning(f"SkillLoader: Skills directory not found: {self.skills_dir}")
             return
@@ -107,7 +107,7 @@ class SkillLoader:
         found = []
         task_lower = task.lower()
         for name, info in self._cache.items():
-            body_lower = info["body"].lower()
+            info["body"].lower()
             desc_lower = info["meta"].get("description", "").lower()
             if any(kw in task_lower for kw in name.split("-")) or any(
                 kw in task_lower for kw in desc_lower.split()[:5]

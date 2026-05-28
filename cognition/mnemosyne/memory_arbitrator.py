@@ -11,14 +11,25 @@ class MemoryArbitrator:
     Formula: priority_score = relevance * recency_weight * reliability
     """
 
-    def __init__(self, recency_decay_hours: float = 24.0):
-        self.recency_decay = recency_decay_hours * 3600
+    def __init__(
+        self,
+        base_decay_hours: float = 24.0,
+        sensitivity: float = 1.0,
+        recency_decay_hours: float | None = None,
+    ):
+        if recency_decay_hours is not None:
+            base_decay_hours = recency_decay_hours
+        self.base_decay_hours = base_decay_hours
+        self.sensitivity = sensitivity
+
+    def _get_adaptive_decay(self, importance: float) -> float:
+        return self.base_decay_hours * (1.0 + self.sensitivity * importance) * 3600
 
     def score(
         self, importance: float, timestamp: float, frequency: int = 1, reliability: float = 1.0
     ) -> float:
         """
-        FIR Scoring Algorithm (2026 SOTA).
+        FIR Scoring Algorithm (2026 SOTA) with Ebbinghaus adaptive S-parameter.
         importance: Base strategic value (0-1).
         frequency: Number of references in session.
         recency: Time since last use.
@@ -26,7 +37,8 @@ class MemoryArbitrator:
         import math
 
         age_seconds = max(0, time.time() - timestamp)
-        recency_weight = math.exp(-age_seconds / self.recency_decay)
+        decay_seconds = self._get_adaptive_decay(importance)
+        recency_weight = math.exp(-age_seconds / decay_seconds)
 
         # Logarithmic frequency boost: rewarded for reuse but with diminishing returns
         frequency_weight = 1.0 + math.log1p(frequency - 1) * 0.1

@@ -2,8 +2,8 @@ import datetime
 import json
 from typing import Any
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
 
@@ -11,12 +11,11 @@ try:
     from .base import Base
     from .temporal_store import TemporalStore
 except ImportError:
-    from base import Base
     from temporal_store import TemporalStore
 
 logger = setup_logger(__name__)
 
-from .models import MnemosyneBase, ReliabilityBase, MetaRecord, AgentReliability, AgentExperience
+from .models import AgentExperience, AgentReliability, MetaRecord, MnemosyneBase, ReliabilityBase
 
 RELIABILITY_THRESHOLD_LOCK = 0.3
 _RELIABILITY_CACHE = {}  # [SRC:axis_8] Process-level cache for reliability fallback
@@ -287,7 +286,7 @@ class MetaCognitionStore:
                 is_penalty = False
             else:
                 actual_score = delta
-                is_penalty = (actual_score < 0.5)
+                is_penalty = actual_score < 0.5
 
             # EWMA formula: s_t = ALPHA * x_t + (1 - ALPHA) * s_{t-1}
             entry.reliability_score = ALPHA * actual_score + (1.0 - ALPHA) * entry.reliability_score
@@ -307,6 +306,7 @@ class MetaCognitionStore:
                         f"RECOVERY: Agent {agent_id} reliability restored above lock threshold (>=0.3)."
                     )
 
+            entry.cycle_count = (entry.cycle_count or 0) + 1
             entry.updated_at = datetime.datetime.now(datetime.UTC)
             session.commit()
 

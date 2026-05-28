@@ -1,23 +1,16 @@
 ---
 name: temporal-validity
-description: Time-respecting memory retrieval with event_key supersede lifecycle and fact history on Axis 4.
+description: Time-respecting memory retrieval with event_key supersede lifecycle and
+  fact history on Axis 4.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Querying time-sensitive facts with validity windows.
-  - Superseding outdated event records.
-  - Retrieving fact state at a specific point in time.
-  - Working with TemporalStore time-series data.
-depends-on:
-  - mnemosyne-high-fidelity-query
-metadata:
-  audience: developers
-  tier: L2-Clotho
-  workflow: memory
-allowed-tools:
-  - semantic
-  - report
+model_role: light
+allowed_tools:
+- semantic
+- mcp_slm_context
+- verify
+tier: 1
 ---
 # Temporal Validity
 

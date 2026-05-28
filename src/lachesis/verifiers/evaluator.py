@@ -37,20 +37,20 @@ class AdversarialEvaluator:
     Uses heuristic analysis + keyword extraction for realistic grading.
     """
 
-    def __init__(self, session_id: str):
+    def __init__(self, session_id: str) -> None:
         self.session_id = session_id
         self.log = SessionLog(session_id)
         self.verifier = SympyVerifier()
 
     def _design_score(self, draft: str) -> float:
-        lines = [l for l in draft.split("\n") if l.strip()]
+        lines = [line for line in draft.split("\n") if line.strip()]
         if len(lines) < 5:
             return 0.2
-        has_header = any(l.strip().startswith("#") for l in lines)
+        has_header = any(line.strip().startswith("#") for line in lines)
         has_imports = any(
-            l.strip().startswith("import") or l.strip().startswith("from") for l in lines
+            line.strip().startswith("import") or line.strip().startswith("from") for line in lines
         )
-        has_structure = sum(1 for l in lines if l.strip().startswith(("class ", "def ")))
+        has_structure = sum(1 for line in lines if line.strip().startswith(("class ", "def ")))
         score = 0.5
         if has_header:
             score += 0.1
@@ -92,7 +92,11 @@ class AdversarialEvaluator:
         return min(1.0, density + 0.1)
 
     async def evaluate(
-        self, draft: str, contract: dict = None, tool_results: list = None, anchors: str = None
+        self,
+        draft: str,
+        contract: dict | None = None,
+        tool_results: list | None = None,
+        anchors: str | None = None,
     ) -> dict:
         if not contract:
             contract = {"threshold": 0.7}
@@ -210,7 +214,7 @@ class AdversarialEvaluator:
         return min(1.0, 0.5 + len(refs) * 0.15)
 
     def _consistency_score(
-        self, draft: str, tool_results: list = None, anchors: str = None
+        self, draft: str, tool_results: list | None = None, anchors: str | None = None
     ) -> float:
         if not tool_results and not anchors:
             return 0.7
@@ -256,17 +260,17 @@ class AdversarialEvaluator:
 
         # Phase 1.0.31: Parallel Neuro-Symbolic Verification
         inequality_exprs = re.findall(r"([a-zA-Z]\s*[><]=?\s*\d+)", draft)
-        
-        tasks = [
-            asyncio.to_thread(self.verifier.audit_code_logic, draft)
-        ]
-        
+
+        tasks = [asyncio.to_thread(self.verifier.audit_code_logic, draft)]
+
         if inequality_exprs:
             problem_str = "\n".join(inequality_exprs)
             tasks.append(self.verifier.verify_logic(problem_str))
         else:
             # Identity task if no inequalities
-            async def no_z3(): return {"result": "No inequalities"}
+            async def no_z3() -> dict[str, str]:
+                return {"result": "No inequalities"}
+
             tasks.append(no_z3())
 
         # Execute QWED and Z3 in parallel
@@ -283,7 +287,9 @@ class AdversarialEvaluator:
         if any(kw in draft.lower() for kw in ["calculate", "solve", "result", "="]) or math_exprs:
             complexity = self.verifier.verify_math_expression(draft)
             category = complexity.get("category", "light")
-            logger.info(f"evaluator: Math complexity detected: {category} (score: {complexity.get('score')})")
+            logger.info(
+                f"evaluator: Math complexity detected: {category} (score: {complexity.get('score')})"
+            )
 
             if category == "deterministic" and math_exprs:
                 # SymPy remains synchronous but we wrap in thread for safety

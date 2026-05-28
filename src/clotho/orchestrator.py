@@ -4,6 +4,7 @@ import os
 
 # from langgraph.checkpoint.sqlite import SqliteSaver (Removed)
 import sqlite3
+from collections.abc import AsyncGenerator
 from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -23,7 +24,13 @@ from .ergon import (
     verify_node,
     vision_node,
 )
-from .krisis import should_after_reflection, should_call_tools, should_continue, should_use_tier
+from .krisis import (
+    clear_session_blacklist,
+    should_after_reflection,
+    should_call_tools,
+    should_continue,
+    should_use_tier,
+)
 
 logger = setup_logger(__name__)
 NODE_TIMEOUT = float(os.getenv("ORCHESTRATOR_NODE_TIMEOUT", "60.0"))
@@ -33,7 +40,7 @@ _checkpointer_ref = None  # SqliteSaver reference
 _checkpointer_conn = None  # sqlite3.Connection reference
 
 
-async def flush_checkpointer():
+async def flush_checkpointer() -> None:
     """Flush the checkpoint WAL and commit transactions to Axis 13."""
     global _checkpointer_ref, _checkpointer_conn
     if _checkpointer_conn:
@@ -45,7 +52,7 @@ async def flush_checkpointer():
             logger.warning(f"orchestrator: Flush failed ({e})")
 
 
-async def close_checkpointer():
+async def close_checkpointer() -> None:
     """Safely flush and close the checkpointer connection."""
     global _checkpointer_ref, _checkpointer_conn
     await flush_checkpointer()
@@ -59,7 +66,7 @@ async def close_checkpointer():
             logger.warning(f"orchestrator: Failed to close checkpointer ({e})")
 
 
-def _validate_checkpoint(state) -> bool:
+def _validate_checkpoint(state: Any) -> bool:
     """Verify structural integrity of a recovered checkpoint (Axis 13)."""
     required = {"task", "session_id", "iteration"}
     # Handle both dict and StateSnapshot (namedtuple) from LangGraph 0.2+
@@ -87,10 +94,10 @@ async def checkpoint_exists(session_id: str) -> dict | None:
     return None
 
 
-def with_timeout(node_func, seconds=NODE_TIMEOUT):
+def with_timeout(node_func: Any, seconds: float = NODE_TIMEOUT) -> Any:
     """Wraps a node function with a mandatory timeout."""
 
-    async def wrapper(state):
+    async def wrapper(state: Any) -> Any:
         try:
             return await asyncio.wait_for(node_func(state), timeout=seconds)
         except TimeoutError:
@@ -132,41 +139,55 @@ class GraphState(TypedDict):
     reflection_insight: str | None
     partial_correction: dict | None
     l0_approved: bool
+    trajectory_id: int
+    step_index: int
 
 
 # --- Graph Construction (Clotho) ---
 
 
-def wait_for_l0(state: Any):
+def wait_for_l0(state: Any) -> dict[str, Any]:
     """Sovereign Gate: Verifies L0 approval and state integrity before proceeding."""
     logger.info("orchestrator: Sovereign Gate reached. Verifying L0 intent.")
-    
+
     # Axis 13: Verify State Integrity
     if not state.get("task"):
         logger.error("orchestrator: Gate Violation - Missing task in state.")
         return {"l0_approved": False}
-    
+
     # Check for L0 approval (SOTA 2026: Explicit state flag required)
     approved = state.get("l0_approved", False)
     if not approved:
         logger.warning("orchestrator: L0 Gate closed. Explicit approval flag missing.")
         return {"l0_approved": False}
-        
+
     logger.info("orchestrator: L0 Gate PASSED.")
     return {"l0_approved": True}
 
 
-def finalize_node(state: Any):
+def finalize_node(state: Any) -> dict[str, Any]:
     """[SRC:axis_12] Final node to perform cleanup and persistence sync."""
     session_id = state.get("session_id", "default")
-    from .krisis import clear_session_blacklist
+    trajectory_id = state.get("trajectory_id", 0) if isinstance(state, dict) else 0
 
     clear_session_blacklist(session_id)
+
+    if trajectory_id:
+        try:
+            critique = state.get("critique", {}) if isinstance(state, dict) else {}
+            score = critique.get("overall_score") if isinstance(critique, dict) else None
+            if score is not None:
+                from .ergon.koinonia import _get_trajectory_store
+
+                _get_trajectory_store().finalize_session(trajectory_id, score)
+        except Exception as e:
+            logger.warning(f"orchestrator: trajectory finalize failed ({e})")
+
     logger.info(f"orchestrator: Finalized session {session_id}.")
     return {"memory_sync": True}
 
 
-def create_clotho_graph():
+def create_clotho_graph() -> Any:
     workflow = StateGraph(GraphState)  # type: ignore
 
     # --- Node Definitions ---
@@ -189,7 +210,7 @@ def create_clotho_graph():
 
     workflow.add_edge("negotiate", "wait_for_l0")
 
-    def check_approval(state: Any):
+    def check_approval(state: Any) -> Any:
         if not state.get("l0_approved", False):
             logger.error(
                 "orchestrator: Sovereign Block - L0 Approval is missing. Terminating flow."
@@ -210,7 +231,7 @@ def create_clotho_graph():
         },
     )
 
-    def route_after_inject(state: Any):
+    def route_after_inject(state: Any) -> str:
         if state.get("image_path"):
             return "vision"
         return should_use_tier(state)
@@ -295,19 +316,22 @@ def create_clotho_graph():
         # [Sovereign Patch] Patch SqliteSaver to support async calls via sync fallback
         # This prevents NotImplementedError while avoiding AsyncSqliteSaver lifecycle issues
         if not hasattr(SqliteSaver, "_patched"):
-            original_aget_tuple = SqliteSaver.aget_tuple
 
-            async def aget_tuple_patched(self, config):
+            async def aget_tuple_patched(self: Any, config: Any) -> Any:
                 return await asyncio.to_thread(self.get_tuple, config)
 
             SqliteSaver.aget_tuple = aget_tuple_patched
 
-            async def aput_patched(self, config, checkpoint, metadata, new_versions):
+            async def aput_patched(
+                self: Any, config: Any, checkpoint: Any, metadata: Any, new_versions: Any
+            ) -> Any:
                 return await asyncio.to_thread(self.put, config, checkpoint, metadata, new_versions)
 
             SqliteSaver.aput = aput_patched
 
-            async def alist_patched(self, config, *, filter=None, before=None, limit=None):
+            async def alist_patched(
+                self: Any, config: Any, *, filter: Any = None, before: Any = None, limit: Any = None
+            ) -> AsyncGenerator[Any, None]:
                 items = await asyncio.to_thread(
                     self.list, config, filter=filter, before=before, limit=limit
                 )
@@ -316,7 +340,9 @@ def create_clotho_graph():
 
             SqliteSaver.alist = alist_patched
 
-            async def aput_writes_patched(self, config, writes, task_id, task_path=""):
+            async def aput_writes_patched(
+                self: Any, config: Any, writes: Any, task_id: Any, task_path: str = ""
+            ) -> Any:
                 return await asyncio.to_thread(self.put_writes, config, writes, task_id, task_path)
 
             SqliteSaver.aput_writes = aput_writes_patched
@@ -356,7 +382,7 @@ def create_clotho_graph():
         raise RuntimeError("System integrity violation: Axis 13 persistence failure.") from e
 
 
-def should_vision_run(state: Any):
+def should_vision_run(state: Any) -> str:
     """Router: Skips vision_node if no image_path is present in the state."""
     if state.get("image_path"):
         return "vision"
@@ -365,7 +391,7 @@ def should_vision_run(state: Any):
 
 if __name__ == "__main__":
 
-    async def test_clotho():
+    async def test_clotho() -> None:
         app = create_clotho_graph()
         initial_state = {
             "task": "Create a high-performance Python decorator for logging execution time.",

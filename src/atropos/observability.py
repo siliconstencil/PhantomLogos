@@ -4,12 +4,14 @@ import inspect
 import os
 import time
 from collections.abc import Callable
+from typing import Any
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
 try:
-    from .token_budget import TokenBudgetGuard, get_token_guard
+    from .token_budget import get_token_guard
 except ImportError:
     from src.atropos.token_budget import get_token_guard
 
@@ -20,11 +22,11 @@ class AtroposMonitor:
     Logs traces, timing, and status to local JSONL files and TemporalStore.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.budget_guard = get_token_guard()
         self._temporal = None
 
-    def _get_temporal(self):
+    def _get_temporal(self) -> Any:
         if self._temporal is None:
             try:
                 from cognition.mnemosyne.temporal_store import TemporalStore
@@ -34,12 +36,12 @@ class AtroposMonitor:
                 logger.warning(f"AtroposMonitor: TemporalStore init failed ({e})")
         return self._temporal
 
-    def trace(self, component: str):
-        def decorator(func: Callable):
+    def trace(self, component: str) -> Callable:
+        def decorator(func: Callable) -> Callable:
             if inspect.iscoroutinefunction(func):
 
                 @functools.wraps(func)
-                async def async_wrapper(*args, **kwargs):
+                async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                     start_time = time.perf_counter()
                     trace_id = f"tr_{int(time.time() * 1000)}"
                     self._log_event(trace_id, component, func.__name__, "START")
@@ -77,7 +79,7 @@ class AtroposMonitor:
             else:
 
                 @functools.wraps(func)
-                def sync_wrapper(*args, **kwargs):
+                def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
                     start_time = time.perf_counter()
                     trace_id = f"tr_{int(time.time() * 1000)}"
                     self._log_event(trace_id, component, func.__name__, "START")
@@ -109,7 +111,9 @@ class AtroposMonitor:
 
         return decorator
 
-    def _log_event(self, trace_id: str, component: str, action: str, status: str, **kwargs):
+    def _log_event(
+        self, trace_id: str, component: str, action: str, status: str, **kwargs: Any
+    ) -> None:
         # Database-First: No file I/O for traces.
         from src.utils.logging_config import setup_logger
 
@@ -165,12 +169,12 @@ if __name__ == "__main__":
     monitor = AtroposMonitor()
 
     @monitor.trace("test_component")
-    async def sample_async_task():
-        time.sleep(0.1)
+    async def sample_async_task() -> str:
+        await asyncio.sleep(0.1)
         return "Async Done"
 
     @monitor.trace("test_component")
-    def sample_sync_task():
+    def sample_sync_task() -> str:
         time.sleep(0.05)
         return "Sync Done"
 

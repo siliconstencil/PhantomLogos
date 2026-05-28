@@ -6,7 +6,7 @@ from src.utils.logging_config import setup_logger
 logger = setup_logger(__name__)
 
 
-async def negotiate_node(state: Any):
+async def negotiate_node(state: Any) -> dict[str, Any]:
     """Initial node: negotiate DOD, load agent definition, resolve model."""
     try:
         from src.clotho.bootstrap import start_morpheus
@@ -33,7 +33,13 @@ async def negotiate_node(state: Any):
 
         # SOTA 2026: Dynamic Agent Selection (RuFlow Mapping)
         task_lower = state["task"].lower()
-        complexity = contract.get("complexity", 0.7)
+        complexity = contract.get("complexity")
+        if complexity is None:
+            logger.warning(
+                "SprintContract returned no complexity score; defaulting to 0.3. Contract dump: %s",
+                contract,
+            )
+            complexity = 0.3
 
         if any(
             kw in task_lower for kw in ["audit", "security", "verify", "check", "vulnerability"]
@@ -74,11 +80,13 @@ async def negotiate_node(state: Any):
                     content = loader.get_skill_summary(sk_name)
                     if content:
                         fragments.append(content)
-                
+
                 skill_context = "\n\n## Calibrated Competencies\n" + "\n".join(fragments)
             else:
                 # Default safety skill
-                skill_context = "\n\n## Calibrated Competencies\n" + (loader.get_skill_summary("error-self-recovery") or "")
+                skill_context = "\n\n## Calibrated Competencies\n" + (
+                    loader.get_skill_summary("error-self-recovery") or ""
+                )
 
         except Exception as se:
             logger.warning(f"ergon: Skill-First calibration failed ({se})")
@@ -141,6 +149,16 @@ async def negotiate_node(state: Any):
         except Exception as oe:
             logger.warning(f"ergon: Failed to record session init event ({oe})")
 
+        trajectory_id = 0
+        try:
+            from .koinonia import _get_trajectory_store
+
+            trajectory_id = _get_trajectory_store().create_session(
+                state["session_id"], state["task"]
+            )
+        except Exception as te:
+            logger.warning(f"ergon: trajectory init failed ({te})")
+
         return {
             "contract": contract,
             "memory_sync": sync_ok,
@@ -150,9 +168,17 @@ async def negotiate_node(state: Any):
             "selected_model_tier": model_tier,
             "ru_flow_active": (tier == 3),
             "verification_retry": 0,
+            "trajectory_id": trajectory_id,
+            "step_index": 0,
         }
     except asyncio.CancelledError:
         raise
     except Exception as e:
         logger.error(f"ergon: negotiate_node failed ({e})", exc_info=True)
-        return {"contract": {"threshold": 0.5}, "memory_sync": False, "active_agent": None}
+        return {
+            "contract": {"threshold": 0.5},
+            "memory_sync": False,
+            "active_agent": None,
+            "trajectory_id": 0,
+            "step_index": 0,
+        }

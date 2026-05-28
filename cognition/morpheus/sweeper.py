@@ -134,6 +134,7 @@ class VRAMSweeper:
         """
         logger.warning("VRAMSweeper: Triggering deep defragmentation...")
         from src.utils.logging_config import log_system_event
+
         log_system_event("WARNING", "VRAMSweeper: Triggering deep defragmentation...")
         if loader:
             loader.flush()
@@ -183,7 +184,9 @@ class VRAMSweeper:
             logger.info("VRAMSweeper: Ollama restart command issued.")
             from src.utils.logging_config import log_system_event
 
-            log_system_event("WARNING", "VRAMSweeper: Ollama unresponsive. Triggering self-healing restart.")
+            log_system_event(
+                "WARNING", "VRAMSweeper: Ollama unresponsive. Triggering self-healing restart."
+            )
             time.sleep(5)  # Wait for bootstrap
         except Exception as e:
             logger.error(f"VRAMSweeper: Self-healing failed ({e})")
@@ -451,6 +454,19 @@ class VRAMSweeper:
             # Phase 11.18.13: Tiered Retention
             stats["archived_metrics"] = self._retention_sweep()
 
+            # Axis 12 (Cache) periodic expired entries sweep
+            try:
+                from src.architrave.context_cache import ContextCacheStore
+
+                cache_store = ContextCacheStore(start_sweep=False)
+                purged_cache = cache_store.purge_expired()
+                if purged_cache > 0:
+                    logger.info(
+                        f"VRAMSweeper: Purged {purged_cache} expired context cache entries."
+                    )
+            except Exception as ce:
+                logger.warning(f"VRAMSweeper: Context cache purge skipped ({ce})")
+
             self._prune_sqlite(gov, stats)
             self._prune_files(gov, stats)
             self._prune_lancedb(gov, stats)
@@ -458,9 +474,10 @@ class VRAMSweeper:
                 f"VRAMSweeper: Hardening complete. SQL={stats['pruned_sqlite']}, Lance={stats['pruned_lancedb']}, Files={stats['pruned_files']}, Archived={stats['archived_metrics']}"
             )
             from src.utils.logging_config import log_system_event
+
             log_system_event(
                 "INFO",
-                f"VRAMSweeper: Hardening complete. SQL={stats['pruned_sqlite']}, Lance={stats['pruned_lancedb']}, Files={stats['pruned_files']}, Archived={stats['archived_metrics']}"
+                f"VRAMSweeper: Hardening complete. SQL={stats['pruned_sqlite']}, Lance={stats['pruned_lancedb']}, Files={stats['pruned_files']}, Archived={stats['archived_metrics']}",
             )
         except Exception as e:
             logger.error(f"VRAMSweeper: Storage hardening failed ({e})")

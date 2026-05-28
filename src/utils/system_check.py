@@ -33,7 +33,7 @@ class SystemCheck:
     OLLAMA_DELAY = 5
     OLLAMA_TIMEOUT = 2
 
-    def __init__(self, project_root: str):
+    def __init__(self, project_root: str) -> None:
         self._root = project_root
         self._warnings: list[str] = []
 
@@ -95,8 +95,11 @@ class SystemCheck:
         for attempt in range(1, self.OLLAMA_RETRY + 1):
             try:
                 # Heartbeat check via /api/tags
-                urllib.request.urlopen(
-                    urllib.request.Request(f"{host}/api/tags"),
+                parsed = urllib.parse.urlparse(f"{host}/api/tags")
+                if parsed.scheme not in ("http", "https"):
+                    raise ValueError(f"Unsupported URL scheme: {parsed.scheme}")
+                urllib.request.urlopen(  # noqa: S310
+                    urllib.request.Request(f"{host}/api/tags"),  # noqa: S310
                     timeout=self.OLLAMA_TIMEOUT,
                 )
                 return  # Success

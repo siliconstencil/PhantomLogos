@@ -1,17 +1,17 @@
 ---
 name: sovereign-gateway
-description: Local proxy management and Pydantic AI hijack protocols for secure model interaction.
+description: Local proxy management and Pydantic AI hijack protocols for secure model
+  interaction.
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Intercepting and auditing external model requests.
-  - Redirecting traffic to local fallback models.
-  - Enforcing circuit breaker patterns on failing gateways.
-metadata:
-  audience: architects
-  tier: L1-Sophia
-  workflow: connectivity
+model_role: primary
+allowed_tools:
+- verify
+- report
+- mcp_slm_remember
+- ls
+tier: 2
 ---
 # Skill: Sovereign Gateway
 

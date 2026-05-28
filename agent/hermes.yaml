@@ -1,7 +1,7 @@
 id: hermes
 name: Hermes Bridge
-version: 1.0.0
-description: "Cross-system bridge and memory synchronization agent."
+version: 1.1.0
+description: "Cross-system bridge and memory synchronization agent. Routes external CLI agents (Claude Code, Gemini, OpenCode) into the RuFlow tier hierarchy and synchronizes cross-session memory state."
 capability: bridge
 
 model:
@@ -14,6 +14,45 @@ bridge:
   timeout: 60
   retry_count: 3
 
+# Registered external CLI agents
+cli_agents:
+  claude_code:
+    id: claude-code
+    interface: claude-code-cli
+    tier: 3
+    roles: [sophia, clotho]
+    multi_agent: true
+    activation: [complexity_gt_0.8, strike_3_escalation, l0_direct]
+  gemini:
+    id: gemini-cli
+    interface: gemini-cli
+    tier: 3
+    roles: [sophia, clotho, lachesis]
+    multi_agent: true
+    activation: [parallel_workload, full_ruflow_required]
+  opencode:
+    id: opencode
+    interface: opencode-cli
+    tier: 2
+    roles: [clotho]
+    multi_agent: false
+    activation: [standard_execution, local_first]
+
+# Routing rules: which CLI handles which task profile
+routing_rules:
+  - condition: complexity > 0.8
+    preferred: claude_code
+    fallback: gemini
+  - condition: parallel_agents_needed
+    preferred: gemini
+    fallback: claude_code
+  - condition: complexity <= 0.8
+    preferred: opencode
+    fallback: claude_code
+  - condition: strike_3_escalation
+    preferred: claude_code
+    fallback: gemini
+
 tools:
   - semantic
   - skill
@@ -21,8 +60,10 @@ tools:
 
 skills:
   - hermes-bridge
+  - ruflow-tier-routing
+  - state-bus
 
-memory_axes: [6, 14]
+memory_axes: [1, 6, 7, 13, 14]
 
 monitoring:
   enabled: true

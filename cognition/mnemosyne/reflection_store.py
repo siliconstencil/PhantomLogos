@@ -63,6 +63,20 @@ class ReflectionStore:
         try:
             self._execute(sql_entities)
             self._execute(sql_reflections)
+            # Check and safely add importance column if missing
+            try:
+                self._execute("SELECT importance FROM reflections LIMIT 1", commit=False)
+            except Exception:
+                try:
+                    self._execute("ALTER TABLE reflections ADD COLUMN importance REAL DEFAULT 0.5")
+                    logger.info(
+                        "ReflectionStore: reflections table altered to include importance column."
+                    )
+                except Exception as alter_err:
+                    logger.warning(
+                        f"ReflectionStore: Failed to alter reflections table ({alter_err})"
+                    )
+
             self._execute(sql_relations)
             self._execute(sql_failure)
             logger.info("ReflectionStore: Raw SQL tables verified/created.")
@@ -129,12 +143,14 @@ class ReflectionStore:
         finally:
             conn.close()
 
-    def store_reflection(self, session_id: str, insight: str, category: str = "general") -> bool:
+    def store_reflection(
+        self, session_id: str, insight: str, category: str = "general", importance: float = 0.5
+    ) -> bool:
         if not insight or len(insight) < 20:
             return False
-        sql = "INSERT INTO reflections (insight, category, session_id) VALUES (?, ?, ?)"
+        sql = "INSERT INTO reflections (insight, category, session_id, importance) VALUES (?, ?, ?, ?)"
         try:
-            self._execute(sql, (insight, category, session_id))
+            self._execute(sql, (insight, category, session_id, importance))
             return True
         except Exception:
             return False
@@ -162,7 +178,7 @@ class ReflectionStore:
         if not keywords:
             return []
         likes = " OR ".join(["name LIKE ?"] * len(keywords))
-        params = tuple(f"%{k}%" for k in keywords) + (limit,)
+        params = (*tuple(f"%{k}%" for k in keywords), limit)
         sql = f"SELECT name, type FROM entities WHERE {likes} ORDER BY frequency DESC LIMIT ?"
         res = self._execute(sql, params, fetch=True, commit=False)
         return cast(list[dict[str, Any]], res)
@@ -220,7 +236,7 @@ class ReflectionStore:
         self._execute(sql, (context_hash,))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     store = ReflectionStore()
-    store.store_reflection('test_session', 'Verification of schema initialization.')
-    print('ReflectionStore: Schema verified.')
+    store.store_reflection("test_session", "Verification of schema initialization.")
+    print("ReflectionStore: Schema verified.")

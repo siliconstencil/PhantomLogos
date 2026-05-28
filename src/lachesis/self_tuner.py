@@ -12,8 +12,9 @@ class SelfTuner:
     Analyzes Meta-Cognition (Axis 8) data to suggest or apply model/routing optimizations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         from cognition.mnemosyne.meta_cognition import MetaCognitionStore
+
         self.meta_store = MetaCognitionStore()
         self.failure_threshold = 0.3
 
@@ -43,7 +44,7 @@ class SelfTuner:
             "recommendation": "Rotate to next stable model in ROLE_TO_MODEL fallback chain",
         }
 
-    def apply_rotation(self, session_id: str, agent_id: str, reason: str):
+    def apply_rotation(self, session_id: str, agent_id: str, reason: str) -> None:
         from src.clotho.krisis import blacklist_model
 
         role = "draft" if agent_id == "sophia" else agent_id
@@ -56,8 +57,8 @@ class SelfTuner:
                 from src.clotho.bootstrap import get_loader
 
                 get_loader().flush()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"SelfTuner: model flush skipped ({e})")
 
     def get_best_model_for_role(self, role: str, agent_id: str | None = None) -> str:
         target_agent = agent_id or role

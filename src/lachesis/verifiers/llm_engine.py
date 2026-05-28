@@ -14,12 +14,12 @@ class LLMMathEngine:
     Standardized to use 'is_valid' for consistency. [HH:MM AM/PM PT]
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._models_checked = False
         self.deepseek_available = False
         self.qwen_math_available = False
 
-    async def _check_models_lazy(self):
+    async def _check_models_lazy(self) -> None:
         if self._models_checked:
             return
         try:
@@ -54,12 +54,12 @@ class LLMMathEngine:
             "primary": "primary",
             "medium": "medium",
             "light": "light",
-            "ultra_light": "ultra_light"
+            "ultra_light": "ultra_light",
         }
-        
+
         role = role_map.get(tier, "light")
         model = resolve_local_model("math", role)
-        
+
         # Determine weights and necessity of flushing
         is_heavy = tier in ("expert", "primary", "high")
         logic_score = 0.95 if is_heavy else (0.70 if tier == "ultra_light" else 0.85)
@@ -68,12 +68,13 @@ class LLMMathEngine:
             # Morpheus flush in async context [Phase 1.0.24]
             try:
                 from src.clotho.bootstrap import get_loader
+
                 loader = get_loader()
                 if loader:
                     await asyncio.to_thread(loader.flush)
-            except Exception:
-                pass
-            
+            except Exception as e:
+                logger.debug(f"LLMVerifier: flush skipped ({e})")
+
             if self.deepseek_available and tier == "expert":
                 res = await self._call_deepseek_math(problem)
                 if res.get("is_valid"):

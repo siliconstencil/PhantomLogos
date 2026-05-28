@@ -16,7 +16,7 @@ logger = setup_logger(__name__)
 class OpenCodeStore:
     AXIS_ID = 13
 
-    def __init__(self, db_path: str | None = None):
+    def __init__(self, db_path: str | None = None) -> None:
         if not db_path:
             opencode_home = os.getenv(
                 "OPENCODE_CONFIG_DIR", os.path.join(get_project_root(), "opencode")
@@ -24,7 +24,7 @@ class OpenCodeStore:
             db_path = os.path.join(opencode_home, "opencode.db")
         self.db_path = db_path
 
-    def _connect(self):
+    def _connect(self) -> sqlite3.Connection | None:
         if not os.path.isfile(self.db_path):
             return None
         return sqlite3.connect(self.db_path)

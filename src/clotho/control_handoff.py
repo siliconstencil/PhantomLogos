@@ -1,6 +1,7 @@
 import asyncio
 import os
 import signal
+import time as time_module
 import uuid
 
 from src.utils.logging_config import setup_logger
@@ -12,11 +13,15 @@ logger = setup_logger(__name__)
 # --- Phase 1.0.10: Resilient Shutdown & Signal Management ---
 _CLOTHO_GRAPH = None
 _SIGNALS_REGISTERED = False
+_MCP_DISCOVERY_DONE = False
+_MCP_DISCOVERY_FAILURES = 0
+_MCP_DISCOVERY_LAST_ATTEMPT = 0.0
+_MCP_DISCOVERY_BACKOFF = [1, 5, 15, 30, 60, 120]
 _shutdown_requested = False
 _SHUTDOWN_HARD_TIMEOUT = 10  # Seconds before os._exit
 
 
-def _signal_handler(sig, frame):
+def _signal_handler(sig, _frame) -> None:
     """Sovereign Signal Handler: Initiates graceful shutdown sequence."""
     global _shutdown_requested
     if not _shutdown_requested:
@@ -28,7 +33,7 @@ def _signal_handler(sig, frame):
         )
 
 
-def _asyncio_exception_handler(loop, context):
+def _asyncio_exception_handler(_loop, context) -> None:
     """Global asyncio loop exception handler to catch unhandled crashes."""
     exception = context.get("exception")
     message = context.get("message")
@@ -45,7 +50,7 @@ def _asyncio_exception_handler(loop, context):
     _shutdown_requested = True
 
 
-def _register_signals():
+def _register_signals() -> None:
     """Register OS signals for Windows (SIGINT, SIGBREAK)."""
     try:
         signal.signal(signal.SIGINT, _signal_handler)
@@ -63,14 +68,19 @@ def _register_signals():
 
     # Hook into the event loop exception handler
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         loop.set_exception_handler(_asyncio_exception_handler)
         logger.debug("clotho_handoff: Asyncio loop exception handler registered.")
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.set_exception_handler(_asyncio_exception_handler)
+        logger.debug("clotho_handoff: Created new event loop + exception handler registered.")
     except Exception as e:
         logger.warning(f"clotho_handoff: Loop handler registration failed ({e})")
 
 
-async def _emergency_cleanup():
+async def _emergency_cleanup() -> None:
     """Final flush and resource release before hard process termination."""
     from .orchestrator import close_checkpointer, flush_checkpointer
 
@@ -90,7 +100,12 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
     ControlFlow-compatible hand-off logic.
     Breaks down user requests and delegates to Clotho (LangGraph).
     """
-    global _CLOTHO_GRAPH, _SIGNALS_REGISTERED, _shutdown_requested
+    global \
+        _CLOTHO_GRAPH, \
+        _SIGNALS_REGISTERED, \
+        _MCP_DISCOVERY_DONE, \
+        _MCP_DISCOVERY_FAILURES, \
+        _shutdown_requested
 
     # 1) Shutdown check: Reject new ingestion if termination is in progress
     if _shutdown_requested:
@@ -102,6 +117,29 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
         _register_signals()
         _SIGNALS_REGISTERED = True
 
+    # 3) MCP Tool Discovery (exponential backoff, no permanent disable)
+    if not _MCP_DISCOVERY_DONE:
+        global _MCP_DISCOVERY_FAILURES, _MCP_DISCOVERY_LAST_ATTEMPT
+        now = time_module.time()
+        backoff_index = min(_MCP_DISCOVERY_FAILURES, len(_MCP_DISCOVERY_BACKOFF) - 1)
+        if now - _MCP_DISCOVERY_LAST_ATTEMPT >= _MCP_DISCOVERY_BACKOFF[backoff_index]:
+            try:
+                from src.architrave.mcp.mcp_tool_bridge import discover_and_register_mcp_tools
+                from src.clotho.bridge.base import ToolBridge
+
+                discover_and_register_mcp_tools(ToolBridge)
+                _MCP_DISCOVERY_DONE = True
+            except Exception as e:
+                _MCP_DISCOVERY_FAILURES += 1
+                _MCP_DISCOVERY_LAST_ATTEMPT = now
+                backoff_sec = _MCP_DISCOVERY_BACKOFF[
+                    min(_MCP_DISCOVERY_FAILURES, len(_MCP_DISCOVERY_BACKOFF) - 1)
+                ]
+                logger.error(
+                    f"clotho_handoff: MCP tool discovery failed ({_MCP_DISCOVERY_FAILURES} failures). "
+                    f"Next retry in {backoff_sec}s: {e}"
+                )
+
     logger.info(f"Clotho: Initializing Task Hand-off for: {task_description[:80]}")
     actual_session_id = session_id or str(uuid.uuid4())
 
@@ -110,8 +148,8 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
         from cognition.mnemosyne.tone_store import ToneStore
 
         ToneStore().record_tone(session_id=actual_session_id, message=task_description)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"Clotho: tone record skipped ({e})")
 
     if _CLOTHO_GRAPH is None:
         _CLOTHO_GRAPH = create_clotho_graph()
@@ -123,6 +161,10 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
         # Phase 1.0.10: Found valid checkpoint. Logging for future resume support.
         logger.info(f"clotho_handoff: Recovered valid checkpoint (Axis 13) for {actual_session_id}")
 
+    from src.architrave.mcp import get_slm_client
+
+    slm = get_slm_client()
+    slm_active = os.getenv("SLM_ENABLED", "true").lower() == "true" and slm.health()
     initial_state = {
         "task": task_description,
         "session_id": actual_session_id,
@@ -143,14 +185,18 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
         "ru_flow_tier": 2,
         "spatial_dirty": False,
         "selected_model_tier": "primary",
+        "slm_active": slm_active,
     }
+
     logger.info(f"Clotho: Session {actual_session_id} initialized.")
     config = {"configurable": {"thread_id": actual_session_id}}
     try:
         if recovered_state:
             result = await asyncio.wait_for(app.ainvoke(None, config=config), timeout=120.0)
         else:
-            result = await asyncio.wait_for(app.ainvoke(initial_state, config=config), timeout=120.0)
+            result = await asyncio.wait_for(
+                app.ainvoke(initial_state, config=config), timeout=120.0
+            )
 
         # Basarili gorev sonrasi control_handoff.py'ye positive reward (1.0 success score) ekle!
         try:
@@ -190,8 +236,8 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
                 success=False,
                 quality=0.0,
             )
-        except Exception:
-            pass
+        except Exception as err:
+            logger.debug(f"Clotho: failure record skipped ({err})")
         return f"[Clotho Error] {e!s}"
     finally:
         # Ensure cleanup if shutdown was requested during execution
@@ -202,7 +248,7 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
 if __name__ == "__main__":
     import asyncio
 
-    async def test():
+    async def test() -> None:
         final_res = await clotho_handoff(
             "Design a modular authentication system for a FastAPI app."
         )

@@ -19,7 +19,7 @@ class QWEDEngine:
     Enforces Fail-Closed security policy. [HH:MM AM/PM PT]
     """
 
-    def __init__(self, model: str | None = None):
+    def __init__(self, model: str | None = None) -> None:
         self.qwed = None
         self.qwed_fallback = None
         if HAS_QWED:
@@ -87,7 +87,9 @@ class QWEDEngine:
             return self._call_qwed_method(self.qwed_fallback, method, content)
         return None
 
-    def _call_qwed_method(self, qwed_instance, method: str, content: str) -> dict[str, Any] | None:
+    def _call_qwed_method(
+        self, qwed_instance: Any, method: str, content: str
+    ) -> dict[str, Any] | None:
         if not qwed_instance:
             return None
         try:

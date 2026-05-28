@@ -66,7 +66,7 @@ async def _vision(bridge, input_data):
                 from cognition.sophia.hephaestus import _get_visual
 
                 visual = _get_visual()
-                asyncio.create_task(
+                asyncio.create_task(  # noqa: RUF006
                     visual.store_vision(
                         image_path=image_path,
                         description=str(res),
@@ -87,8 +87,11 @@ async def _vision(bridge, input_data):
             image_bytes = await asyncio.to_thread(read_bytes, opt_path)
 
             client = get_ollama_client()
-            response = await client.generate(
-                model=model_name, prompt=prompt, images=[image_bytes], stream=False
+            response = await asyncio.wait_for(
+                client.generate(
+                    model=model_name, prompt=prompt, images=[image_bytes], stream=False
+                ),
+                timeout=45.0,
             )
             output = response.get("response", "")
 
@@ -96,7 +99,7 @@ async def _vision(bridge, input_data):
                 from cognition.sophia.hephaestus import _get_visual
 
                 visual = _get_visual()
-                asyncio.create_task(
+                asyncio.create_task(  # noqa: RUF006
                     visual.store_vision(
                         image_path=image_path,
                         description=output,

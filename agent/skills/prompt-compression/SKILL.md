@@ -4,13 +4,12 @@ description: Compressing long prompts into high-density tokens via semantic dist
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Injecting massive 14-axis memory state into a single prompt.
-  - Optimizing recursive reasoning loops.
-metadata:
-  audience: developers
-  tier: Atropos
-  workflow: optimization
+model_role: primary
+allowed_tools:
+- report
+- mcp_slm_remember
+- ls
+tier: 2
 ---
 # Skill: Prompt Compression (Sovereign Edition)
 
