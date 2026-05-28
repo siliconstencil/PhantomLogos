@@ -19,6 +19,11 @@ logger = setup_logger(__name__)
 
 
 class PollingGuardian:
+    """
+    Sovereign Shield: Cryptographic File Integrity Watchdog (SHA-256).
+    [SRC:axis_11] Enforces absolute L0 authorization for all system mutations. [HH:MM AM/PM PT]
+    """
+
     def __init__(self, project_root: str | None = None) -> None:
         from src.utils.project_path import get_project_root
 
@@ -26,18 +31,20 @@ class PollingGuardian:
             str(get_project_root()) if project_root is None else os.path.abspath(project_root)
         )
         self.manager = SnapshotManager(self.project_root)
-        self._last_mtimes = {}
+        self._last_mtimes = {}  # Cache for mtime optimization
         self._db_path = self.manager._db_path
         self._token_path = self.manager._token_path
 
     def _is_l0_authorized(self) -> bool:
         if os.path.exists(self._token_path):
             st = os.stat(self._token_path)
-            if time.time() - st.st_mtime < 300:
+            # 60s authorization window
+            if time.time() - st.st_mtime < 60:
                 return True
         return False
 
     def _update_system_status(self, status: str, details: dict | None = None) -> None:
+        """Atomic update of the system status flag for agent awareness."""
         status_path = os.path.join(self.project_root, "data/system_status.json")
         os.makedirs(os.path.dirname(status_path), exist_ok=True)
         ts = datetime.now().strftime("%I:%M %p PT")
@@ -59,6 +66,7 @@ class PollingGuardian:
                 logger.error(f"Guardian: Status update failed ({e})")
 
     def _log_violation(self, rel_path: str, reason: str) -> None:
+        """Log sovereign violations to both file and Mnemosyne axes."""
         log_path = os.path.join(self.project_root, "logs/system/watchdog/integrity_violations.log")
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
