@@ -13,11 +13,27 @@ class SessionFilter(logging.Filter):
     """
 
     def filter(self, record) -> bool:
-        if not hasattr(record, "session_id"):
-            record.session_id = "unknown"
-        if not hasattr(record, "agent_id"):
-            record.agent_id = "unknown"
+        if not hasattr(record, "session_id") or record.session_id == "unknown":
+            record.session_id = os.getenv("SESSION_ID", "unknown")
+        if not hasattr(record, "agent_id") or record.agent_id == "unknown":
+            record.agent_id = os.getenv("LOG_AGENT_ID", "unknown")
         return True
+
+
+# Global LogRecordFactory to automatically populate agent_id and session_id
+_old_factory = logging.getLogRecordFactory()
+
+
+def _custom_record_factory(*args, **kwargs):
+    record = _old_factory(*args, **kwargs)
+    if not hasattr(record, "session_id") or record.session_id == "unknown":
+        record.session_id = os.getenv("SESSION_ID", "unknown")
+    if not hasattr(record, "agent_id") or record.agent_id == "unknown":
+        record.agent_id = os.getenv("LOG_AGENT_ID", "unknown")
+    return record
+
+
+logging.setLogRecordFactory(_custom_record_factory)
 
 
 class JSONFormatter(logging.Formatter):
@@ -134,11 +150,14 @@ class SQLiteHandler(logging.Handler):
         super().close()
 
 
-def setup_logger(name: str) -> logging.Logger:
+def setup_logger(name: str, agent_id: str | None = None) -> logging.Logger:
     """
     Sets up a dual-stream logger (Text + JSONL).
     Includes SessionFilter for metadata persistence.
     """
+    if agent_id:
+        os.environ["LOG_AGENT_ID"] = agent_id
+
     logger = logging.getLogger(name)
 
     # Apply SessionFilter idempotently
@@ -185,6 +204,16 @@ def setup_logger(name: str) -> logging.Logger:
             print(f"Failed to initialize RotatingFileHandler (JSON): {e}")
 
     return logger
+
+
+def setup_logging(log_dir=None, level=logging.INFO, agent_id="system") -> logging.Logger:
+    """Legacy/Validation wrapper to configure logging and return a logger."""
+    return setup_logger(__name__, agent_id=agent_id)
+
+
+def get_json_logger(name: str) -> logging.Logger:
+    """Convenience helper to retrieve configured logger."""
+    return setup_logger(name)
 
 
 def log_system_event(level: str, message: str, extra: dict | None = None) -> None:

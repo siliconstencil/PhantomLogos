@@ -51,6 +51,9 @@ async def get_dynamic_context(
     Stable context is suitable for System Instruction (Implicit Caching).
     Dynamic context contains task-specific and rapidly changing axes.
     """
+    if session_id is None:
+        session_id = "default"
+
     cache_key = f"{agent_id}:{task_hint[:40]}:{session_id}"
 
     # [SRC:axis_12] Query disk-based cache first
@@ -133,22 +136,78 @@ async def get_dynamic_context(
     from .axis_14_visual import _build_axis_14
 
     try:
-        # Dynamic Axes (Session/Task specific)
-        dynamic_context.append(await _build_axis_1(session_id))
-        dynamic_context.append(_build_axis_2())
-        dynamic_context.append(_build_axis_3())
-        dynamic_context.append(_build_axis_4(session_id))
-        dynamic_context.append(_build_axis_5(task_hint))
-        dynamic_context.append(await _build_axis_6(task_hint, session_id, embedding_vec))
-        dynamic_context.append(_build_axis_7())
+        # Safe async wrappers to handle individual failures gracefully
+        async def _safe_build_axis_1(sid):
+            try:
+                return await _build_axis_1(sid)
+            except Exception as e:
+                logger.warning(f"Gnosis: _build_axis_1 failed ({e})")
+                return "Axis 1 Episodic Memory: N/A"
 
-        # [SRC:axis_8] Failure Memory & Meta-Cognition Recall (P3)
-        fail_str, block_signal = await _build_axis_8_failures(task_hint, embedding_vec)
-        dynamic_context.append(await _build_axis_8_meta(session_id))
+        async def _safe_build_axis_6(th, sid, ev):
+            try:
+                return await _build_axis_6(th, sid, ev)
+            except Exception as e:
+                logger.warning(f"Gnosis: _build_axis_6 failed ({e})")
+                return "Axis 6 Semantic Memory: N/A"
+
+        async def _safe_build_axis_8_failures(th, ev):
+            try:
+                return await _build_axis_8_failures(th, ev)
+            except Exception as e:
+                logger.warning(f"Gnosis: _build_axis_8_failures failed ({e})")
+                return "Axis 8 Failures: N/A", {"block": False, "reason": None}
+
+        async def _safe_build_axis_8_meta(sid):
+            try:
+                return await _build_axis_8_meta(sid)
+            except Exception as e:
+                logger.warning(f"Gnosis: _build_axis_8_meta failed ({e})")
+                return "Axis 8 Meta-Cognition: N/A"
+
+        # Concurrently build all asynchronous and independent axes (Group A)
+        a1_res, a6_res, a8f_res, a8m_res = await asyncio.gather(
+            _safe_build_axis_1(session_id),
+            _safe_build_axis_6(task_hint, session_id, embedding_vec),
+            _safe_build_axis_8_failures(task_hint, embedding_vec),
+            _safe_build_axis_8_meta(session_id),
+            return_exceptions=True
+        )
+
+        # Unpack safe async results
+        res_a1 = a1_res if not isinstance(a1_res, Exception) else "Axis 1 Episodic Memory: N/A"
+        res_a6 = a6_res if not isinstance(a6_res, Exception) else "Axis 6 Semantic Memory: N/A"
+
+        if isinstance(a8f_res, Exception):
+            fail_str = "Axis 8 Failures: N/A"
+        else:
+            fail_str, axis_8_block = a8f_res
+            if isinstance(axis_8_block, dict):
+                block_signal.update(axis_8_block)
+
+        res_a8m = a8m_res if not isinstance(a8m_res, Exception) else "Axis 8 Meta-Cognition: N/A"
+
+        # Synchronous and thread-safe axes (Group B)
+        a2 = _build_axis_2()
+        a3 = _build_axis_3()
+        a4 = _build_axis_4(session_id)
+        a5 = _build_axis_5(task_hint)
+        a7 = _build_axis_7()
+        a14 = _build_axis_14(session_id)
+
+        # Assemble Dynamic Context in exact original ordering
+        dynamic_context.append(res_a1)
+        dynamic_context.append(a2)
+        dynamic_context.append(a3)
+        dynamic_context.append(a4)
+        dynamic_context.append(a5)
+        dynamic_context.append(res_a6)
+        dynamic_context.append(a7)
+        dynamic_context.append(res_a8m)
         dynamic_context.append(fail_str)
-        dynamic_context.append(_build_axis_14(session_id))
+        dynamic_context.append(a14)
 
-        # Stable Axes (Governance/Patterns)
+        # Stable Axes (Governance/Patterns) - Group C
         stable_context.append(_build_axis_9(session_id, task_hint))
         stable_context.append(_build_axis_10(agent_id))
         stable_context.append(_build_axis_11())

@@ -215,7 +215,7 @@ class SLMClient:
 
             meta = entry.get("metadata") or {}
             if isinstance(meta, dict):
-                tags.extend(self._flatten_meta_tags(meta))
+                tags.extend(_flatten_meta_tags(meta))
 
             timestamp = entry.get("timestamp") or meta.get("timestamp") or time.time()
             tags.append(f"t:{float(timestamp)}")
@@ -307,7 +307,7 @@ class SLMClient:
 
             meta = entry.get("metadata") or {}
             if isinstance(meta, dict):
-                tags.extend(self._flatten_meta_tags(meta))
+                tags.extend(_flatten_meta_tags(meta))
 
             timestamp = entry.get("timestamp") or meta.get("timestamp") or time.time()
             tags.append(f"t:{float(timestamp)}")
