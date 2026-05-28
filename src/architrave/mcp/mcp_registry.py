@@ -98,7 +98,52 @@ class MCPRegistry:
             logger.error(f"MCPRegistry: Failed to write default config: {e}")
         return default_config
 
+    def _kill_orphaned_slm(self) -> None:
+        """Kill any orphaned slm.exe processes before spawning a new one.
+
+        On Windows, atexit handlers don't fire on force-kill, leaving stdio-attached
+        SLM child processes as orphans. These hold DB locks and cause 30s timeouts.
+        """
+        try:
+            import subprocess
+
+            result = subprocess.run(  # noqa: S603
+                ["tasklist", "/FI", "IMAGENAME eq slm.exe", "/FO", "CSV", "/NH"],  # noqa: S607
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+            killed = 0
+            for line in result.stdout.strip().splitlines():
+                line = line.strip().strip('"')
+                if not line:
+                    continue
+                parts = line.split('","')
+                if len(parts) >= 2:
+                    try:
+                        pid = int(parts[1])
+                        subprocess.run(  # noqa: S603
+                            ["taskkill", "/F", "/PID", str(pid)],  # noqa: S607
+                            capture_output=True,
+                            timeout=3,
+                            check=False,
+                        )
+                        killed += 1
+                    except Exception as _e:
+                        logger.debug(f"MCPRegistry: taskkill failed for PID {pid} ({_e})")
+            if killed:
+                import time
+
+                time.sleep(0.5)
+                logger.info(
+                    f"MCPRegistry: Cleaned up {killed} orphaned SLM process(es) before init."
+                )
+        except Exception as e:
+            logger.debug(f"MCPRegistry: Orphan SLM cleanup skipped ({e})")
+
     def _initialize_sessions(self) -> None:
+        self._kill_orphaned_slm()
         for srv_name, server in self._config.mcpServers.items():
             session = MCPSession(
                 name=srv_name,
