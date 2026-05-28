@@ -30,8 +30,8 @@ def test_remember_mapping():
         assert name == "remember"
         assert params["content"] == "test memory text"
         assert "linter_error" in params["tags"]
-        assert "meta:category:syntax" in params["tags"]
-        assert any("python" in t for t in params["tags"])
+        assert "syntax" in params["tags"]
+        assert "python" in params["tags"]
         assert params["importance"] == 0.8
         assert params["project"] == "semantic_memory"
 
@@ -82,7 +82,7 @@ def test_tag_serialization_and_axis_id():
 
         # Verify prefixes exist
         assert any(t.startswith("v:") for t in tags)
-        assert any(t.startswith("meta:") for t in tags)
+        assert any(t.startswith("m:") for t in tags)
         assert "t:1234567.0" in tags
         assert "a:agent-007" in tags
         assert "x:14" in tags

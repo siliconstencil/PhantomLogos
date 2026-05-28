@@ -448,5 +448,52 @@ class FailureMemoryStore:
         except Exception as e:
             logger.error(f"FailureMemoryStore: add_failure_vector failed ({e})")
 
-    # K2.7: search_similar_failures removed (dead code).
-    # Use normal LanceDB search via search_memories() instead.
+    def search_similar_failures(
+        self, query_vector: np.ndarray, limit: int = 3, session_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Finds prevention rules related to the current task context."""
+        session_id = session_id or "default"
+        if self.matryoshka:
+            query_vector = self.matryoshka._slice_and_normalize(query_vector, 256)
+        else:
+            sliced = query_vector[:256]
+            norm = np.linalg.norm(sliced)
+            query_vector = sliced / norm if norm > 1e-10 else sliced
+
+        if self._is_slm_active():
+            try:
+                from src.architrave.mcp import get_slm_client
+
+                slm = get_slm_client()
+                query_str = (
+                    str(query_vector.tolist())
+                    if hasattr(query_vector, "tolist")
+                    else str(query_vector)
+                )
+                results = slm.search(
+                    query=query_str, limit=limit, table_name=self.table_name, session_id=session_id
+                )
+                if results:
+                    return results
+            except Exception as e:
+                logger.error(
+                    f"FailureMemoryStore: SLM search failed ({e}). Falling back to LanceDB."
+                )
+
+        try:
+            table = self.db.open_table(self.table_name)
+            vec_list = (
+                query_vector.tolist() if hasattr(query_vector, "tolist") else list(query_vector)
+            )
+
+            schema = table.schema
+            has_session_id = "session_id" in schema.names
+
+            q = table.search(vec_list)
+            if has_session_id and session_id:
+                safe_session_id = "".join(c for c in session_id if c.isalnum() or c in "-_")
+                q = q.where(f"session_id IN ('{safe_session_id}', 'system', 'default', 'global')")
+            return q.limit(limit).to_list()
+        except Exception as e:
+            logger.error(f"FailureMemoryStore: search_similar_failures failed ({e})")
+            return []
