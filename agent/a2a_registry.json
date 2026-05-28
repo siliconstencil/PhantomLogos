@@ -19,7 +19,7 @@
     {
       "agent_id": "sophia",
       "name": "Sophia Agent",
-      "endpoint": "http://127.0.0.1:32884/a2a",
+      "endpoint": "http://127.0.0.1:32554/a2a",
       "capabilities": [
         "core",
         "orchestration"

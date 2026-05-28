@@ -5,12 +5,9 @@ Monitors GPU fragmentation and triggers cleanup operations to reclaim contiguous
 
 import datetime as _dt
 import os
-import shutil
 import subprocess
-import tarfile
 import threading
 import time
-import tracemalloc
 
 from src.clotho.activity import ActivityMonitor
 from src.utils.logging_config import setup_logger
@@ -407,59 +404,6 @@ class VRAMSweeper:
             (now, cutoff),
         )
 
-    def _backup_databases(self, stats: dict) -> None:
-        """VACUUM INTO ile SQLite yedekle + lancedb tar.gz. 5 jenerasyon rotasyon."""
-        from src.utils.project_path import get_project_root
-
-        root = get_project_root()
-        backup_dir = str(root / "data" / "backups")
-        os.makedirs(backup_dir, exist_ok=True)
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        import sqlite3
-
-        # SQLite VACUUM INTO (her DB icin ayri)
-        dbs = ["data/mnemosyne.db", "data/spatial.db", "data/reliability.db"]
-        for rel_path in dbs:
-            src = str(root / rel_path)
-            if not os.path.exists(src):
-                continue
-            backup_name = f"{os.path.basename(rel_path)}.{timestamp}.db"
-            backup_path = os.path.join(backup_dir, backup_name)
-            conn = sqlite3.connect(src)
-            try:
-                conn.execute(f"VACUUM INTO '{backup_path}'")
-                stats["backed_up_sqlite"] += 1
-            except Exception as e:
-                logger.error(f"VRAMSweeper: Backup failed for {rel_path} ({e})")
-            finally:
-                conn.close()
-        # LanceDB tar.gz
-        lancedb_path = str(root / "data" / "lancedb")
-        if os.path.isdir(lancedb_path):
-            tar_name = f"lancedb.{timestamp}.tar.gz"
-            tar_path = os.path.join(backup_dir, tar_name)
-            try:
-                with tarfile.open(tar_path, "w:gz") as tar:
-                    tar.add(lancedb_path, arcname="lancedb")
-                stats["backed_up_lancedb"] = 1
-            except Exception as e:
-                logger.error(f"VRAMSweeper: LanceDB backup failed ({e})")
-        # 5 jenerasyon rotasyon (en eski backup'lari sil)
-        all_backups = sorted(
-            [f for f in os.listdir(backup_dir) if f.endswith((".db", ".tar.gz"))],
-            key=lambda f: os.path.getmtime(os.path.join(backup_dir, f)),
-        )
-        max_backups = 5
-        backup_groups = {}
-        for f in all_backups:
-            prefix = f.split(".202")[0]
-            backup_groups.setdefault(prefix, []).append(f)
-        for prefix, files in backup_groups.items():
-            if len(files) > max_backups:
-                for old in files[: len(files) - max_backups]:
-                    os.remove(os.path.join(backup_dir, old))
-                    stats["backups_rotated"] += 1
-
     def _retention_sweep(self) -> int:
         """[SRC:axis_4] Tiered retention: Aggregate old raw data into summaries before deletion."""
         import sqlite3
@@ -504,66 +448,8 @@ class VRAMSweeper:
         except Exception:
             pass
 
-        from src.utils.project_path import get_project_root
-
-        root = get_project_root()
-
-        # Disk alani kontrolu
-        try:
-            usage = shutil.disk_usage(str(root))
-            free_gb = usage.free / (1024**3)
-            if free_gb < 0.5:
-                logger.critical(
-                    f"VRAMSweeper: DISK CRITICAL - only {free_gb:.2f}GB free. "
-                    f"HALTING all write operations."
-                )
-                from src.utils.logging_config import log_system_event
-
-                log_system_event(
-                    "CRITICAL",
-                    f"VRAMSweeper: Emergency halt - disk < 500MB ({free_gb:.2f}GB free)",
-                )
-                return {
-                    "pruned_sqlite": 0,
-                    "pruned_lancedb": 0,
-                    "pruned_files": 0,
-                    "archived_metrics": 0,
-                    "backed_up_sqlite": 0,
-                    "backed_up_lancedb": 0,
-                    "backups_rotated": 0,
-                }
-            elif free_gb < 2.0:
-                logger.warning(
-                    f"VRAMSweeper: Low disk space ({free_gb:.2f}GB). Pruning aggressively."
-                )
-            else:
-                logger.debug(f"VRAMSweeper: Disk OK ({free_gb:.2f}GB free).")
-        except Exception as de:
-            logger.warning(f"VRAMSweeper: Disk check failed ({de})")
-
-        # Bellek snapshot (her 20. sweep'te bir)
-        try:
-            if self._sweep_count % 20 == 0 and tracemalloc.is_tracing():
-                snapshot = tracemalloc.take_snapshot()
-                top_stats = snapshot.statistics("lineno")[:5]
-                for stat in top_stats:
-                    logger.debug(f"VRAMSweeper: Mem top - {stat}")
-        except Exception as me:
-            logger.debug(f"VRAMSweeper: Memory snapshot skipped ({me})")
-
         gov = self._load_governance_config()
-        stats = {
-            "pruned_sqlite": 0,
-            "pruned_lancedb": 0,
-            "pruned_files": 0,
-            "archived_metrics": 0,
-            "backed_up_sqlite": 0,
-            "backed_up_lancedb": 0,
-            "backups_rotated": 0,
-        }
-
-        # Pre-write backup
-        self._backup_databases(stats)
+        stats = {"pruned_sqlite": 0, "pruned_lancedb": 0, "pruned_files": 0, "archived_metrics": 0}
         try:
             # Phase 11.18.13: Tiered Retention
             stats["archived_metrics"] = self._retention_sweep()

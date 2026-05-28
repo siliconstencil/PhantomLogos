@@ -20,9 +20,6 @@ from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
-# GLiNER2 local model path (bypasses incomplete HF hub cache)
-_GLINER2_LOCAL_PATH = "D:/Google/AntiGravity/General Tools/gliner2-base-v1"
-
 
 class EntityExtractor:
     """
@@ -105,11 +102,9 @@ class EntityExtractor:
                         # Monkey-patch to prevent UnicodeEncodeError on Windows (Brain emoji in _print_config)
                         GLiNER2._print_config = lambda self, config: None  # noqa: ARG005
 
-                        # Load model to CPU explicitly from local path (bypasses incomplete HF hub cache)
-                        self.model = GLiNER2.from_pretrained(_GLINER2_LOCAL_PATH)
-                        logger.info(
-                            f"EntityExtractor: GLiNER2 loaded on CPU ({_GLINER2_LOCAL_PATH})"
-                        )
+                        # Load model to CPU explicitly
+                        self.model = GLiNER2.from_pretrained(self.model_name)
+                        logger.info(f"EntityExtractor: GLiNER2 loaded on CPU ({self.model_name})")
                     except Exception as e:
                         raise RuntimeError(
                             f"EntityExtractor: Failed to load GLiNER2 model '{self.model_name}' ({e})"
