@@ -1,20 +1,3 @@
-## Phase 1.1.30 - 3-Agent Parallel Stabilite Sertlestirmesi - 2026-05-28 [Daylight]
-
-### Added
-
-- **Agent 1 (Stability Core)**: K2.14 periyodik DB yedekleme (VACUUM INTO + LanceDB tar.gz, 5 jenerasyon), K2.15/16 disk/memory monitor (<500MB halt, tracemalloc), K1.2 SIGTERM handler (SIGINT+SIGBREAK+SIGTERM + emergency cleanup callback), K1.1 sync retry jitter (random.uniform 0.5-2.0)
-- **Agent 2 (Code Health)**: K0.1 GLiNER2 stabil model path fix (direct HF cache bypass), K2.7 search_similar_failures dead code removal, K2.12 test infrastructure (pytest-cov %38 hedef), K0.0 baseline metrics (10-adim benchmark)
-- **Agent 3 (Platform Olgunlugu)**: K2.6 context assembly paralel (asyncio.gather ile 4 async axis), K2.11 observability query helpers (temporal_store 3 method), K1.5.3 logging agent entegrasyonu (LogRecordFactory + agent_id shema)
-
-### Fixed
-
-- **logging_config.py (logging_config.py)**: `setup_logging()` icinde `logger = setup_logger(agent_id)` yerine `logger = setup_logger(__name__)` -- agent_id'nin logger adi olarak yanlis gecilmesi hatasi duzeltildi
-- **sweeper.py (sweeper.py)**: Cift yedekleme ve _sweep_count cift artirim bug'lari duzeltildi
-
-### Changed
-
-- **ROADMAP_STATUS_Q2_2026.md**: 10 madde durum guncellemesi, maturity ~%64
-
 ## Phase 1.1.29 - Codebase Scanner Guncellemesi - 2026-05-28 [01:00 AM PT]
 
 ### Fixed

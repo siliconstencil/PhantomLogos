@@ -89,19 +89,19 @@ KADEME K2 (Code Health) - 16 madde
 | K2.3   | temperature_control.py Fold        | YAPILDI (Faz 1.1.26, 14 satir silindi) |
 | K2.4   | tool_validator.py Fold             | YAPILDI (Faz 1.1.26, 41 satir silindi) |
 | K2.5   | Token Budget Persistence           | YAPILDI (Faz 1.1.26, temporal_store'a kayit eklendi) |
-| K2.6   | Context Assembly Paralel Yap       | YAPILDI (Faz 1.1.27, asyncio.gather() ile paralel axis inşası uygulandı) |
+| K2.6   | Context Assembly Paralel Yap       | ACIK (14 axis sirali sorgu devam ediyor) |
 | K2.7   | SemanticStore FailureMemory Dead Code | GEREKSIZ (SLM kendi failure memory yonetiyor; ancak cleanup yapilmadiysa dead code var) |
 | K2.8   | ReflectionStore raw sqlite3 -> SQLAlchemy | ACIK (tutarsiz pattern devam ediyor) |
 | K2.9   | Duplicate Import Cleanup           | YAPILDI (Faz 1.1.26, cogu temizlendi) |
 | K2.10  | BLACKLISTED_MODELS Leak Fix        | YAPILDI (Faz 1.1.26, instance variable'a tasindi) |
-| K2.11  | Observability Quality (Axis 4)     | YAPILDI (Faz 1.1.27, 24h summary, weekly report ve recent errors eklendi) |
+| K2.11  | Observability Quality (Axis 4)     | ACIK (temporal metrics var ama dashboard/alerting yok) |
 | K2.12  | Test Infrastructure Expansion      | KISMEN (conftest.py eklendi, smoke marker eklendi commit 99ce61e; coverage %10 civarinda) |
 | K2.13  | Documentation Gap                  | KISMEN (SYSTEM_REPORT.md olusturuldu; docs/unused_modules.md yok) |
 | K2.14  | Periodic DB Backup                 | ACIK (Mnemosyne yedekleme yok; en kritik eksiklerden biri) |
 | K2.15  | Memory Leak Monitoring             | ACIK (tracemalloc entegrasyonu yok) |
 | K2.16  | Disk Space Monitoring              | ACIK (shutil.disk_usage() kontrolu yok) |
- 
-K2 Ozeti: 8 YAPILDI, 1 KISMEN, 1 GEREKSIZ, 6 ACIK
+
+K2 Ozeti: 6 YAPILDI, 1 KISMEN, 1 GEREKSIZ, 8 ACIK
 
 --------------------------------------------------------------------
 KADEME K3 (New Capabilities) - 8 madde
