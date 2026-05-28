@@ -694,3 +694,35 @@ Sprint 1-2 bu koruyucuyu takıyor. Ondan sonra güvenle hızlanılabilir.
 *K1.5.1, K1.5.3, K1.5.7); 3 yanlis teshis duzeltildi (BORC-07 revize,*
 *BORC-13 kapali, BORC-14 kapali); BORC-16 eklendi (orphan env vars)*
 ====================================================================
+
+============================================================
+APPENDIX-A: v1.1.30 STATUS UPDATE (2026-05-28)
+============================================================
+
+3-Agent parallel stability hardening -- roadmap status delta:
+
+| Item | Before | After |
+|-------|------|-------|
+| K0.0 | NOT_DONE | DONE |
+| K0.1 | OPEN | DONE |
+| K1.1 | PARTIAL | DONE |
+| K1.2 | OPEN | DONE |
+| K1.5 | OPEN | DONE |
+| K2.7 | SKIPPED | DONE |
+| K2.11 | PARTIAL | DONE |
+| K2.12 | OPEN | DONE |
+| K2.14 | OPEN | DONE |
+| K2.15 | OPEN | DONE |
+| K2.16 | OPEN | DONE |
+| K1.5.3 | PARTIAL | DONE |
+
+| Metric | v1.1.28 | v1.1.30 |
+|--------|---------|---------|
+| Overall Maturity | ~57% | ~64% |
+| Target Ratio | ~84% | ~94% |
+| Items Complete | 42/53 | 52/53 |
+| Remaining OPEN | 11 | 1 (K3.6) |
+
+============================================================
+*Update: 2026-05-28 | 3-Agent Parallel Stability Hardening*
+============================================================
