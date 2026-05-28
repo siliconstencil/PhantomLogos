@@ -263,10 +263,9 @@ Every phase must utilize the following triple-artifact structure:
 ## 18. Token Preservation Mandate
 
 ### ASSISTANT_TOKEN_PRESERVATION_MANDATE (RULE-038)
-- The agent MUST avoid unnecessary `view_file` calls that read full files when only specific sections are needed.
-- For research, prefer low-cost tools (`grep_search`, `glob`) over full-file reads.
-- `view_file` reads the ENTIRE file. Use it ONLY when editing, and ONLY read the specific range needed.
-- This rule exists to prevent token waste from reading large files for casual exploration.
+- Native `view_file` tool is STRONGLY PROHIBITED due to its 800-line token bloat imposition.
+- The agent MUST use `read_file` or `read_text_file` via the MCP filesystem server to read file contents.
+- For research and search, prefer low-cost tools (`grep_search`, `glob`) over full-file reads.
 
 ---
 

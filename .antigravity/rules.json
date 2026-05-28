@@ -155,7 +155,7 @@
       "id": "RULE-030",
       "name": "LOCAL_FIRST_ROUTING",
       "severity": "HARD",
-      "description": "Her draft islemi ONCE yerel modelle calismalidir. Cloud Gateway sadece Tier 3 stratejik gorevlerde ve hata durumunda son care olarak kullanilir.",
+      "description": "Every draft process MUST run on a local model first. Cloud Gateway is only used for Tier 3 strategic tasks and as a last resort in case of error.",
       "enforcement": {
         "pre_check": "find_fitting_model(role, available_vram_gb)",
         "chain": [
@@ -170,7 +170,7 @@
       "id": "RULE-031",
       "name": "SKILL_TO_MODEL_BINDING",
       "severity": "HARD",
-      "description": "Her SKILL.md frontmatter'inda `model_role` alani zorunludur. Draft oncesi `skill_loader.match_for_task()` ile eslesen skill'in modeli, `model_registry.resolve_local_model()` ile cozulur.",
+      "description": "Every SKILL.md frontmatter must require the 'model_role' field. Before draft, the model of the skill matched by 'skill_loader.match_for_task()' is resolved via 'model_registry.resolve_local_model()'.",
       "enforcement": {
         "mandatory_frontmatter": "model_role",
         "role_to_tier_map": {
@@ -185,7 +185,7 @@
       "id": "RULE-032",
       "name": "CLOUD_AS_EXCEPTION",
       "severity": "HARD",
-      "description": "Cloud Gateway (`generate_async`) SADECE su durumlarda cagrilabilir: (a) complexity > 0.8 VE gorev stratejik/architectural ise, (b) tum yerel modellerin fallback zinciri tukenmisse, (c) L0 'bulut' anahtar kelimesiyle acikca talep etmisse.",
+      "description": "Cloud Gateway ('generate_async') may ONLY be called if: (a) complexity > 0.8 AND the task is strategic/architectural, (b) the fallback chain of all local models is exhausted, (c) L0 explicitly requests it via the 'cloud' keyword.",
       "enforcement": {
         "allowed_triggers": [
           "complexity_gt_0.8",
@@ -199,7 +199,7 @@
       "id": "RULE-033",
       "name": "TIER_ENFORCEMENT",
       "severity": "HARD",
-      "description": "4 tier'lik RuFlow sistemi anayasal esik degerlerle zorunlu kilinir. Tier atlama (skip) sadece VRAM yetersizliginde bir alt tier'a gecis olarak yapilabilir.",
+      "description": "The 4-tier RuFlow system is enforced with constitutional threshold values. Tier skipping is only permitted as a transition to a lower tier in case of VRAM insufficiency.",
       "enforcement": {
         "tiers": {
           "0": {
@@ -233,7 +233,7 @@
       "id": "RULE-034",
       "name": "MORPHEUS_VRAM_AWARE_SELECTION",
       "severity": "HARD",
-      "description": "Her draft oncesi Morpheus VRAM durumu sorgulanir. `find_fitting_model(role, available_vram_gb)` ile uygun model secilir. VRAM < 2 GB ise Tier 0'a zorla.",
+      "description": "Before every draft, Morpheus VRAM status is queried. The appropriate model is selected using 'find_fitting_model(role, available_vram_gb)'. Force Tier 0 if VRAM < 2 GB.",
       "enforcement": {
         "pre_draft_check": "morpheus.get_available_vram()",
         "vram_threshold": 2.0,
@@ -244,7 +244,7 @@
       "id": "RULE-035",
       "name": "LANGGRAPH_THRESHOLD_GOVERNANCE",
       "severity": "HARD",
-      "description": "LangGraph state machine'in esik degerleri ve conditional router kurallari anayasaya baglanir.",
+      "description": "LangGraph state machine threshold values and conditional router rules are bound to the constitution.",
       "enforcement": {
         "max_tool_iteration": 2,
         "max_verification_retry": 3,
@@ -259,7 +259,7 @@
       "id": "RULE-036",
       "name": "DUAL_PATH_FALLBACK",
       "severity": "HARD",
-      "description": "SLM MCP sunucusu unhealthy ise, sistem otomatik olarak LanceDB + Ollama + Jina Reranker yerel katmanina gecer. 15s heartbeat TTL ile SLM health kontrol edilir.",
+      "description": "If the SLM MCP server is unhealthy, the system automatically falls back to the LanceDB + Ollama + Jina Reranker local layer. SLM health is monitored with a 15-second heartbeat TTL.",
       "enforcement": {
         "primary": "SLM MCP (`slm_client.search/remember/recall/rerank`)",
         "fallback": "LanceDB + Ollama (`semantic_store.hybrid_search`, `ollama_utils.embed`)",
@@ -271,7 +271,7 @@
       "id": "RULE-037",
       "name": "TOOL_PERMISSION_RBAC",
       "severity": "HARD",
-      "description": "Her arac icin izin matrisi. `skill_loader.get_allowed_tools_for_agent()` SSOT olarak kabul edilir. RBAC disindaki arac cagrilari OutputGuard tarafindan reddedilir.",
+      "description": "Permission matrix for every tool. 'skill_loader.get_allowed_tools_for_agent()' is accepted as the SSOT. Tool calls outside of RBAC are rejected by OutputGuard.",
       "enforcement": {
         "ssot": "skill_loader.get_allowed_tools_for_agent()",
         "categories": {
@@ -321,54 +321,175 @@
       "id": "RULE-038",
       "name": "ASSISTANT_TOKEN_PRESERVATION_MANDATE",
       "severity": "HARD",
-      "description": "Asistan gereksiz dosya okumalariyla token israfini engellemek zorundadir. Sadece duzenlenecek dosyalari kismi araliklarla okur. Arastirma icin oncelikle grep_search, glob gibi dusuk maliyetli araclari kullanir. view_file tum dosyayi okur, bu nedenle mumkun oldugunca kacinilmalidir."
+      "description": "The assistant must prevent token waste by avoiding unnecessary file reads. It ONLY reads partial ranges of files that are being edited. For research, low-cost tools like 'grep_search' and 'glob' must be used first. Native 'view_file' is strictly prohibited due to its 800-line token bloat imposition. Instead, use 'read_file' or 'read_text_file' via filesystem MCP server."
     },
     {
       "id": "RULE-039",
       "name": "MCP_TOOL_GOVERNANCE",
       "severity": "HARD",
-      "description": "6 MCP server (103 tool) icin kullanim kategorileri, tool selection priority siralamasi, ve server-specific guardrails.",
+      "description": "Usage categories, tool selection priority rankings, and server-specific guardrails for 6 MCP servers (103 tools).",
       "enforcement": {
         "naming_convention": "Tools documented as `{server}_{tool}` (e.g. `playwright_navigate`) for direct ToolBridge.execute() calls. Via MCP protocol clients, use separate server+tool parameters instead of the combined name.",
         "tool_selection_priority": {
-          "web_content": ["webfetch (built-in / static)", "fetch (MCP / static+readability)", "playwright_navigate (MCP / dynamic/SPA)"],
-          "reasoning": ["sequentialthinking (karmasik, branching)", "internal CoT (basit, lineer)"],
-          "entity_graph": ["mcp_slm_recall (semantic)", "kg-mem_search_nodes (structured)", "semantic_store (fallback)"],
-          "version_control": ["github_* (GitHub API)", "local git (yerel repo)"],
-          "browser_test": ["playwright_* (E2E)", "manual (gozle kontrol)"]
+          "web_content": [
+            "webfetch (built-in / static)",
+            "fetch (MCP / static+readability)",
+            "playwright_navigate (MCP / dynamic/SPA)"
+          ],
+          "reasoning": [
+            "sequentialthinking (complex, branching)",
+            "internal CoT (simple, linear)"
+          ],
+          "entity_graph": [
+            "mcp_slm_recall (semantic)",
+            "kg-mem_search_nodes (structured)",
+            "semantic_store (fallback)"
+          ],
+          "version_control": [
+            "github_* (GitHub API)",
+            "local git (local repository)"
+          ],
+          "browser_test": [
+            "playwright_* (E2E)",
+            "manual (visual check)"
+          ]
         },
         "server_categories": {
           "sequentialthinking": {
-            "read": ["sequentialthinking"]
+            "read": [
+              "sequentialthinking"
+            ]
           },
           "fetch": {
-            "read": ["fetch"]
+            "read": [
+              "fetch"
+            ]
           },
           "kg-mem": {
-            "read": ["search_nodes", "open_nodes", "read_graph"],
-            "write": ["create_entities", "create_relations", "add_observations"],
-            "delete": ["delete_entities", "delete_observations", "delete_relations"]
+            "read": [
+              "search_nodes",
+              "open_nodes",
+              "read_graph"
+            ],
+            "write": [
+              "create_entities",
+              "create_relations",
+              "add_observations"
+            ],
+            "delete": [
+              "delete_entities",
+              "delete_observations",
+              "delete_relations"
+            ]
           },
           "github": {
-            "read": ["search_repositories", "get_file_contents", "search_code", "search_issues", "search_users", "list_commits", "list_issues", "get_issue", "get_pull_request", "list_pull_requests", "get_pull_request_files", "get_pull_request_status", "get_pull_request_comments", "get_pull_request_reviews"],
-            "write": ["create_or_update_file", "push_files", "create_repository", "create_issue", "create_pull_request", "create_branch", "fork_repository", "update_issue", "add_issue_comment", "create_pull_request_review", "merge_pull_request", "update_pull_request_branch"]
+            "read": [
+              "search_repositories",
+              "get_file_contents",
+              "search_code",
+              "search_issues",
+              "search_users",
+              "list_commits",
+              "list_issues",
+              "get_issue",
+              "get_pull_request",
+              "list_pull_requests",
+              "get_pull_request_files",
+              "get_pull_request_status",
+              "get_pull_request_comments",
+              "get_pull_request_reviews"
+            ],
+            "write": [
+              "create_or_update_file",
+              "push_files",
+              "create_repository",
+              "create_issue",
+              "create_pull_request",
+              "create_branch",
+              "fork_repository",
+              "update_issue",
+              "add_issue_comment",
+              "create_pull_request_review",
+              "merge_pull_request",
+              "update_pull_request_branch"
+            ]
           },
           "playwright": {
-            "browser_control": ["navigate", "go_back", "go_forward", "close", "resize", "custom_user_agent", "click_and_switch_tab"],
-            "interaction": ["click", "fill", "select", "hover", "press_key", "drag", "upload_file", "iframe_click", "iframe_fill"],
-            "extraction": ["screenshot", "get_visible_text", "get_visible_html", "save_as_pdf", "console_logs"],
-            "network": ["expect_response", "assert_response", "get", "post", "put", "patch", "delete"],
-            "codegen": ["start_codegen_session", "end_codegen_session", "get_codegen_session", "clear_codegen_session"],
-            "restricted": ["evaluate"]
+            "browser_control": [
+              "navigate",
+              "go_back",
+              "go_forward",
+              "close",
+              "resize",
+              "custom_user_agent",
+              "click_and_switch_tab"
+            ],
+            "interaction": [
+              "click",
+              "fill",
+              "select",
+              "hover",
+              "press_key",
+              "drag",
+              "upload_file",
+              "iframe_click",
+              "iframe_fill"
+            ],
+            "extraction": [
+              "screenshot",
+              "get_visible_text",
+              "get_visible_html",
+              "save_as_pdf",
+              "console_logs"
+            ],
+            "network": [
+              "expect_response",
+              "assert_response",
+              "get",
+              "post",
+              "put",
+              "patch",
+              "delete"
+            ],
+            "codegen": [
+              "start_codegen_session",
+              "end_codegen_session",
+              "get_codegen_session",
+              "clear_codegen_session"
+            ],
+            "restricted": [
+              "evaluate"
+            ]
           }
         },
         "guardrails": {
-          "all": ["Tum MCP araclari ToolBridge uzerinden calistirilir; dogrudan shell/terminal yok", "MCP timeout: 30s", "Hata durumunda built-in tool'a fallback"],
-          "github": ["GITHUB_TOKEN .env'den okunur (wrapper script ile)", "main branch'a dogrudan push yasak - PR-based workflow zorunlu", "Lokal git islemleri icin GitHub MCP degil built-in git araclari kullanilir"],
-          "playwright": ["Her seanstan sonra playwright_close cagrilmali", "playwright_evaluate sadece guvenilir JS icin - kullanici girdisi asla evaluate edilmez", "Statik icerik icin playwright yerine fetch/webfetch tercih edilir"],
-          "kg-mem": ["Secret/API key/credential storelamak yasaktir (JSON dosyada duz metin saklanir)", "SLM ile tamamlayicidir, alternatif degil (SLM semantik, KG yapilandirilmis iliskiler icin)"],
-          "fetch": ["robots.txt zorunlu (server enforce eder)", "max_length varsayilan 5000; buyuk sayfalar icin start_index ile paginate"],
-          "sequentialthinking": ["Sadece karmasik mantik zincirleri ve branching gerektiren problemler icin", "Basit lineer CoT icin kullanilmaz - internal reasoning yeterlidir"]
+          "all": [
+            "All MCP tools must run through the ToolBridge; no direct shell/terminal execution",
+            "MCP timeout: 30 seconds",
+            "Fallback to built-in tool in case of failure"
+          ],
+          "github": [
+            "GITHUB_TOKEN is read from .env via wrapper script",
+            "Direct push to main branch is forbidden - PR-based workflow mandatory",
+            "Built-in git tools are used for local git operations instead of GitHub MCP"
+          ],
+          "playwright": [
+            "playwright_close must be called after every session",
+            "playwright_evaluate is only for trusted JS - never evaluate user input",
+            "Prefer fetch/webfetch over playwright for static content"
+          ],
+          "kg-mem": [
+            "Storing secrets, API keys, or credentials is forbidden (saved as plain text in JSON)",
+            "Complementary to SLM, not an alternative (SLM for semantic memory, KG for structured relations)"
+          ],
+          "fetch": [
+            "robots.txt compliance is mandatory (enforced by server)",
+            "Default max_length is 5000; paginate using start_index for larger pages"
+          ],
+          "sequentialthinking": [
+            "Only for complex logic chains and branching problems",
+            "Do not use for simple linear CoT - internal reasoning is sufficient"
+          ]
         }
       }
     }
