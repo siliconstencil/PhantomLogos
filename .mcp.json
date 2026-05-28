@@ -64,6 +64,19 @@
       "env": {
         "PYTHONPATH": "<project-root>"
       }
+    },
+    "filesystem": {
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "<project-root>"
+      ],
+      "command": "cmd",
+      "env": {
+        "PYTHONPATH": "<project-root>"
+      }
     }
   }
 }
