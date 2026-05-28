@@ -8,7 +8,7 @@ from cognition.mnemosyne.operational_store import OperationalStore
 from cognition.mnemosyne.procedural_store import ProceduralStore
 from src.architrave.otl_engine import get_otl_engine
 
-# AUDIT-04.2: FunctionGemma Router — tool dispatch keyword detection
+# AUDIT-04.2: FunctionGemma Router - tool dispatch keyword detection
 _TOOL_DISPATCH_KEYWORDS = [
     "read ",
     "write ",

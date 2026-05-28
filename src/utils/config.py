@@ -76,7 +76,7 @@ _config: PhantomLogosConfig | None = None
 
 def load_config() -> PhantomLogosConfig:
     """
-    Lazy singleton loader. Never raises — always returns a config instance.
+    Lazy singleton loader. Never raises - always returns a config instance.
     If validation fails, logs a warning and returns a model with defaults (model_construct).
     """
     global _config

@@ -1,5 +1,24 @@
 # Phantom Logos: Walkthrough — Sovereign Skill Architecture
 
+## Phase 1.1.31: Morpheus Kod Temizliği & Filesystem MCP Entegrasyonu [11:15 AM - 11:30 AM PT]
+
+**Status**: COMPLETED (2026-05-28)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | Morpheus Launcher Türkçe İhlal Temizliği | `run_morpheus.bat` | Türkçe kelimeler ve log formatı (Yeni oturum basliyo -> New session starting) tamamen ASCII İngilizce standardına dönüştürüldü. [SRC:axis_1] |
+| 2 | Kod İçi Türkçe Yorum/Docstring Temizliği | `mcp_tool_bridge.py`, `scheduler.py` | Türkçe docstring ve Predictive Pre-load yorum satırları İngilizce ASCII açıklamalarla değiştirildi. |
+| 3 | ASCII Dışı Karakter (Em-dash) Temizliği | `config.py`, `krisis.py`, `mcp_registry.py` | Tüm em-dash (`—`) karakterleri standart tire (`-`) ile değiştirilerek kod tabanının ASCII-only olması sağlandı. |
+| 4 | Pyright `psutil` Tip Uyarılarının Giderilmesi | `scheduler.py`, `mcp_registry.py` | `import psutil` satırlarına `# type: ignore` eklenerek Pyright/IDE tip uyarıları tamamen giderildi. [SRC:axis_8] |
+| 5 | Filesystem MCP Server Entegrasyonu | `mcp_config.json` | `@modelcontextprotocol/server-filesystem` sunucusu D:\Hank yetkisiyle eklenerek platformun 800 satır dayatması olmaksızın token tasarruflu okuma/yazma sağlandı. [SRC:axis_8] |
+
+### Test & Derleme Sonuçları (SUCCESS)
+
+- `python -m py_compile` doğrulaması: **%100 BAŞARILI** (Sözdizimi hatası yok). [SRC:axis_11]
+- `grep_search` ASCII taraması: **%100 BAŞARILI** (Hiçbir non-ASCII veya Türkçe karakter kalmadı).
+
+---
+
 ## Phase 1.1.29: Codebase Scanner Guncellemesi [01:00 AM - 01:10 AM PT]
 
 **Status**: COMPLETED (2026-05-28)

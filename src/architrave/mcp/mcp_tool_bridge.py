@@ -97,8 +97,8 @@ def make_observe_handler(srv_name: str, t_name: str, _mcp_sess: Any):
 
 def discover_and_register_mcp_tools(tool_bridge_cls: Any) -> None:
     """
-    MCP Registry'deki tüm aktif sunucuların araçlarını sorgular ve
-    ToolBridge sınıfına class-level olarak `{server_name}_{tool_name}` ön ekiyle kaydeder.
+    Queries all active tools in the MCP Registry and registers them
+    on the ToolBridge class at the class-level with a `{server_name}_{tool_name}` prefix.
     """
     try:
         registry = get_mcp_registry()

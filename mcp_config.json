@@ -2,7 +2,9 @@
   "mcpServers": {
     "slm": {
       "command": "D:\\Hank\\.venv\\Scripts\\slm.exe",
-      "args": ["mcp"],
+      "args": [
+        "mcp"
+      ],
       "env": {
         "PYTHONPATH": "D:\\Hank",
         "SLM_DISABLE_WARMUP_SIDE_EFFECTS": "1"
@@ -12,21 +14,34 @@
     },
     "sequential-thinking": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
       "env": {},
       "timeout": 60,
       "enabled": true
     },
     "fetch": {
       "command": "D:\\Hank\\.venv\\Scripts\\python.exe",
-      "args": ["-m", "mcp_server_fetch"],
+      "args": [
+        "-m",
+        "mcp_server_fetch"
+      ],
       "env": {},
       "timeout": 30,
       "enabled": true
     },
     "kg-mem": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory"],
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
       "env": {
         "MEMORY_FILE_PATH": "D:\\Hank\\mcp-servers\\kg-mem\\memory.json"
       },
@@ -35,17 +50,38 @@
     },
     "github": {
       "command": "cmd",
-      "args": ["/c", "D:\\Hank\\scripts\\run_github_mcp.bat"],
+      "args": [
+        "/c",
+        "D:\\Hank\\scripts\\run_github_mcp.bat"
+      ],
       "env": {},
       "timeout": 30,
       "enabled": true
     },
     "playwright": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@executeautomation/playwright-mcp-server"],
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ],
       "env": {},
       "timeout": 60,
       "enabled": true
+    },
+    "filesystem": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "D:\\Hank"
+      ],
+      "env": {
+        "PYTHONPATH": "D:\\Hank"
+      }
     }
   }
 }

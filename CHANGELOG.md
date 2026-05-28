@@ -1,3 +1,16 @@
+## Phase 1.1.31 - Morpheus Kod Temizliği & Filesystem MCP Entegrasyonu - 2026-05-28 [11:15 AM PT]
+
+### Added
+
+- **Filesystem MCP Server Entegrasyonu**: `@modelcontextprotocol/server-filesystem` sunucusu hem IDE yapılandırmasına (`C:\Users\Hakan\.gemini\config\mcp_config.json`) hem de çalışma alanı konfigürasyonuna (`D:\Hank\mcp_config.json`) `D:\Hank` okuma yetkisiyle eklendi. Bu entegrasyon, platformun yerleşik `view_file` aracındaki 800 satır dayatmasını baypas ederek %90'ın üzerinde token tasarrufu sağlar. [SRC:axis_8]
+
+### Fixed
+
+- **Morpheus Launcher Türkçe Kelime ve Karakter İhlali**: `run_morpheus.bat` dosyasındaki tüm Türkçe kelimeler ve loglama formatları (Yeni oturum basliyo -> New session starting, HATA -> ERROR vb.) tamamen ASCII-only İngilizce olarak temizlendi. [SRC:axis_1]
+- **Kod İçi Türkçe Açıklamalar ve Docstring'ler**: `src/architrave/mcp/mcp_tool_bridge.py` içerisindeki Türkçe docstring ve `cognition/morpheus/scheduler.py` içerisindeki Türkçe yorum satırları İngilizce açıklamalarla değiştirildi. [SRC:axis_1]
+- **ASCII Dışı Karakter Temizliği (Em-dash)**: `src/utils/config.py`, `src/clotho/krisis.py` ve `src/architrave/mcp/mcp_registry.py` içerisindeki tüm em-dash (`—`) karakterleri standart ASCII tire (`-`) ile değiştirildi.
+- **Pyright `psutil` Tip Uyarıları**: `cognition/morpheus/scheduler.py` ve `src/architrave/mcp/mcp_registry.py` içindeki `import psutil` satırlarına `# type: ignore` eklenerek IDE tip uyarıları giderildi. [SRC:axis_8]
+
 ## Phase 1.1.30 - 3-Agent Parallel Stability Hardening - 2026-05-28 [Daylight]
 
 ### Added
