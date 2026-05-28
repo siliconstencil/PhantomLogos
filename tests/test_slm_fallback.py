@@ -88,7 +88,7 @@ class TestSLMFallback(unittest.IsolatedAsyncioTestCase):
                 fm_store.db.drop_table(fm_store.table_name)
 
     @patch("src.architrave.mcp.get_slm_client")
-    @patch("src.utils.ollama_utils.get_ollama_client")
+    @patch("src.atropos.matryoshka_service.get_ollama_client")
     async def test_matryoshka_service_fallback_on_unhealthy_slm(self, mock_ollama, mock_get_client):
         # Mock SLM client to be unhealthy
         mock_slm = MagicMock()
@@ -101,9 +101,8 @@ class TestSLMFallback(unittest.IsolatedAsyncioTestCase):
         mock_ollama_client.embeddings.return_value = {"embedding": np.random.rand(768).tolist()}
         mock_ollama.return_value = mock_ollama_client
 
-        # Initialize MatryoshkaService and assign mocked client to singleton instance
+        # Initialize MatryoshkaService
         service = MatryoshkaService()
-        service.client = mock_ollama_client
 
         # Verify active check returns False
         self.assertFalse(service._is_slm_active())
