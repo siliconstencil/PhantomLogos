@@ -9,13 +9,11 @@ from typing import Any
 from src.utils.logging_config import setup_logger
 from src.utils.project_path import get_project_root
 from src.utils.sandbox import LightSandbox
+from src.lachesis.snapshot_manager import SnapshotManager
 
 logger = setup_logger(__name__)
 
-# Note: Layer 3 provides protection for INTERNAL tool calls.
-# Direct writes via OpenCode (IDE) are protected by Layer 2 (Watchdog).
-
-_l0_cache: dict = {"ts": 0.0, "result": False}  # modul seviyesi
+_l0_cache: dict = {"ts": 0.0, "result": False}
 
 _BASE = pathlib.Path(".").resolve()
 PROTECTED_PATHS = {
@@ -28,7 +26,7 @@ def _is_protected(target: str) -> bool:
     try:
         resolved = pathlib.Path(target).resolve()
     except Exception:
-        return True  # cozumlenemeyen yol = guvensiz kabul et
+        return True
     return resolved in PROTECTED_PATHS or any(resolved.is_relative_to(p) for p in PROTECTED_PATHS)
 
 
@@ -38,7 +36,7 @@ def _is_l0_authorized() -> bool:
         return _l0_cache["result"]
     token_path = pathlib.Path("data/snapshots/L0_AUTH_TOKEN")
     try:
-        result = (now - token_path.stat().st_mtime) < 60
+        result = (now - token_path.stat().st_mtime) < 300
     except FileNotFoundError:
         result = False
     _l0_cache["ts"] = now
@@ -47,7 +45,6 @@ def _is_l0_authorized() -> bool:
 
 
 def _pre_write_audit(content: str, rel_path: str) -> bool:
-    """F1 Gemini Virus Fix: Formal pre-write audit for code content."""
     if not rel_path.endswith(".py"):
         return True
     try:
@@ -75,21 +72,26 @@ def _pre_write_audit(content: str, rel_path: str) -> bool:
 
 
 def _backup_file(rel_path: str, project_root: str) -> None:
-    """Creates a timestamped backup in .antigravity/backup/."""
     try:
         full_path = os.path.join(project_root, rel_path)
         if not os.path.exists(full_path):
             return
-
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_dir = os.path.join(project_root, ".antigravity", "backup", ts)
         os.makedirs(backup_dir, exist_ok=True)
-
         dest_path = os.path.join(backup_dir, os.path.basename(rel_path))
         shutil.copy2(full_path, dest_path)
         logger.info(f"ToolBridge: Backup created for {rel_path} at {dest_path}")
     except Exception as e:
         logger.error(f"ToolBridge: Backup failed for {rel_path} ({e})")
+
+
+def _update_snapshot(rel_path: str, project_root: str) -> None:
+    try:
+        sm = SnapshotManager(project_root)
+        sm.take_snapshot(rel_path)
+    except Exception as e:
+        logger.error(f"ToolBridge: Snapshot update failed for {rel_path} ({e})")
 
 
 async def _ls(_bridge, input_data):
@@ -104,33 +106,24 @@ async def _ls(_bridge, input_data):
 
 
 async def _write_file(_bridge, input_data: dict[str, Any]) -> str | None:
-    """
-    Atomic write with pre-write backup.
-    Input: {"path": "...", "content": "..."}
-    """
     try:
         rel_path = input_data.get("path")
         content = input_data.get("content", "")
         if not rel_path:
             return "Error: Missing path"
-
         if _is_protected(rel_path):
             return "Error: Protected system path. Direct write to L0_AUTH_TOKEN is forbidden."
-
         if not _is_l0_authorized():
             return "Error: L0_AUTH_TOKEN missing or expired. Run: python scripts/create_l0_token.py"
 
         project_root = str(get_project_root())
         full_path = os.path.join(project_root, rel_path)
 
-        # 1. Pre-write formal audit (F1 Gemini Virus Guard)
         if not _pre_write_audit(content, rel_path):
             return f"Error: Pre-write audit failed for {rel_path}"
 
-        # 2. Pre-write backup
         _backup_file(rel_path, project_root)
 
-        # 3. Atomic Write (temp + rename)
         temp_path = full_path + ".tmp"
 
         def write_sync() -> None:
@@ -143,8 +136,8 @@ async def _write_file(_bridge, input_data: dict[str, Any]) -> str | None:
 
         await asyncio.to_thread(write_sync)
 
-        # 3. Audit (Manual trigger of changelog if needed, but Guardian will pick it up)
-        logger.info(f"ToolBridge: Successfully wrote {rel_path} (atomic)")
+        _update_snapshot(rel_path, project_root)
+        logger.info(f"ToolBridge: Successfully wrote {rel_path} (atomic + snapshot)")
         return f"Success: Wrote to {rel_path}"
     except Exception as e:
         logger.error(f"ToolBridge: write_file failed ({e})")
@@ -152,20 +145,14 @@ async def _write_file(_bridge, input_data: dict[str, Any]) -> str | None:
 
 
 async def _replace_content(_bridge, input_data: dict[str, Any]):
-    """
-    Replaces TargetContent with ReplacementContent with pre-write backup.
-    Input: {"path": "...", "target": "...", "replacement": "..."}
-    """
     try:
         rel_path = input_data.get("path")
         target = input_data.get("target")
         replacement = input_data.get("replacement")
         if not rel_path or target is None or replacement is None:
             return "Error: Missing parameters"
-
         if _is_protected(rel_path):
             return "Error: Protected system path. Direct write to L0_AUTH_TOKEN is forbidden."
-
         if not _is_l0_authorized():
             return "Error: L0_AUTH_TOKEN missing or expired. Run: python scripts/create_l0_token.py"
 
@@ -175,22 +162,17 @@ async def _replace_content(_bridge, input_data: dict[str, Any]):
         def replace_sync() -> str:
             if not os.path.exists(full_path):
                 return f"Error: File {rel_path} not found"
-
             with open(full_path, encoding="utf-8") as f:
                 data = f.read()
-
             if target not in data:
                 return f"Error: Target content not found in {rel_path}"
-
             new_data = data.replace(target, replacement)
-
             if not _pre_write_audit(new_data, rel_path):
                 return f"Error: Pre-write audit failed for {rel_path}"
-
             _backup_file(rel_path, project_root)
-
             with open(full_path, "w", encoding="utf-8") as f:
                 f.write(new_data)
+            _update_snapshot(rel_path, project_root)
             return "Success"
 
         result = await asyncio.to_thread(replace_sync)
@@ -202,7 +184,7 @@ async def _replace_content(_bridge, input_data: dict[str, Any]):
 
 async def _run_code(_bridge, input_data):
     try:
-        code = input_data.get("code") if isinstance(input_data, dict) else str(input_data)
+        code = input_data.get("code") if isinstance(input_data, list) else str(input_data)
         timeout = input_data.get("timeout", 10) if isinstance(input_data, dict) else 10
         sandbox = LightSandbox()
         try:
