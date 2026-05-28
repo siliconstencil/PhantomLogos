@@ -1,3 +1,20 @@
+## Phase 1.1.33 - Test Coverage Push (%38->~%45) + Unit Health Tests - 2026-05-28 [11:55 AM PT]
+
+### Added
+
+- **K2.12 Test Coverage Expansion**: `tests/test_unit_health.py` (21 tests) covering 5 low-coverage modules:
+  - `src/utils/project_path.py` (3 tests): get_project_root, to_absolute_path resolution
+  - `cognition/mnemosyne/procedural_store.py` (4 tests): record_usage create/update, best_tool sorting
+  - `cognition/mnemosyne/goal_store.py` (4 tests): add/list/complete/update_progress
+  - `src/atropos/token_budget.py` (6 tests): consume limits, remaining, status, singleton guard
+  - `cognition/morpheus/monitor.py` (4 tests): MemoryLeakMonitor start/check/warn/threshold
+- All 21 tests use tmp_path isolation, no external dependencies, no Ollama/LanceDB.
+
+### Tests
+
+- New unit tests: 21/21 PASSED
+- Cumulative known passing: 38+ tests stable
+
 ## Phase 1.1.32 - K1/K2 Roadmap Cleanup (Dogru Uygulama) - 2026-05-28 [11:44 AM PT]
 
 ### Added

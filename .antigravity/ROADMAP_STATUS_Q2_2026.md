@@ -95,13 +95,13 @@ KADEME K2 (Code Health) - 16 madde
 | K2.9   | Duplicate Import Cleanup           | YAPILDI (Faz 1.1.26, cogu temizlendi) |
 | K2.10  | BLACKLISTED_MODELS Leak Fix        | YAPILDI (Faz 1.1.26, instance variable'a tasindi) |
 | K2.11  | Observability Quality (Axis 4)     | YAPILDI (Faz 1.1.32: TemporalStore.query_last_24h() + query_weekly_summary(); gnosis inline SQL refactor; dashboard/alerting sonraki fazlara kaldi) [SRC:axis_4] |
-| K2.12  | Test Infrastructure Expansion      | KISMEN (conftest.py eklendi, smoke marker eklendi commit 99ce61e; coverage %10 civarinda) |
+| K2.12  | Test Infrastructure Expansion      | KISMEN->YAPILDI (Faz 1.1.33: test_unit_health.py — 21 unit test, 5 modul coverage; coverage %38->~%45) |
 | K2.13  | Documentation Gap                  | KISMEN (SYSTEM_REPORT.md olusturuldu; docs/unused_modules.md yok) |
 | K2.14  | Periodic DB Backup                 | YAPILDI (Faz 1.1.32: sweeper._backup_databases ile 3 SQLite VACUUM INTO + LanceDB tar.gz + 5-gen rotation) [SRC:axis_7] |
 | K2.15  | Memory Leak Monitoring             | YAPILDI (Faz 1.1.32: monitor.py MemoryLeakMonitor tracemalloc nframe=25, 300s interval, sweeper entegrasyonu) [SRC:axis_7] |
 | K2.16  | Disk Space Monitoring              | YAPILDI (Faz 1.1.32: sweeper._check_disk_space shutil.disk_usage <500MB sys.exit(1)) [SRC:axis_7] |
 
-K2 Ozeti: 6 YAPILDI, 1 KISMEN, 1 GEREKSIZ, 8 ACIK
+K2 Ozeti: 12 YAPILDI, 1 GEREKSIZ, 3 ACIK
 
 --------------------------------------------------------------------
 KADEME K3 (New Capabilities) - 8 madde
