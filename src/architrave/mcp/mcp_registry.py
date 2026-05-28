@@ -101,9 +101,13 @@ class MCPRegistry:
     def _kill_orphaned_slm(self) -> None:
         """Kill orphaned slm.exe processes before spawning a new one.
 
-        Uses psutil to surgically detect true orphans: an slm.exe whose parent PID
-        is dead, not a python process, or was born after the SLM itself (PID reuse).
-        This preserves healthy SLM children owned by other live IDE windows.
+        An slm.exe is an orphan if and only if its parent PID no longer exists,
+        or the process at that PID was born after the SLM (Windows PID reuse).
+
+        Deliberately does NOT filter by parent process name: multiple IDEs, CLIs,
+        and agents (Python, Node, Electron, etc.) may each own a healthy slm.exe
+        simultaneously. Any live parent — regardless of type — means the SLM is
+        not an orphan and must be left alone.
         """
         import sys
 
@@ -126,17 +130,14 @@ class MCPRegistry:
 
                     is_orphan = False
                     if ppid is None or not psutil.pid_exists(ppid):
+                        # Parent PID is gone — true orphan
                         is_orphan = True
                     else:
                         try:
-                            parent = psutil.Process(ppid)
-                            parent_name = parent.name().lower()
-                            parent_create_time = parent.create_time()
-                            if "python" not in parent_name:
-                                # Parent is not python — reparented or unrelated
-                                is_orphan = True
-                            elif parent_create_time > slm_create_time:
-                                # Parent was born after SLM — Windows PID reuse, not our owner
+                            parent_create_time = psutil.Process(ppid).create_time()
+                            if parent_create_time > slm_create_time:
+                                # A new process reused the parent PID after the real
+                                # parent died — treat as orphan
                                 is_orphan = True
                         except psutil.NoSuchProcess:
                             is_orphan = True
@@ -147,7 +148,7 @@ class MCPRegistry:
                             killed += 1
                             logger.info(
                                 f"MCPRegistry: Killed orphaned SLM pid={proc.pid} "
-                                f"(parent pid={ppid} is dead or non-python)"
+                                f"(parent pid={ppid} is dead)"
                             )
                         except (psutil.NoSuchProcess, psutil.AccessDenied) as _e:
                             logger.debug(
