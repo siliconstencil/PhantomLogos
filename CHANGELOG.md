@@ -1,5 +1,10 @@
-## Phase 1.1.28 - Sistem Guvenlik Sertlestirme (AUDIT-035) - 2026-05-28 [12:15 AM PT]
+## Phase 1.1.29 - Codebase Scanner Guncellemesi - 2026-05-28 [01:00 AM PT]
 
+### Fixed
+
+- **Codebase Scanner (codebase_scanner.py)**: Added `timeout` parameters to Ruff (60s) and Pyright (120s) `subprocess.run` calls. Passed the `--yes` flag to `npx` to prevent interactive prompts from hanging the scan indefinitely when dependencies need installation.
+
+## Phase 1.1.28 - Sistem Guvenlik Sertlestirme (AUDIT-035) - 2026-05-28 [12:15 AM PT]
 ### Added
 
 - **Pre-Flight Hard-Gate & Whitelist (fs.py, snapshot_manager.py, file_watchdog.py, server.py)**: Enforced strict `L0_AUTH_TOKEN` checks for file writes/mutations with 5s cache. Whitelisted `agent/a2a_registry.json` and port 32556 to prevent watchdog rollback loops.
