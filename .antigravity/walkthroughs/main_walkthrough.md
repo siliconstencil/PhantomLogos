@@ -1,8 +1,16 @@
 # Phantom Logos: Walkthrough — Sovereign Skill Architecture
 
-## Phase 1.1.28: Sistem Guvenlik Sertlestirme (AUDIT-035) [00:00 AM - 00:15 AM PT]
+## Phase 1.1.29: Codebase Scanner Guncellemesi [01:00 AM - 01:10 AM PT]
 
 **Status**: COMPLETED (2026-05-28)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | Subprocess Timeout & --yes Flag Entegrasyonu | `codebase_scanner.py` | Ruff ve Pyright calls for subprocess have timeouts; npx uses `--yes` to prevent interactive prompts |
+
+---
+
+## Phase 1.1.28: Sistem Guvenlik Sertlestirme (AUDIT-035) [00:00 AM - 00:15 AM PT]
 
 | Step | Change | File(s) | Result |
 | :--- | :--- | :--- | :--- |

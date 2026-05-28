@@ -1,9 +1,10 @@
 ====================================================================
 PHANTOM LOGOS - ROADMAP DURUM & KIYASLAMA RAPORU
-Q2 2026 | v1.0.0 -> v1.1.27 Gecis Analizi
+Q2 2026 | v1.0.0 -> v1.1.28 Gecis Analizi
 ====================================================================
-[Olusturma: 2026-05-27 | Kaynak: ROADMAP.md + walkthroughs + TASKS.md]
+[Olusturma: 2026-05-27 | Guncelleme: 2026-05-28 | Kaynak: ROADMAP.md + walkthroughs + TASKS.md]
 [Kapsam: 53 madde analizi, teknik borc envanteri, gidis yolu]
+[v1.1.28 Dogrulama: bagimsiz denetim bulgulari codebase karsilastirmasi ile teyit edildi]
 ====================================================================
 
 ====================================================================
@@ -37,15 +38,15 @@ KADEME K0 (Foundation Stability) - 8 madde
 | Madde  | Baslik                             | Durum              |
 |--------|------------------------------------|--------------------|
 | K0F1   | ToolBridge-Sophia Koprusu Onarimi  | KISMEN (synergeia.py beyaz liste genisligi bilinmiyor, LangGraph ergon yeniden yapilandirildi, Faz 1.1.25 kapsaminda kod tasinmasi yapildi) |
-| K0F2   | GraphState Temizligi               | ACIK (memory_sync AND bug, spatial_context orphan, ru_flow_trace kullanim durumu netlik gerektiriyor) |
+| K0F2   | GraphState Temizligi               | KISMEN (memory_sync ve spatial_context field'lari codebase'de yok; AND bug raporu hatali; sadece ru_flow_trace kullanim durumu netlestirilmeli) |
 | K0F3   | Clotho Qwen 3.5 UD Yukseltmesi     | YAPILDI (clotho.yaml primary=qwen3.5-4b-ud, 1.8 GB VRAM tasarrufu) |
 | K0.0   | Baseline Metrics Collection        | YAPILMADI (scripts/baseline_benchmark.py olusturulmamis) |
 | K0.1   | semantic_relations Bug Fix         | ACIK (gliner2 eksikligi devam ediyor, 0 row durumu cozulmediyse gecerli) |
-| K0.2   | Dead Code: _get_cloud_gateway()    | ACIK (hephaestus.py K0.2 temizligi dogrulanmamis) |
+| K0.2   | Dead Code: _get_cloud_gateway()    | YAPILDI (codebase'de hic eslesen yok; temizlenmis) |
 | K0.3   | Ebbinghaus Lineer->Exp Decay       | GEREKSIZ (SLM Fisher-Rao kapsiyor, activation gate K3.2 ile birlikte rafta) |
-| K0.4   | _tmp_outdated.py Temizligi         | ACIK (kok dizinde gecici dosya kalabilir) |
+| K0.4   | _tmp_outdated.py Temizligi         | YAPILDI (_tmp_outdated.py dosyasi kok dizinde bulunmuyor) |
 
-K0 Ozeti: 1 kesin YAPILDI, 1 GEREKSIZ, 4 ACIK, 2 KISMEN
+K0 Ozeti: 3 kesin YAPILDI, 1 GEREKSIZ, 2 ACIK, 2 KISMEN
 
 --------------------------------------------------------------------
 KADEME K1 (Critical Stability) - 5 madde
@@ -53,13 +54,13 @@ KADEME K1 (Critical Stability) - 5 madde
 
 | Madde  | Baslik                             | Durum              |
 |--------|------------------------------------|--------------------|
-| K1.1   | Gateway Circuit Breaker Iyilestirmesi | KISMEN (Faz 1.1.25 gateway refactoring yapildi; kratos.py circuit breaker yeniden yapilandirildi, jitter durumu dogrulanmali) |
-| K1.2   | Resilient Shutdown & Recovery      | ACIK (SIGTERM handler, checkpoint flush, session recovery yapilmamis) |
-| K1.3   | WAL Checkpoint Optimizasyonu       | ACIK (periyodik PRAGMA wal_checkpoint eklenmedi) |
+| K1.1   | Gateway Circuit Breaker Iyilestirmesi | KISMEN (Faz 1.1.25 gateway refactoring yapildi; kratos.py circuit breaker yeniden yapilandirildi; random.uniform jitter codebase'de YOK, dogrulanmadi) |
+| K1.2   | Resilient Shutdown & Recovery      | ACIK [KRITIK] (SIGTERM handler codebase'de yok; sadece SIGINT+SIGBREAK var; checkpoint flush, session recovery yapilmamis) |
+| K1.3   | WAL Checkpoint Optimizasyonu       | YAPILDI (episodic_store.py:37-67 periyodik WAL TRUNCATE checkpoint; temporal/trajectory/hypergraph_store'da da WAL aktif) |
 | K1.4   | Embedding Zero-Vector Fix + Health | KISMEN (SLM entegrasyonu Nomic+Jina stack'ini degistirdi; zero-vector path kontrol edilmeli) |
 | K1.5   | .env Token Tier Variables          | ACIK (token tier'lari hala hardcoded olmasi kuvvetle muhtemel) |
 
-K1 Ozeti: 0 kesin YAPILDI, 3 KISMEN/ACIK, 2 ACIK
+K1 Ozeti: 1 kesin YAPILDI (K1.3), 2 KISMEN, 2 ACIK (K1.2 KRITIK)
 
 --------------------------------------------------------------------
 KADEME K1.5 (Quality Gates) - 7 madde
@@ -67,15 +68,15 @@ KADEME K1.5 (Quality Gates) - 7 madde
 
 | Madde  | Baslik                             | Durum              |
 |--------|------------------------------------|--------------------|
-| K1.5.1 | pyproject.toml PEP 621             | KISMEN (versiyon ve dev-deps eklendi, ancak authors/classifiers eksik olabilir) |
-| K1.5.2 | Pre-commit Hooks                   | KISMEN (ruff entegrasyonu var, pre-commit config tam degil) |
-| K1.5.3 | Structured Logging (JSON+Rotation) | ACIK (plain text logging devam ediyor; RotatingFileHandler ve JSON formatter eklenmemis) |
+| K1.5.1 | pyproject.toml PEP 621             | YAPILDI (name, version, description, authors, classifiers, requires-python, dependencies hepsi mevcut; PEP 621 tam uyumlu) |
+| K1.5.2 | Pre-commit Hooks                   | KISMEN (ruff+trailing-whitespace+yaml+toml hooks aktif; pre-commit install dokumantasyonu eksik) |
+| K1.5.3 | Structured Logging (JSON+Rotation) | YAPILDI (src/utils/logging_config.py:23 JSONFormatter + RotatingFileHandler 10MB/5yedek; tam uygulandi) |
 | K1.5.4 | Config Validation + SystemCheck    | ACIK (Pydantic BaseSettings modeli ve SystemCheck sinifi eklenmemis) |
 | K1.5.5 | .gitignore Audit                   | YAPILDI (git durumunda .gitignore degistirilmis; duzeltme yapilmis) |
 | K1.5.6 | Alembic Migrations Setup           | YAPILDI (commit ef4be4c: K1.5.6 Alembic migration autogenerate) |
-| K1.5.7 | Semantic Versioning + Rate Limiting | KISMEN (pyproject.toml surum eklendi; rate limiting belirsiz) |
+| K1.5.7 | Semantic Versioning + Rate Limiting | YAPILDI (pyproject.toml surum eklendi; src/utils/rate_limiter.py token-bucket rate limiter aktif) |
 
-K1.5 Ozeti: 2 YAPILDI, 3 KISMEN, 2 ACIK
+K1.5 Ozeti: 5 YAPILDI, 1 KISMEN, 1 ACIK
 
 --------------------------------------------------------------------
 KADEME K2 (Code Health) - 16 madde
@@ -111,10 +112,10 @@ KADEME K3 (New Capabilities) - 8 madde
 | K3.1   | SLM MCP Integration                | YAPILDI (Faz 1.1.5-1.1.27; 104 MCP arac aktif, daemon stabil) |
 | K3.2   | Ebbinghaus Forgetting Curve        | GEREKSIZ (SLM devreye girdiginden SLM Fisher-Rao kapsiyor) |
 | K3.3   | Graphiti Temporal Knowledge Graph  | RAFTA (SLM temporal channel yuzunden %70-80 gereksiz hale geldi; graphiti-core kurulmadi) |
-| K3.4   | MCP Runtime (Native MCP Client)    | KISMEN (SLM MCP calisiyor; ancak tam MCP Runtime mimarisi (src/clotho/mcp/) yok) |
+| K3.4   | MCP Runtime (Native MCP Client)    | KISMEN (SLM MCP calisiyor; tam MCP Runtime src/architrave/mcp/ altinda 6 modul ile mevcut; src/clotho/mcp/ hic planlanmamisti, yol dokumantasyonda hataliydi) |
 | K3.5   | Cross-Axis Memory Hypergraph       | ACIK (networkx + SQLite adjacency table henuz eklenmedi) |
 | K3.6   | LangGraph Transition Verification  | ACIK (Z3 invariant sadece 2 gecis icin yazilmadi, K5.3'e ertelendi) |
-| K3.7   | Model Switching Optimization       | KISMEN (OTL motoru model optimizasyon sagliyor; keep-alive pool ve VRAMBudgetGuard eksik) |
+| K3.7   | Model Switching Optimization       | KISMEN (OTL motoru model optimizasyon sagliyor; VRAMBudgetGuard callback ollama_utils.py'de uygulanmis; keep-alive pool (KeepAlivePool sinifi) eksik) |
 | K3.8   | Gateway Secondary Fallback         | ACIK (tek endpoint; ANTIGRAVITY_GATEWAY_URL_SECONDARY env var yok) |
 
 K3 Ozeti: 1 YAPILDI, 2 KISMEN, 2 GEREKSIZ/RAFTA, 3 ACIK
@@ -348,10 +349,12 @@ BORC-06: Context Assembly Sirali (K2.6)
   - asyncio.gather() ile paralel yapılabilir eksenler var
   - Etki: Her istek için gereksiz latency birikimi
 
-BORC-07: GraphState memory_sync AND Bug (K0F2)
-  - memory_sync: Annotated[bool, operator.and_] -> bir False kalici False
-  - Uzun pipeline'larda beklenmedik state dondurması mümkün
-  - spatial_context orphan field context'i büyütüyor
+BORC-07: GraphState Temizligi Gerekiyor (K0F2) [REVIZE]
+  - memory_sync field ve spatial_context field codebase'de bulunamadi
+    (grep: no matches) - AND reducer bug raporlanmisti ama mevcut degil
+  - ru_flow_trace kullanim durumu hala netlestirilmemis
+  - Etki: Dusuk; field'lar mevcut degilse bug da yok; ru_flow_trace
+    incelenmeli
 
 BORC-08: Test Coverage ~%10-15 (K2.12)
   - 46 test dosyasi var ama çoğu minimal
@@ -381,13 +384,20 @@ BORC-12: Disk Space Monitoring Yok (K2.16)
   - LanceDB + SQLite büyümeye devam ediyor
   - <500 MB disk durumunda emergency halt mekanizması yok
 
-BORC-13: gliner2 vs gliner Paket Karistirmasi (K0.1)
-  - requirements.txt'de gliner==0.2.26 ama kod gliner2 import ediyor
-  - Bu durum semantic_relations tablosunu susturulmus hatayla bosiyor
+BORC-13: gliner2 Paket Tutarli [KAPALI - YANLIS TESHIS]
+  - pyproject.toml: gliner2>=1.3.1 (dogru paket adi)
+  - Kod: from gliner2 import GLiNER2 (tutarli)
+  - Bu borc kapatilmistir; paket karistirmasi yok
+  - K0.1 semantic_relations sorunu varligi devam ediyorsa baska bir
+    nedene bagli olmali (gliner2 model dosyasi eksikligi veya init hatasi)
 
-BORC-14: _get_cloud_gateway() Dead Code (K0.2)
-  - hephaestus.py:204 tek çağrısız fonksiyon
-  - 12 satır ölü kod
+BORC-14: _get_cloud_gateway() Dead Code [KAPALI]
+  - K0.2 ile ayni madde; codebase'de hic eslesen yok; temizlenmis
+
+BORC-16: .env Orphan Degiskenleri [DUSUK]
+  - OPENCODE_DB: .env'de tanimli ama hicbir Python dosyasinda kullanilmiyor
+  - HF_HUB_DISABLE_SYMLINKS_WARNING: .env'de iki kez tanimli (satir 27 ve 46 duplicate)
+  - Etki: Sessiz; kullanilmayan env degiskenleri bakim yuku arttirir
 
 BORC-15: SovereignTruthGuard [DEFERRED] G1-G4
   - G1: output_guard.py shadow verification (SophiaOutput dogrulama)
@@ -402,25 +412,26 @@ BORC-15: SovereignTruthGuard [DEFERRED] G1-G4
 
 Orijinal plan: v1.0.0 = %27 -> v1.1.0 hedef = %68
 
-Mevcut Durum (v1.1.27, 2026-05-27):
+Mevcut Durum (v1.1.28, 2026-05-28):
 
-| Kategori                   | v1.0.0 | v1.1.0 Hedef | v1.1.27 Gercek | Not                    |
+| Kategori                   | v1.0.0 | v1.1.0 Hedef | v1.1.28 Gercek | Not                    |
 |----------------------------|--------|-------------|-----------------|------------------------|
 | CI/CD Pipeline             | 0%     | 60%         | 35%             | ci.yml var, coverage yok |
-| Observability              | 0%     | 70%         | 15%             | metrics var, dashboard yok |
+| Observability              | 0%     | 70%         | 25%             | JSON+rotation logging dogrulandi |
 | Security                   | 35%    | 75%         | 60%             | Sovereign Shield güçlendi |
 | Data Management            | 45%    | 85%         | 62%             | Alembic tamam, yedek yok |
 | Documentation              | 50%    | 80%         | 68%             | SYSTEM_REPORT eklendi |
 | Test Coverage              | 10%    | 65%         | 18%             | smoke + conftest eklendi |
-| Code Quality               | 55%    | 85%         | 72%             | K2 parcial temizlik |
+| Code Quality               | 55%    | 85%         | 74%             | K2 temizlik + WAL + PEP621 dogrulandi |
 | Memory Architecture        | 65%    | 90%         | 82%             | SLM + OTL + Alembic |
 | Model Management (VRAM)    | 70%    | 85%         | 82%             | FunctionGemma + OTL |
 | Agent Orchestration        | 75%    | 90%         | 85%             | LangGraph + OTL güçlendi |
-| Tool Ecosystem             | 60%    | 80%         | 78%             | 104 MCP arac aktif |
-| **GENEL OLGUNLUK**         | **27%**| **68%**     | **~54%**        | Hedefin %79'u |
+| Tool Ecosystem             | 60%    | 80%         | 80%             | 104 MCP arac aktif, MCP src/architrave/mcp/ dogrulandi |
+| **GENEL OLGUNLUK**         | **27%**| **68%**     | **~57%**        | Hedefin %84'u |
 
-Hedefin %79'una ulasildi. Kalan %21 (%68 - %54 = 14 puan) ağırlıklı
-olarak test coverage, observability ve kritik borc kalemlerinde.
+Hedefin %84'une ulasildi (onceki hesap: %79). 6 madde yanlis ACIK/KISMEN
+olarak isaretlenmisti; gercekte YAPILDI. Kalan gap agırlıklı olarak
+test coverage, DB yedekleme ve SIGTERM handler uzerinde.
 
 Ama: Sisteme ROADMAP dışı eklenen OTL, FunctionGemma, Gemini
 implicit cache, 7-paket gateway gibi özellikler orijinal hedefte yok.
@@ -449,14 +460,19 @@ SPRINT 1 (Acil Stabilite) - ~1 hafta
    - Neden acil: veri kaybı riski gerçek ve geri dönülemez
 
 2. K1.2 Resilient Shutdown [KRITIK-BORC-02]
-   - signal.signal(SIGTERM) + asyncio handler
+   - signal.signal(SIGTERM) + asyncio handler (SIGTERM codebase'de YOK, dogrulandi)
    - checkpoint.flush() + DB session close() + 10s timeout
+   - clotho/control_handoff.py'ye SIGTERM handler ekle (SIGINT zaten var)
    - Neden acil: uzun görevlerde çökme = checkpoint bozulması
 
 3. K0.1 semantic_relations Bug Fix [KRITIK-BORC-03]
-   - pip install gliner2, requirements.txt guncelle
-   - theoria.py:56 debug -> warning yükselt
-   - Neden acil: Axis 11 verification ve entity extraction kalörisi düşük
+   - gliner2 paketi pyproject.toml'da dogru (gliner2>=1.3.1); paket sorunu degil
+   - Olasi neden: gliner2 model dosyasi eksikligi veya init/lazy-load hatasi
+   - entity_extractor.py:100 hata ayiklama ile gercek nedeni tespit et
+   - Neden acil: Axis 11 verification ve entity extraction kalitesi düşük
+
+   (NOT: K1.3 WAL Checkpoint - episodic_store.py'de zaten uygulanmis;
+    bu sprint'ten cikarildi)
 
 --------------------------------------------------------------------
 SPRINT 2 (Kalite Altyapısı) - ~1 hafta
@@ -480,10 +496,10 @@ SPRINT 2 (Kalite Altyapısı) - ~1 hafta
 SPRINT 3 (Kod Sagligi) - ~2 hafta
 --------------------------------------------------------------------
 
-7. K0F2 GraphState Temizligi [BORC-07]
-   - memory_sync AND reducer duzelt
-   - spatial_context orphan field temizle veya bagla
-   - ru_flow_trace kullanim durumunu netlesir
+7. K0F2 GraphState Temizligi [BORC-07 REVIZE]
+   - memory_sync ve spatial_context field'lari codebase'de YOK (grep onayladi)
+   - AND reducer bug mevcut degil
+   - Sadece ru_flow_trace kullanim durumunu netlestir (hala belirsiz)
 
 8. K2.8 ReflectionStore SQLAlchemy Migrasyon [BORC-05]
    - yedek al (sqlite3 .backup)
@@ -503,10 +519,11 @@ SPRINT 3 (Kod Sagligi) - ~2 hafta
 SPRINT 4 (Platform Olgunlugu) - ~2 hafta
 --------------------------------------------------------------------
 
-11. K1.5.3 Structured Logging (Tam)
-    - JSON formatter + RotatingFileHandler (10MB, 5 yedek)
-    - LOG_LEVEL env var
-    - Tum agent loglarına session_id, agent_id fieldi
+11. K1.5.3 Structured Logging - Agent Entegrasyonu (Tamamlama)
+    - JSON formatter + RotatingFileHandler 10MB/5yedek ZATEN VAR
+      (src/utils/logging_config.py - dogrulandi)
+    - Eksik olan: tum agent loglarına session_id + agent_id fieldi eklenmesi
+    - LOG_LEVEL env var .env'de mevcut
 
 12. K1.5.4 Config Validation + SystemCheck
     - Pydantic BaseSettings (URL, API key, VRAM budget)
@@ -606,11 +623,13 @@ Güçlü Yönler (stabiliteye katkı):
 
 Zayıf Yönler (stabiliteyi tehdit eden):
   - Veri yedeklemesi YOK (BORC-01 - en kritik)
-  - Graceful shutdown YOK (BORC-02)
+  - Graceful shutdown YOK, SIGTERM handler eksik (BORC-02 - KRITIK)
   - Test coverage %10-15 (BORC-08)
   - hephaestus.py 25 import sitesi: bir değişiklik 17 dosyayı etkiler
-  - memory_sync AND bug: beklenmedik state dondurması mümkün
   - semantic_relations 0 row: sessiz hata, Axis 11 kalitesi düşük
+  - K1.1 jitter eksik: circuit breaker'da random.uniform backoff yok
+  (NOT: memory_sync AND bug - bu alan codebase'de mevcut degil;
+   orijinal rapordaki tespit hatali)
 
 ====================================================================
 9. SON YORUM VE ÖNERİLER
@@ -668,7 +687,10 @@ Sprint 1-2 bu koruyucuyu takıyor. Ondan sonra güvenle hızlanılabilir.
 
 ====================================================================
 *Rapor: Phantom Logos Sovereign Audit - L0 Yetki Altinda*
-*Olusturma: 2026-05-27*
-*Kapsam: v1.0.0 -> v1.1.27 | 53 ROADMAP Maddesi + Ek Gelistirmeler*
+*Olusturma: 2026-05-27 | Son Guncelleme: 2026-05-28*
+*Kapsam: v1.0.0 -> v1.1.28 | 53 ROADMAP Maddesi + Ek Gelistirmeler*
 *Hedef Cerce: Stabilite, Saglamlik, Surdurulebilirlik*
+*v1.1.28 Notlari: 6 madde YAPILDI olarak guncellendi (K0.2, K0.4, K1.3,*
+*K1.5.1, K1.5.3, K1.5.7); 3 yanlis teshis duzeltildi (BORC-07 revize,*
+*BORC-13 kapali, BORC-14 kapali); BORC-16 eklendi (orphan env vars)*
 ====================================================================

@@ -163,6 +163,7 @@ class CodebaseScanner:
                 cwd=project_root,
                 capture_output=True,
                 check=False,
+                timeout=60,
             )
 
             if proc.stdout:
@@ -192,10 +193,11 @@ class CodebaseScanner:
                 return
 
             proc = subprocess.run(
-                [npx_executable, "pyright", "--outputjson"],
+                [npx_executable, "--yes", "pyright", "--outputjson"],
                 cwd=project_root,
                 capture_output=True,
                 check=False,
+                timeout=120,
             )
 
             stdout_str = proc.stdout.decode("utf-8")
