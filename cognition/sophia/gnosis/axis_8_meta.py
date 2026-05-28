@@ -1,9 +1,12 @@
+import os
 from typing import Any
 
+from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
 from cognition.sophia.hephaestus import _get_meta, _get_reflection
+from src.architrave.mcp import get_slm_client
 
 
-def _build_axis_8_meta(session_id: str = "default") -> str:
+async def _build_axis_8_meta(session_id: str = "default") -> str:
     lines = []
     try:
         # Reliability Metrics
@@ -18,6 +21,25 @@ def _build_axis_8_meta(session_id: str = "default") -> str:
             lines.append("- RECENT REFLECTIONS:")
             for r in reflections:
                 lines.append(f"  * {r['insight']}")
+
+        # SLM Recall integration (Axis 8)
+        if os.getenv("SLM_ENABLED", "true").lower() == "true":
+            try:
+                slm = get_slm_client()
+                if slm.health():
+                    slm_results = await slm.asearch(
+                        query="meta-cognition reflections insights reliability",
+                        limit=3,
+                        table_name="default",
+                        session_id=session_id,
+                    )
+                    if slm_results:
+                        lines.append("- SLM RECALLED METADATA:")
+                        for r in slm_results:
+                            if r.get("axis_id") == 8:
+                                lines.append(f"  * {r.get('text')}")
+            except Exception:
+                pass
 
     except Exception:
         pass
@@ -46,6 +68,19 @@ async def _build_axis_8_failures(task_hint: str, vec: Any | None = None) -> tupl
                     block_signal["block"] = True
                     block_signal["reason"] = r.get("prevention_rule")
                 lines.append(f"- [{r.get('error_type')}] {r.get('prevention_rule')}")
+            feed_hypergraph(
+                source_axis_id=8,
+                entities=[
+                    {
+                        "name": r.get("error_type", "unknown"),
+                        "type": "error_type",
+                        "axis_id": 8,
+                        "label": r.get("prevention_rule", ""),
+                    }
+                    for r in rules
+                ],
+                relation_type="has_failure_pattern",
+            )
     except Exception:
         pass
     return "\n".join(lines), block_signal

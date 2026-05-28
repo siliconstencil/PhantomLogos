@@ -1,5 +1,5 @@
 # Python & Virtual Environment
-.venv/
+.venv*/
 __pycache__/
 *.pyc
 *.pyo
@@ -50,3 +50,4 @@ opencode/
 .opencode/
 node_modules/
 .antigravity/backup/
+.gstack/

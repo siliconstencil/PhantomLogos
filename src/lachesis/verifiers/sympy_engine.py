@@ -8,7 +8,7 @@ from src.utils.logging_config import setup_logger
 logger = setup_logger(__name__)
 
 # [Phase 1.0.24] Standard transformations for secure math parsing
-TRANSFORMATIONS = standard_transformations + (implicit_multiplication,)
+TRANSFORMATIONS = (*standard_transformations, implicit_multiplication)
 
 
 def verify_expression(expr_str: str, expected_result: Any = None) -> dict[str, Any]:
@@ -42,7 +42,7 @@ def verify_math(problem: str) -> dict[str, Any]:
             left = parse_expr(left_str.strip(), transformations=TRANSFORMATIONS)
             right = parse_expr(right_str.strip(), transformations=TRANSFORMATIONS)
             eq = sympy.Eq(left, right)
-            if eq == False:
+            if eq is False:
                 return {
                     "is_valid": False,
                     "valid": False,
@@ -94,7 +94,8 @@ def validate_algebraic_solution(problem: str, proposed_solution: str) -> dict[st
                                     "matches": True,
                                     "logic_score": 0.95,
                                 }
-                        except Exception:
+                        except Exception as e:
+                            logger.debug(f"SymPy: candidate check skipped ({e})")
                             continue
 
             # [TIER 2.2 FIX] matches: False if no match found

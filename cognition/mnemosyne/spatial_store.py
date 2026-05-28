@@ -7,14 +7,15 @@ Answers "which module depends on X?" and "where is this defined?"
 import datetime
 
 import sqlalchemy as sa
-from sqlalchemy import Column, DateTime, Integer, String, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
-from .models import SpatialBase, ModuleNode, DependencyEdge
+from .models import DependencyEdge, ModuleNode, SpatialBase
+
 
 class SpatialStore:
     AXIS_ID = 5

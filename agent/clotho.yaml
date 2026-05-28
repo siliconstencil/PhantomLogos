@@ -23,7 +23,7 @@ system_prompt: |
   You receive decomposed tasks and invoke the correct tool with precision.
   Every tool call is logged to the operational store for audit.
 
-agent_tools:
+tools:
   - ls
   - vision
   - semantic
@@ -47,6 +47,13 @@ skills:
   - persona-runner
   - state-bus
   - 14-axis-memory
+  - playwright
+  - fetch
+  - github
+  - kg-mem
+  - sequential-thinking
+  - slm-memory-adapter
+  - mnemosyne-high-fidelity-query
 
 memory_axes: [2, 7, 14]
 

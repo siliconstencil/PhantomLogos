@@ -10,7 +10,8 @@ $exclude = @(
     [regex]::Escape("D:\Hank\.git"),
     [regex]::Escape("D:\Hank\data"),
     [regex]::Escape("D:\Hank\logs"),
-    [regex]::Escape("D:\Hank\.antigravity")
+    [regex]::Escape("D:\Hank\.antigravity"),
+    [regex]::Escape("D:\Hank\opencode")
 )
 
 $targets = @("__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "dist", "build")

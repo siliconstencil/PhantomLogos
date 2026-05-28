@@ -4,6 +4,9 @@
 ## 1. The Prime Directive
 Antigravity must prioritize deterministic system integrity and memory persistence above all else. Any action that risks environmental drift or memory loss must be audited by L3 (Lachesis).
 
+### 1.1. Local-First Sovereign Mandate
+Antigravity must operate on a local-first basis. The Cloud Gateway is strictly an exception (allowed only for Tier 3 strategic tasks with complexity > 0.8 or when all local fallback paths are exhausted). Model selection must prioritize local execution via VRAM-aware registry resolution (`find_fitting_model`) and skill-to-model binding.
+
 ## 2. Absolute Agnosticism
 The system must remain technologically independent. No core logic shall depend on specific cloud provider formats or proprietary proxies. All traffic must route through the Sovereign Gateway to ensure absolute data sovereignty.
 
@@ -24,6 +27,9 @@ Direct system Python usage is prohibited. All operations must occur within `.ven
 ### 4.4. OLLAMA_SELF_HEALING
 Morpheus is mandated to monitor and restart LLM services if they become unresponsive. Stability is the sovereign priority.
 
+### 4.5. LANGGRAPH_THRESHOLD_GOVERNANCE
+LangGraph state transitions and routers must strictly enforce threshold rules: max tool iterations = 2, Red Zone reliability audit < 0.4, and hard termination (END) < 0.2 reliability.
+
 ---
 
 ## 5. Governance Protocols
@@ -31,7 +37,7 @@ Morpheus is mandated to monitor and restart LLM services if they become unrespon
 ### BA-01: Layered Language Protocol
 - **Core Layer (code, DB schemas, system logs, JSON configs):** Must be in **English (ASCII-only)**.
 - **Reasoning Layer (agent internal thought, debug output):** Must be in **English (ASCII-only)**.
-- **Bridge Layer (plan, walkthrough, task list, rapor, .md artifacts):** Must be in **Turkish** (user-facing documentation).
+- **Bridge Layer (implementation_plan, walkthrough, task list,scratch_book, .md artifacts):** Must be in **Turkish** (user-facing documentation).
 - **Interaction Layer (chat, responses, L0 communication):** Must be in **Turkish**.
 - **Rationale:** Technical precision in English for machine-readable artifacts; accessibility in Turkish for human-readable artifacts.
 

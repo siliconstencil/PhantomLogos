@@ -9,6 +9,8 @@ from src.lachesis import AdversarialEvaluator
 @pytest.mark.asyncio
 async def test_gnosis_injection():
     store = ReflectionStore()
+    # Clear existing rules to avoid state pollution from prior test failures in shared DB
+    store._execute("DELETE FROM failure_memory")
     # Rule must be > 50 chars as per ReflectionStore.store_failure logic
     test_rule = "MANDATORY RULE: Always verify absolute paths in Windows environments to prevent drive mapping errors. [EXTRA_LENGTH_FOR_STORAGE_THRESHOLD]"
     store.store_failure("test_injection", "absolute path error", test_rule, severity=3)
@@ -23,7 +25,9 @@ async def test_gnosis_injection():
     unique_sid = f"test_session_{uuid.uuid4().hex[:8]}"
 
     # Verify rule is actually in store before calling gnosis
-    rules_in_store = store.get_prevention_rules(limit=5)
+    rules_in_store = store.get_prevention_rules(
+        limit=20
+    )  # high limit to account for existing rules
     assert any("MANDATORY RULE" in r["prevention_rule"] for r in rules_in_store), (
         "Rule failed to commit to ReflectionStore"
     )

@@ -1,11 +1,10 @@
-import json
 import sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
 sys.path.append(str(root))
 
-from cognition.sophia.hephaestus import _get_mapper, _get_spatial
+from cognition.sophia.hephaestus import _get_mapper
 from src.utils.project_path import to_absolute_path
 
 
@@ -13,7 +12,6 @@ def update_mapper(output_path: str | None = None):
     output_path = output_path or to_absolute_path("logs/mapper_report.json")
 
     print("[MAPPER] Initializing CodebaseMapper (Axis 5)...")
-    store = _get_spatial()
     mapper = _get_mapper()
 
     print("[MAPPER] Starting deep scan of codebase...")

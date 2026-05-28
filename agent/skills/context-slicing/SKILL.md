@@ -4,17 +4,13 @@ description: Intelligent context pruning and sliding window management for long 
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Session history exceeds 12k tokens.
-  - LLM performance degrades due to context noise.
-metadata:
-  audience: developers
-  tier: L1-Atropos
-  workflow: efficiency
-allowed-tools:
-  - prune
+model_role: light
+allowed_tools:
+- report
+- mcp_slm_remember
+- ls
+tier: 1
 ---
-
 # Skill: Context Slicing
 
 Optimizes information density by removing redundant or low-value context fragments.

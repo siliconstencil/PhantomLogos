@@ -2,10 +2,12 @@ from typing import Any
 
 from src.utils.logging_config import setup_logger
 
+from .koinonia import record_step
+
 logger = setup_logger(__name__)
 
 
-async def deadlock_resolver_node(state: Any):
+async def deadlock_resolver_node(state: Any) -> dict[str, Any]:
     """
     SOTA 2026: Logic Deadlock Resolver.
     Triggered when L3 audit repeatedly rejects a draft.
@@ -27,6 +29,7 @@ async def deadlock_resolver_node(state: Any):
             "DEADLOCK RESOLUTION: Threshold relaxed to bypass hallucination spiral."
         )
 
+        record_step(state, "deadlock_resolver")
         # Reset retry and increment iteration to force a fresh perspective
         return {
             "contract": contract,

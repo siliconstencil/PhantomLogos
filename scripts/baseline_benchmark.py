@@ -30,7 +30,7 @@ BASELINE_VERSION = "1.0.0"
 
 
 class BaselineBenchmark:
-    def __init__(self, simulate_gateway_down: bool = False):
+    def __init__(self, simulate_gateway_down: bool = False) -> None:
         self.simulate_gateway_down = simulate_gateway_down
         self.gateway = GatewayArchitrave()
         if simulate_gateway_down:
@@ -71,7 +71,7 @@ class BaselineBenchmark:
         except Exception:
             return "Ollama not found or error"
 
-    async def gather_system_info(self):
+    async def gather_system_info(self) -> None:
         print("Gathering system info...")
         self.results["system_info"] = {
             "ollama_version": "Unknown",
@@ -82,13 +82,14 @@ class BaselineBenchmark:
         }
         try:
             gpu_output = subprocess.check_output(
-                ["nvidia-smi", "--query-gpu=gpu_name", "--format=csv,noheader"], encoding="utf-8"
+                ["nvidia-smi", "--query-gpu=gpu_name", "--format=csv,noheader"],
+                encoding="utf-8",
             )
             self.results["system_info"]["gpu"] = gpu_output.strip()
         except Exception:
             pass
 
-    def create_test_image(self):
+    def create_test_image(self) -> None:
         print(f"Creating test image at {TEST_IMAGE_PATH}...")
         try:
             from PIL import Image
@@ -105,7 +106,7 @@ class BaselineBenchmark:
         """Measures Time To First Token for Ollama calls."""
         try:
             start = time.monotonic()
-            async for chunk in await self.ollama.chat(
+            async for _chunk in await self.ollama.chat(
                 model=model, messages=[{"role": "user", "content": prompt}], stream=True
             ):
                 ttft = int((time.monotonic() - start) * 1000)
@@ -113,7 +114,7 @@ class BaselineBenchmark:
         except Exception:
             return None
 
-    async def measure_step(self, name: str, coro, prompt: str = ""):
+    async def measure_step(self, name: str, coro, prompt: str = "") -> None:
         print(f"Executing step: {name}...")
         session_id = f"baseline_{uuid.uuid4().hex[:8]}"
         vram_start = self._get_vram_gb()
@@ -134,9 +135,7 @@ class BaselineBenchmark:
         try:
             if "Sophia Loop" in name:
                 # Use clotho_handoff with the generated session_id
-                result = await asyncio.wait_for(
-                    clotho_handoff(prompt, session_id=session_id), timeout=150
-                )
+                await asyncio.wait_for(clotho_handoff(prompt, session_id=session_id), timeout=150)
 
                 # Metadata Retrieval from Axis 1 & 7
                 with self.episodic_store.engine.connect() as conn:
@@ -159,18 +158,24 @@ class BaselineBenchmark:
                                 warnings.append("K0.1 BUG: 0 row semantic_relations detected")
 
             elif name == "Vision Call":
-                ttft = await self._measure_ttft("mimo-7b-vl-ud:latest", prompt)
-                result = await asyncio.wait_for(coro, timeout=120)
-                model_used = "mimo-7b-vl-ud:latest"
+                vram_before = self._get_vram_gb()
+                if vram_before > 5.0:
+                    warnings.append(f"VRAM too high ({vram_before} GB) for vision, skipping")
+                    status = False
+                    error = "VRAM over 5.0 GB, cannot load vision model safely"
+                else:
+                    ttft = await self._measure_ttft("qwen2.5-vl-3b:latest", prompt)
+                    await asyncio.wait_for(coro, timeout=120)
+                    model_used = "qwen2.5-vl-3b:latest"
 
             elif name == "Embedding Call":
                 ttft = await self._measure_ttft("nomic-embed-text-v2-moe-q8:latest", prompt)
-                result = await asyncio.wait_for(coro, timeout=60)
+                await asyncio.wait_for(coro, timeout=60)
                 model_used = "nomic-embed-text-v2-moe-q8:latest"
                 output_tokens = 256
 
             else:
-                result = await coro
+                await coro
                 if "Semantic Search" in name:
                     model_used = "LanceDB/Hybrid"
 
@@ -200,7 +205,7 @@ class BaselineBenchmark:
         }
         self.results["steps"].append(step_data)
 
-    async def run_benchmark(self):
+    async def run_benchmark(self) -> None:
         await self.gather_system_info()
         self.create_test_image()
 
@@ -236,7 +241,7 @@ class BaselineBenchmark:
         async def vision_call():
             client = get_ollama_client()
             return await client.chat(
-                model="mimo-7b-vl-ud:latest",
+                model="qwen2.5-vl-3b:latest",
                 messages=[{"role": "user", "content": vision_prompt, "images": [TEST_IMAGE_PATH]}],
             )
 
@@ -261,7 +266,7 @@ class BaselineBenchmark:
         self.save_results()
         self.compare_with_previous()
 
-    def generate_summary(self):
+    def generate_summary(self) -> None:
         steps = self.results["steps"]
         successful = [s for s in steps if s["success"]]
         total_latency = sum(s["latency_ms"] for s in steps)
@@ -278,7 +283,7 @@ class BaselineBenchmark:
             else 0.0,
         }
 
-    def save_results(self):
+    def save_results(self) -> None:
         filename = f"baseline_{datetime.now().strftime('%Y%m%d')}.json"
         filepath = os.path.join(DATA_DIR, filename)
         latest_path = os.path.join(DATA_DIR, "baseline_latest.json")
@@ -290,7 +295,7 @@ class BaselineBenchmark:
 
         print(f"\nResults saved to {filepath} and baseline_latest.json")
 
-    def compare_with_previous(self):
+    def compare_with_previous(self) -> None:
         # Placeholder for simple diff logic
         print("\n--- Baseline Comparison Summary ---")
         print("Current version 1.0.0 established.")

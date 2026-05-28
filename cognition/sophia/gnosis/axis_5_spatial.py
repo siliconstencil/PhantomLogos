@@ -1,3 +1,4 @@
+from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
 from cognition.sophia.hephaestus import _get_mapper, _get_reflection
 
 
@@ -12,10 +13,31 @@ def _build_axis_5(task_hint: str) -> str:
         if relevant:
             lines.append("### MNEMOSYNE AXIS 5 (SPATIAL/CODEBASE)")
             lines.extend([f"- {m}" for m in relevant])
+            feed_hypergraph(
+                source_axis_id=5,
+                entities=[
+                    {"name": m, "type": "module", "axis_id": 5, "label": "suggested_context"}
+                    for m in relevant
+                ],
+                relation_type="references_module",
+            )
 
         # [SRC:axis_5] Semantic Relations Injection (B4)
         store = _get_reflection()
-        relations = store.get_relevant_relations(keywords, limit=5)
+        matched_entities = store.get_relevant_entities(keywords, limit=5)
+        entity_names = [e["name"] for e in matched_entities] if matched_entities else []
+        if entity_names:
+            feed_hypergraph(
+                source_axis_id=5,
+                entities=[
+                    {"name": e["name"], "type": e.get("type", "entity"), "axis_id": 6, "label": ""}
+                    for e in matched_entities
+                ],
+                relation_type="references_entity",
+            )
+        relations = []
+        if entity_names:
+            relations = store.get_relevant_relations(entity_names, limit=5)
         if relations:
             if "### MNEMOSYNE AXIS 5 (SPATIAL/CODEBASE)" not in lines:
                 lines.append("### MNEMOSYNE AXIS 5 (SPATIAL/CODEBASE)")

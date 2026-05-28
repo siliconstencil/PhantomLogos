@@ -4,6 +4,7 @@ import os
 import re
 import threading
 from collections import defaultdict
+from typing import Any, ClassVar
 
 from src.utils.logging_config import setup_logger
 from src.utils.project_path import to_absolute_path
@@ -13,9 +14,20 @@ from .ast_parser import STDLIB_MODULES, ASTParser
 logger = setup_logger(__name__)
 
 EXCLUDE_DIRS = {
-    ".venv", "__pycache__", ".git", ".antigravity", "logs",
-    "data", "scratch", "opencode_BAK", "opencode", "hermes-agent",
-    "projects", "brain", ".antigravityignore",
+    ".venv",
+    ".venv-linux",
+    "__pycache__",
+    ".git",
+    ".antigravity",
+    "logs",
+    "data",
+    "scratch",
+    "opencode_BAK",
+    "opencode",
+    "hermes-agent",
+    "projects",
+    "brain",
+    ".antigravityignore",
 }
 
 _mtime_cache: dict[str, float] = {}
@@ -23,9 +35,9 @@ _mtime_cache: dict[str, float] = {}
 
 class CodebaseMapper:
     _lock = threading.Lock()
-    _full_cache: dict[str, dict] = {}
+    _full_cache: ClassVar[dict[str, dict]] = {}
 
-    def __init__(self, project_path: str | None = None, spatial_store=None):
+    def __init__(self, project_path: str | None = None, spatial_store: Any = None) -> None:
         from src.utils.project_path import get_project_root
 
         self.project_path = project_path or str(get_project_root())
@@ -39,7 +51,7 @@ class CodebaseMapper:
         rel = re.sub(r"\.(py|json|yaml|yml|md|sql|bat|vbs)$", "", rel)
         return rel.replace("/", ".")
 
-    def index_file(self, file_path: str, force: bool = False):
+    def index_file(self, file_path: str, force: bool = False) -> None:
         global _mtime_cache
         try:
             current_mtime = os.path.getmtime(file_path)
@@ -68,7 +80,7 @@ class CodebaseMapper:
         CodebaseMapper._full_cache[file_path] = parsed
         _mtime_cache[file_path] = current_mtime
 
-    def remap_file(self, file_path: str):
+    def remap_file(self, file_path: str) -> None:
         if not self._store:
             return
         with self._lock:
@@ -93,9 +105,7 @@ class CodebaseMapper:
                 and not any(k in root for k in ["src", "cognition", "scripts", "tests", "agent"])
             ):
                 continue
-            for f in filenames:
-                if f.endswith(".py"):
-                    py_files.append(os.path.join(root, f))
+            py_files.extend(os.path.join(root, f) for f in filenames if f.endswith(".py"))
 
         with self._lock:
             for file_path in py_files:
@@ -121,21 +131,21 @@ class CodebaseMapper:
 
     def detect_circular(self) -> list[list[str]]:
         adj = self._build_adjacency()
-        WHITE, GRAY, BLACK = 0, 1, 2
+        WHITE, GRAY, BLACK = 0, 1, 2  # noqa: N806
         color: dict[str, int] = {k: WHITE for k in adj}
         cycles: list[tuple[str, ...]] = []
 
-        def dfs(node: str, path: list[str]):
+        def dfs(node: str, path: list[str]) -> None:
             if color.get(node) != WHITE:
                 return
             color[node] = GRAY
             for neigh in adj.get(node, []):
                 if color.get(neigh) == GRAY:
                     if neigh in path:
-                        cycle = path[path.index(neigh):] + [neigh]
+                        cycle = [*path[path.index(neigh) :], neigh]
                         cycles.append(tuple(cycle))
                 elif color.get(neigh) == WHITE:
-                    dfs(neigh, path + [neigh])
+                    dfs(neigh, [*path, neigh])
             color[node] = BLACK
 
         for node in list(adj.keys()):
@@ -154,6 +164,7 @@ class CodebaseMapper:
             session = self._store.Session()
             try:
                 from cognition.mnemosyne.models import DependencyEdge
+
                 edges = session.query(DependencyEdge).all()
                 for e in edges:
                     if e.target_module not in adj[e.source_module]:
@@ -163,16 +174,17 @@ class CodebaseMapper:
         return adj
 
     def detect_orm_models(self) -> list[dict]:
-        models = []
-        for parsed in CodebaseMapper._full_cache.values():
-            for cls_info in parsed.get("orm_models", []):
-                models.append({
-                    "class": cls_info["name"],
-                    "bases": cls_info["bases"],
-                    "file": parsed.get("module_name", ""),
-                    "file_path": parsed.get("file", ""),
-                    "lineno": cls_info["lineno"],
-                })
+        models = [
+            {
+                "class": cls_info["name"],
+                "bases": cls_info["bases"],
+                "file": parsed.get("module_name", ""),
+                "file_path": parsed.get("file", ""),
+                "lineno": cls_info["lineno"],
+            }
+            for parsed in CodebaseMapper._full_cache.values()
+            for cls_info in parsed.get("orm_models", [])
+        ]
         return models
 
     def detect_dead_code(self) -> list[dict]:
@@ -200,15 +212,21 @@ class CodebaseMapper:
                 )
                 if not parsed:
                     parsed = next(
-                        (p for p in CodebaseMapper._full_cache.values()
-                         if p.get("module_name") == mod), None
+                        (
+                            p
+                            for p in CodebaseMapper._full_cache.values()
+                            if p.get("module_name") == mod
+                        ),
+                        None,
                     )
-                dead.append({
-                    "module": mod,
-                    "imported_by": list(imported_by.get(mod, set())),
-                    "line_count": (parsed or {}).get("stats", {}).get("lines", 0),
-                    "functions": (parsed or {}).get("stats", {}).get("functions", 0),
-                })
+                dead.append(
+                    {
+                        "module": mod,
+                        "imported_by": list(imported_by.get(mod, set())),
+                        "line_count": (parsed or {}).get("stats", {}).get("lines", 0),
+                        "functions": (parsed or {}).get("stats", {}).get("functions", 0),
+                    }
+                )
         return dead
 
     def detect_layer_violations(self) -> list[dict]:
@@ -225,24 +243,25 @@ class CodebaseMapper:
                 seen.add(key)
                 is_violation, desc = ASTParser.check_layer_violation(src, tgt)
                 if is_violation:
-                    violations.append({
-                        "source": src,
-                        "target": tgt,
-                        "violation": desc,
-                    })
+                    violations.append(
+                        {
+                            "source": src,
+                            "target": tgt,
+                            "violation": desc,
+                        }
+                    )
         return sorted(violations, key=lambda v: (v["source"], v["target"]))
 
     def generate_report(self) -> dict:
         with self._lock:
-            indexed_count = sum(1 for p in CodebaseMapper._full_cache.values()
-                              if p.get("module_name"))
+            indexed_count = sum(
+                1 for p in CodebaseMapper._full_cache.values() if p.get("module_name")
+            )
             total_lines = sum(
-                p.get("stats", {}).get("lines", 0)
-                for p in CodebaseMapper._full_cache.values()
+                p.get("stats", {}).get("lines", 0) for p in CodebaseMapper._full_cache.values()
             )
             total_funcs = sum(
-                p.get("stats", {}).get("functions", 0)
-                for p in CodebaseMapper._full_cache.values()
+                p.get("stats", {}).get("functions", 0) for p in CodebaseMapper._full_cache.values()
             )
             circular = self.detect_circular()
             orm_models = self.detect_orm_models()
@@ -258,22 +277,23 @@ class CodebaseMapper:
                 if not mod_name:
                     continue
                 dependencies = [
-                    {"target": tgt, "type": rel}
-                    for tgt, rel in parsed.get("dependencies", [])
+                    {"target": tgt, "type": rel} for tgt, rel in parsed.get("dependencies", [])
                 ]
-                modules.append({
-                    "module": mod_name,
-                    "axis": ASTParser._resolve_axis(mod_name),
-                    "file": parsed.get("file", ""),
-                    "stats": parsed.get("stats", {}),
-                    "dependencies": dependencies,
-                    "classes": parsed.get("classes", []),
-                    "functions": parsed.get("functions", []),
-                    "orm_models": [
-                        {"class": c["name"], "bases": c["bases"]}
-                        for c in parsed.get("orm_models", [])
-                    ],
-                })
+                modules.append(
+                    {
+                        "module": mod_name,
+                        "axis": ASTParser._resolve_axis(mod_name),
+                        "file": parsed.get("file", ""),
+                        "stats": parsed.get("stats", {}),
+                        "dependencies": dependencies,
+                        "classes": parsed.get("classes", []),
+                        "functions": parsed.get("functions", []),
+                        "orm_models": [
+                            {"class": c["name"], "bases": c["bases"]}
+                            for c in parsed.get("orm_models", [])
+                        ],
+                    }
+                )
 
             dependents: dict[str, list[str]] = defaultdict(list)
             for m in modules:
@@ -290,17 +310,13 @@ class CodebaseMapper:
                     "total_modules": indexed_count,
                     "total_lines": total_lines,
                     "total_functions": total_funcs,
-                    "total_dependencies": sum(
-                        len(m["dependencies"]) for m in modules
-                    ),
+                    "total_dependencies": sum(len(m["dependencies"]) for m in modules),
                     "circular_dependencies": len(circular),
                     "orm_models": len(orm_models),
                     "dead_code_modules": len(dead_code),
                     "layer_violations": len(layer_violations),
                 },
-                "circular_dependencies": [
-                    {"cycle": c, "length": len(c)} for c in circular
-                ],
+                "circular_dependencies": [{"cycle": c, "length": len(c)} for c in circular],
                 "orm_models": orm_models,
                 "dead_code": dead_code,
                 "layer_violations": layer_violations,

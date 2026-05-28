@@ -1,4 +1,3 @@
-import asyncio
 import json
 
 # [SRC:axis_6] Mnemosyne Semantic Vector Store
@@ -9,6 +8,7 @@ import lancedb
 import numpy as np
 
 from src.utils.logging_config import setup_logger
+from src.utils.run_async import run_async
 
 logger = setup_logger(__name__)
 
@@ -21,7 +21,17 @@ class SemanticStore:
 
     AXIS_ID = 6
 
-    def __init__(self, db_path: str = "data/lancedb"):
+    def _is_slm_active(self) -> bool:
+        if os.getenv("SLM_ENABLED", "true").lower() != "true":
+            return False
+        try:
+            from src.architrave.mcp import get_slm_client
+
+            return get_slm_client().health()
+        except Exception:
+            return False
+
+    def __init__(self, db_path: str = "data/lancedb") -> None:
         os.makedirs(db_path, exist_ok=True)
         self.db = lancedb.connect(db_path)
         self.table_name = "semantic_memory"
@@ -86,13 +96,45 @@ class SemanticStore:
         session_id: str = "default",
     ) -> None:
         """Adds memories to the semantic store with session isolation."""
+        sliced_vectors = []
+        for v in vectors:
+            if self.matryoshka:
+                sliced_vectors.append(self.matryoshka._slice_and_normalize(v, 256))
+            else:
+                # Fallback: slice raw if no service locator
+                sliced = v[:256]
+                norm = np.linalg.norm(sliced)
+                sliced_vectors.append(sliced / norm if norm > 1e-10 else sliced)
+
+        if self._is_slm_active():
+            try:
+                from src.architrave.mcp import get_slm_client
+
+                slm = get_slm_client()
+                for text, vector, meta in zip(texts, sliced_vectors, metadata, strict=False):
+                    entry = {
+                        "text": text,
+                        "vector": vector.tolist() if hasattr(vector, "tolist") else list(vector),
+                        "session_id": session_id,
+                        "metadata": meta,
+                        "importance": meta.get("importance", 0.5),
+                        "timestamp": meta.get("timestamp", 0.0),
+                    }
+                    agent_id = meta.get("agent_id") or "system"
+                    slm.remember(
+                        entry, table_name=self.table_name, agent_id=agent_id, axis_id=self.AXIS_ID
+                    )
+                logger.info(f"SLM: Added {len(texts)} memories to SLM for session {session_id}.")
+            except Exception as e:
+                logger.error(f"SemanticStore: SLM add_memories failed ({e})")
+
         try:
             table = self.db.open_table(self.table_name)
             records = []
-            for text, vector, meta in zip(texts, vectors, metadata):
+            for text, vector, meta in zip(texts, sliced_vectors, metadata, strict=False):
                 records.append(
                     {
-                        "vector": vector.tolist(),
+                        "vector": vector.tolist() if hasattr(vector, "tolist") else list(vector),
                         "text": text,
                         "session_id": session_id,
                         "metadata": json.dumps(meta),
@@ -109,8 +151,8 @@ class SemanticStore:
 
     def search(
         self,
-        query_vector: np.ndarray,
-        session_id: str,
+        query_vector: np.ndarray | None = None,
+        session_id: str = "default",
         limit: int = 5,
         mode: str = "hybrid",
         query_text: str = "",
@@ -118,12 +160,35 @@ class SemanticStore:
         """
         Performs a semantic, full-text, or hybrid search isolated by session_id.
         Hybrid mode uses Reciprocal Rank Fusion (RRF) to merge vector and FTS results.
+        query_vector can be None (auto-generate from query_text) or a numpy array.
         """
-        try:
-            # E1: Enforce global RAG limits from .env
-            max_chunks = int(os.getenv("RAG_MAX_CHUNKS", "20"))
-            limit = min(limit, max_chunks)
+        # E1: Enforce global RAG limits from .env
+        max_chunks = int(os.getenv("RAG_MAX_CHUNKS", "20"))
+        limit = min(limit, max_chunks)
 
+        results_slm = []
+        if self._is_slm_active():
+            try:
+                from src.architrave.mcp import get_slm_client
+
+                slm = get_slm_client()
+                if query_vector is None and query_text and self.matryoshka:
+                    query_vector = run_async(self.matryoshka.embed_query(query_text))
+                query_str = query_text or (
+                    str(query_vector.tolist())
+                    if hasattr(query_vector, "tolist")
+                    else str(query_vector)
+                )
+                results_slm = slm.search(
+                    query=query_str,
+                    limit=limit * 2,
+                    table_name=self.table_name,
+                    session_id=session_id,
+                )
+            except Exception as e:
+                logger.warning(f"SemanticStore: SLM search failed ({e}). LanceDB fallback active.")
+
+        try:
             safe_session_id = "".join(c for c in session_id if c.isalnum() or c in "-_")
             table = self.db.open_table(self.table_name)
 
@@ -134,15 +199,29 @@ class SemanticStore:
             if mode in ("vector", "hybrid"):
                 if query_vector is None and query_text and self.matryoshka:
                     # Generate embedding from text if vector is missing
-                    query_vector = asyncio.run(self.matryoshka.embed_query(query_text))
+                    query_vector = run_async(self.matryoshka.embed_query(query_text))
 
                 if query_vector is not None:
                     try:
                         # Standardized 256-dim Matryoshka Vector
-                        vec_list = query_vector.tolist()
+                        if self.matryoshka:
+                            query_vector = self.matryoshka._slice_and_normalize(query_vector, 256)
+                        else:
+                            # Fallback: raw slicing
+                            sliced = query_vector[:256]
+                            norm = np.linalg.norm(sliced)
+                            query_vector = sliced / norm if norm > 1e-10 else sliced
+
+                        vec_list = (
+                            query_vector.tolist()
+                            if hasattr(query_vector, "tolist")
+                            else list(query_vector)
+                        )
                         results_vec = (
                             table.search(vec_list)
-                            .where(f"session_id = '{safe_session_id}'")
+                            .where(
+                                f"session_id IN ('{safe_session_id}', 'system', 'default', 'global')"
+                            )
                             .limit(limit * 2 if mode == "hybrid" else limit)
                             .to_list()
                         )
@@ -155,7 +234,9 @@ class SemanticStore:
                 try:
                     results_fts = (
                         table.search(query_text)
-                        .where(f"session_id = '{safe_session_id}'")
+                        .where(
+                            f"session_id IN ('{safe_session_id}', 'system', 'default', 'global')"
+                        )
                         .limit(limit * 2 if mode == "hybrid" else limit)
                         .to_list()
                     )
@@ -166,7 +247,15 @@ class SemanticStore:
 
             # 3. Merge / Hybrid logic
             if mode == "hybrid":
-                if not results_fts:
+                if results_slm:
+                    # Merge SLM + LanceDB vector + LanceDB FTS via 3-way RRF
+                    lists_to_merge = [results_slm]
+                    if results_vec:
+                        lists_to_merge.append(results_vec)
+                    if results_fts:
+                        lists_to_merge.append(results_fts)
+                    results = self._rrf_merge(*lists_to_merge, limit=limit)
+                elif not results_fts:
                     # Graceful fallback to vector results if FTS is broken/missing
                     results = results_vec[:limit]
                 elif not results_vec:
@@ -204,32 +293,20 @@ class SemanticStore:
             )
             return []
 
-    def _rrf_merge(
-        self, results_vec: list[dict], results_fts: list[dict], limit: int, k: int = 60
-    ) -> list[dict]:
-        """Merges vector and FTS results using Reciprocal Rank Fusion (RRF)."""
-        scores = {}  # (text) -> total_rrf_score
-        seen_docs = {}  # (text) -> doc_dict
+    def _rrf_merge(self, *result_lists, limit: int, k: int = 60) -> list[dict]:
+        """Merges N result lists (each with a "text" key) using Reciprocal Rank Fusion (RRF)."""
+        scores = {}
+        seen_docs = {}
 
-        # Rank vec results
-        for i, doc in enumerate(results_vec):
-            text = doc.get("text", "")
-            if not text:
-                continue
-            scores[text] = scores.get(text, 0) + 1.0 / (k + i + 1)
-            seen_docs[text] = doc
+        for results in result_lists:
+            for i, doc in enumerate(results):
+                text = doc.get("text", "") or doc.get("prevention_rule", "")
+                if not text:
+                    continue
+                scores[text] = scores.get(text, 0) + 1.0 / (k + i + 1)
+                if text not in seen_docs:
+                    seen_docs[text] = doc
 
-        # Rank FTS results
-        for i, doc in enumerate(results_fts):
-            text = doc.get("text", "")
-            if not text:
-                continue
-            # If doc exists in both, scores accumulate
-            scores[text] = scores.get(text, 0) + 1.0 / (k + i + 1)
-            if text not in seen_docs:
-                seen_docs[text] = doc
-
-        # Sort by total RRF score
         sorted_texts = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)
         return [seen_docs[t] for t in sorted_texts[:limit]]
 
@@ -271,13 +348,29 @@ class FailureMemoryStore:
     Separated from general semantic memory to avoid noise and context poisoning.
     """
 
-    def __init__(self, db_path: str = "data/lancedb"):
+    def _is_slm_active(self) -> bool:
+        if os.getenv("SLM_ENABLED", "true").lower() != "true":
+            return False
+        try:
+            from src.architrave.mcp import get_slm_client
+
+            return get_slm_client().health()
+        except Exception:
+            return False
+
+    def __init__(self, db_path: str = "data/lancedb") -> None:
         os.makedirs(db_path, exist_ok=True)
         self.db = lancedb.connect(db_path)
         self.table_name = "failure_memory"
         self._ensure_table()
+        try:
+            from src.utils.service_locator import get_matryoshka
 
-    def _ensure_table(self):
+            self.matryoshka = get_matryoshka()
+        except Exception:
+            self.matryoshka = None
+
+    def _ensure_table(self) -> None:
         try:
             table_list = self.db.table_names()
             if self.table_name not in table_list:
@@ -289,6 +382,7 @@ class FailureMemoryStore:
                         "context_hash": "0000000000000000",
                         "metadata": "{}",
                         "timestamp": 0.0,
+                        "session_id": "default",
                     }
                 ]
                 self.db.create_table(self.table_name, data=data)
@@ -305,12 +399,39 @@ class FailureMemoryStore:
         error_type: str,
         context_hash: str,
         metadata: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         """Adds a failure rule vector for semantic retrieval."""
+        if self.matryoshka:
+            vector = self.matryoshka._slice_and_normalize(vector, 256)
+        else:
+            sliced = vector[:256]
+            norm = np.linalg.norm(sliced)
+            vector = sliced / norm if norm > 1e-10 else sliced
+
+        if self._is_slm_active():
+            try:
+                from src.architrave.mcp import get_slm_client
+
+                slm = get_slm_client()
+                record = {
+                    "vector": vector.tolist() if hasattr(vector, "tolist") else list(vector),
+                    "prevention_rule": prevention_rule,
+                    "error_type": error_type,
+                    "context_hash": context_hash,
+                    "metadata": metadata or {},
+                    "timestamp": metadata.get("timestamp", 0.0) if metadata else 0.0,
+                    "session_id": (metadata or {}).get("session_id") or "default",
+                }
+                agent_id = (metadata or {}).get("agent_id") or "system"
+                slm.remember(record, table_name=self.table_name, agent_id=agent_id, axis_id=6)
+                logger.info(f"SLM: Indexed failure memory lesson. Hash: {context_hash}")
+            except Exception as e:
+                logger.error(f"FailureMemoryStore: SLM add_failure_vector failed ({e})")
+
         try:
             table = self.db.open_table(self.table_name)
-            
-            vec_list = vector.tolist()
+
+            vec_list = vector.tolist() if hasattr(vector, "tolist") else list(vector)
             record = {
                 "vector": vec_list,
                 "prevention_rule": prevention_rule,
@@ -318,6 +439,7 @@ class FailureMemoryStore:
                 "context_hash": context_hash,
                 "metadata": json.dumps(metadata or {}),
                 "timestamp": metadata.get("timestamp", 0.0) if metadata else 0.0,
+                "session_id": (metadata or {}).get("session_id") or "default",
             }
             # Note: Deduplication is handled primarily in SQLite (Axis 8).
             # We add to LanceDB to ensure the rule is searchable.
@@ -327,14 +449,51 @@ class FailureMemoryStore:
             logger.error(f"FailureMemoryStore: add_failure_vector failed ({e})")
 
     def search_similar_failures(
-        self, query_vector: np.ndarray, limit: int = 3
+        self, query_vector: np.ndarray, limit: int = 3, session_id: str | None = None
     ) -> list[dict[str, Any]]:
         """Finds prevention rules related to the current task context."""
+        session_id = session_id or "default"
+        if self.matryoshka:
+            query_vector = self.matryoshka._slice_and_normalize(query_vector, 256)
+        else:
+            sliced = query_vector[:256]
+            norm = np.linalg.norm(sliced)
+            query_vector = sliced / norm if norm > 1e-10 else sliced
+
+        if self._is_slm_active():
+            try:
+                from src.architrave.mcp import get_slm_client
+
+                slm = get_slm_client()
+                query_str = (
+                    str(query_vector.tolist())
+                    if hasattr(query_vector, "tolist")
+                    else str(query_vector)
+                )
+                results = slm.search(
+                    query=query_str, limit=limit, table_name=self.table_name, session_id=session_id
+                )
+                if results:
+                    return results
+            except Exception as e:
+                logger.error(
+                    f"FailureMemoryStore: SLM search failed ({e}). Falling back to LanceDB."
+                )
+
         try:
             table = self.db.open_table(self.table_name)
-            
-            vec_list = query_vector.tolist()
-            return table.search(vec_list).limit(limit).to_list()
+            vec_list = (
+                query_vector.tolist() if hasattr(query_vector, "tolist") else list(query_vector)
+            )
+
+            schema = table.schema
+            has_session_id = "session_id" in schema.names
+
+            q = table.search(vec_list)
+            if has_session_id and session_id:
+                safe_session_id = "".join(c for c in session_id if c.isalnum() or c in "-_")
+                q = q.where(f"session_id IN ('{safe_session_id}', 'system', 'default', 'global')")
+            return q.limit(limit).to_list()
         except Exception as e:
             logger.error(f"FailureMemoryStore: search_similar_failures failed ({e})")
             return []

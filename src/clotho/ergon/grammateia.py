@@ -3,7 +3,7 @@ from typing import Any
 
 from src.utils.logging_config import setup_logger
 
-from .koinonia import _verify_draft_sync
+from .koinonia import _verify_draft_sync, record_step
 
 logger = setup_logger(__name__)
 
@@ -46,7 +46,11 @@ Reason: Deterministic, concise, no social filler.
 """
     formatted_task += few_shot
 
-    sophia_state = ReasoningState(task=formatted_task)
+    sophia_state = ReasoningState(
+        task=formatted_task,
+        session_id=state.get("session_id", "default"),
+        flags={"tier": state.get("ru_flow_tier", 2)},
+    )
     try:
         res = await run_draft(sophia_state)
         draft, tool_calls = res if isinstance(res, tuple) else (res, [])
@@ -58,6 +62,7 @@ Reason: Deterministic, concise, no social filler.
             tool_calls = []
 
         sync_ok = await _verify_draft_sync()
+        await asyncio.to_thread(record_step, state, "draft")
         return {
             "draft": draft,
             "tool_calls": tool_calls,
@@ -85,6 +90,7 @@ async def expert_draft_node(state: Any):
             draft = ""
             tool_calls = []
 
+        await asyncio.to_thread(record_step, state, "expert_draft")
         return {
             "draft": draft,
             "tool_calls": tool_calls,
@@ -97,6 +103,7 @@ async def expert_draft_node(state: Any):
         raise
     except Exception as e:
         logger.error(f"ergon: expert_draft_node failed ({e})", exc_info=True)
+        await asyncio.to_thread(record_step, state, "expert_draft")
         return {
             "draft": f"[Expert Error: {e}]",
             "memory_sync": False,

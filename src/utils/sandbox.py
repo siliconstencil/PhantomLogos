@@ -18,7 +18,7 @@ class LightSandbox:
     [SRC:axis_11] Implements formal verification and security gates.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # [SRC:axis_10] Workspace hygiene: using system temp for isolation.
         self.temp_dir = tempfile.mkdtemp(prefix="phantom_sandbox_")
         self.temp_dir = os.path.abspath(self.temp_dir)
@@ -40,7 +40,7 @@ class LightSandbox:
         paths = []
 
         # 1. System32 (Required for base DLLs)
-        sys32 = os.path.join(os.environ.get("SystemRoot", "C:\\Windows"), "System32")
+        sys32 = os.path.join(os.environ.get("SYSTEMROOT", "C:\\Windows"), "System32")
         if os.path.exists(sys32):
             paths.append(sys32)
 
@@ -54,7 +54,7 @@ class LightSandbox:
 
         return env
 
-    def run(self, code: str, timeout_sec: int = 10):
+    def run(self, code: str, timeout_sec: int = 10) -> tuple[str, str]:
         """
         Executes code in the sandbox and returns (stdout, stderr).
         Includes basic security pre-check for absolute paths.
@@ -77,7 +77,7 @@ class LightSandbox:
 
             logger.info(f"LightSandbox: Executing code (timeout={timeout_sec}s)")
 
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603
                 [sys.executable, script_path],
                 capture_output=True,
                 text=True,
@@ -99,7 +99,7 @@ class LightSandbox:
             logger.error(f"LightSandbox: Unexpected error ({e})")
             return "", f"Error: {e!s}"
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Removes the temporary directory.
         [SRC:axis_10] Resource cleanup protocol.

@@ -4,6 +4,17 @@ description: Autonomously plans complex projects, delegates tasks to specialist 
 version: 1.2.0
 license: MIT
 compatibility: opencode
+model_role: expert
+allowed_tools:
+  - ls
+  - mapper
+  - report
+  - verify
+  - semantic
+  - mcp_slm_remember
+  - mcp_slm_recall
+  - mcp_slm_session_init
+tier: 3
 when_to_use:
   - Large-scale requests requiring architectural decomposition.
   - Multi-step execution involving multiple agents.
@@ -11,11 +22,6 @@ metadata:
   audience: developers
   tier: L1-Architect
   workflow: orchestration
-allowed-tools:
-  - ls
-  - mapper
-  - report
-  - verify
 ---
 
 # Agent Orchestrator Skill (2026 Edition)

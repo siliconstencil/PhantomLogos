@@ -90,7 +90,7 @@ async def test_qwed():
     try:
         from src.lachesis.verifiers.evaluator import AdversarialEvaluator
 
-        evaluator = AdversarialEvaluator(session_id="audit_test")
+        AdversarialEvaluator(session_id="audit_test")
         qwed_model = resolve_local_model("verification")
         print(f"OK (Model: {qwed_model})")
         return True

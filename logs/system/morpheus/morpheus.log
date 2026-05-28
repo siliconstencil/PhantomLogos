@@ -10493,3 +10493,1374 @@ subprocess.TimeoutExpired: Command '['nvidia-smi', '--query-gpu=memory.total,mem
 2026-05-17 12:12:48,983 - cognition.mnemosyne.temporal_store - INFO - TemporalStore: Removed legacy LanceDB directory at D:\Hank\data\lancedb
 2026-05-17 12:12:48,984 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite optimized.
 2026-05-17 12:12:48,985 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Hardening complete. SQL=11, Lance=0, Files=0, Archived=0
+2026-05-17 13:45:24,158 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] CHANGELOG.md: Mutation detected. ROLLBACK!
+2026-05-17 13:45:24,574 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scratch_book.md: Mutation detected. ROLLBACK!
+2026-05-17 13:45:24,709 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/walkthroughs/main_walkthrough.md: Mutation detected. ROLLBACK!
+2026-05-17 13:45:24,782 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/meta_cognition.py: Mutation detected. ROLLBACK!
+2026-05-17 13:45:24,845 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-17 13:45:24,915 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-17 13:45:24,983 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/__init__.py: Mutation detected. ROLLBACK!
+2026-05-17 13:45:25,038 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/context_cache.py: Mutation detected. ROLLBACK!
+2026-05-17 13:45:25,100 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/control_handoff.py: Mutation detected. ROLLBACK!
+2026-05-17 13:45:25,160 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/elenchos.py: Mutation detected. ROLLBACK!
+2026-05-17 18:30:07,574 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-17 18:30:57,596 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-17 18:30:57,606 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-17 18:30:57,608 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-17 18:30:57,608 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-17 18:30:57,609 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-17 18:30:57,610 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-17 18:30:57,623 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-17 18:30:57,628 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-17 18:31:07,877 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-17 18:31:07,877 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-17 18:31:07,878 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-17 18:31:07,878 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-17 21:06:10,364 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 9312s, 1.77GB VRAM used)
+2026-05-17 21:41:11,486 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 11413s, 3.67GB VRAM used)
+2026-05-17 21:41:11,729 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.67GB, free=4.1GB, req=0.0GB, frag=0.30)
+2026-05-17 21:41:14,217 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Evicting 'jina-reranker-v3:latest' based on EVICTION_ORDER.
+2026-05-17 21:53:48,734 - cognition.morpheus.loader - INFO - Morpheus: Unloaded Ollama model 'jina-reranker-v3:latest'
+2026-05-17 21:53:49,216 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-17 21:53:49,216 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Triggering deep defragmentation...
+2026-05-17 21:53:49,226 - cognition.morpheus.loader - WARNING - Morpheus: Triggering global VRAM flush...
+2026-05-17 21:53:54,941 - cognition.morpheus.loader - INFO - Morpheus: Unloaded Ollama model 'functiongemma-270m:latest'
+2026-05-17 21:53:55,341 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-17 21:54:13,561 - cognition.morpheus.sweeper - INFO - VRAMSweeper: PyTorch CUDA cache cleared.
+2026-05-17 21:54:13,562 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Defragmentation complete.
+2026-05-17 21:54:15,693 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Retention sweep complete. 0 raw metrics archived/purged.
+2026-05-17 21:54:16,101 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Vision cache pruned.
+2026-05-17 21:54:17,079 - cognition.mnemosyne.semantic_store - INFO - LanceDB Table 'semantic_memory' opened.
+2026-05-17 21:54:17,290 - cognition.mnemosyne.semantic_store - INFO - SemanticStore: FTS index ensured on table 'semantic_memory' column 'text'.
+2026-05-17 21:54:17,824 - src.atropos.matryoshka_service - INFO - MatryoshkaService: Initialized (Axis 4).
+2026-05-17 21:54:17,956 - cognition.mnemosyne.semantic_store - WARNING - SemanticStore: Optimization failed (The lance library is required to use this function. Please install with `pip install pylance`.)
+2026-05-17 21:54:18,054 - cognition.mnemosyne.temporal_store - INFO - TemporalStore: Removed legacy LanceDB directory at D:\Hank\data\lancedb
+2026-05-17 21:54:18,055 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite optimized.
+2026-05-17 21:54:18,056 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Hardening complete. SQL=79, Lance=0, Files=0, Archived=0, Ebbinghaus=0
+2026-05-17 21:59:18,242 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 12500s, 5.32GB VRAM used)
+2026-05-17 21:59:18,535 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=5.32GB, free=2.44GB, req=0.0GB, frag=0.30)
+2026-05-17 21:59:20,956 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Evicting 'qwen3.5-4b-ud:latest' based on EVICTION_ORDER.
+2026-05-17 22:01:30,931 - cognition.morpheus.loader - INFO - Morpheus: Unloaded Ollama model 'qwen3.5-4b-ud:latest'
+2026-05-17 22:01:31,359 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-17 22:01:31,360 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Triggering deep defragmentation...
+2026-05-17 22:01:31,428 - cognition.morpheus.loader - WARNING - Morpheus: Triggering global VRAM flush...
+2026-05-17 22:01:34,099 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-17 22:01:34,995 - cognition.morpheus.sweeper - INFO - VRAMSweeper: PyTorch CUDA cache cleared.
+2026-05-17 22:01:34,996 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Defragmentation complete.
+2026-05-17 22:12:47,618 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-17 22:12:58,206 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-17 22:15:01,165 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-17 22:16:37,643 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 13540s, 2.98GB VRAM used)
+2026-05-17 22:16:37,906 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.98GB, free=4.78GB, req=0.0GB, frag=0.40)
+2026-05-17 22:16:40,201 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Evicting 'functiongemma-270m:latest' based on EVICTION_ORDER.
+2026-05-17 22:16:45,491 - cognition.morpheus.loader - INFO - Morpheus: Unloaded Ollama model 'functiongemma-270m:latest'
+2026-05-17 22:16:45,757 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-17 22:16:45,757 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Triggering deep defragmentation...
+2026-05-17 22:16:45,764 - cognition.morpheus.loader - WARNING - Morpheus: Triggering global VRAM flush...
+2026-05-17 22:16:51,176 - cognition.morpheus.loader - INFO - Morpheus: Unloaded Ollama model 'qwen2.5-math-1.5b:latest'
+2026-05-17 22:16:51,514 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-17 22:16:52,567 - cognition.morpheus.sweeper - INFO - VRAMSweeper: PyTorch CUDA cache cleared.
+2026-05-17 22:16:52,567 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Defragmentation complete.
+2026-05-17 22:19:27,222 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-18 12:24:35,848 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-18 12:26:27,146 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-18 12:26:27,149 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-18 12:26:27,152 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-18 12:26:27,152 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-18 12:26:27,153 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-18 12:26:27,180 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-18 12:26:27,555 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-18 12:26:27,557 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-18 12:26:27,559 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-18 12:26:27,561 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-18 12:26:27,590 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-18 12:26:27,611 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-18 12:26:27,619 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-18 12:26:52,179 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-18 12:26:52,181 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-18 12:26:52,182 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-18 12:26:52,183 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-18 13:33:25,059 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/semantic_store.py: Mutation detected. ROLLBACK!
+2026-05-18 13:33:35,587 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/semantic_store.py: Mutation detected. ROLLBACK!
+2026-05-18 13:33:45,853 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/semantic_store.py: Mutation detected. ROLLBACK!
+2026-05-18 13:33:56,108 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/semantic_store.py: Mutation detected. ROLLBACK!
+2026-05-18 13:36:19,133 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] tests/test_slm_fallback.py: Mutation detected. ROLLBACK!
+2026-05-18 15:10:07,646 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_models.py: Mutation detected. ROLLBACK!
+2026-05-18 15:10:38,390 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_registry.py: Mutation detected. ROLLBACK!
+2026-05-18 15:10:48,835 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_config.json: Mutation detected. ROLLBACK!
+2026-05-18 15:14:03,409 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_config.json: Mutation detected. ROLLBACK!
+2026-05-18 15:15:04,800 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] tests/test_slm_mcp_transport.py: Mutation detected. ROLLBACK!
+2026-05-18 15:29:13,835 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] pyproject.toml: Mutation detected. ROLLBACK!
+2026-05-18 15:29:34,517 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/slm_client.py: Mutation detected. ROLLBACK!
+2026-05-18 15:30:05,368 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/phantom_logos.egg-info/requires.txt: Mutation detected. ROLLBACK!
+2026-05-18 15:30:05,443 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/phantom_logos.egg-info/SOURCES.txt: Mutation detected. ROLLBACK!
+2026-05-18 15:30:05,515 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/phantom_logos.egg-info/top_level.txt: Mutation detected. ROLLBACK!
+2026-05-18 15:36:24,044 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_config.json: Mutation detected. ROLLBACK!
+2026-05-18 15:36:44,510 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_registry.py: Mutation detected. ROLLBACK!
+2026-05-18 15:38:16,588 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] slm/server.py: Mutation detected. ROLLBACK!
+2026-05-18 15:52:03,791 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-18 15:52:51,032 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-18 15:52:51,034 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-18 15:52:51,037 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-18 15:52:51,037 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-18 15:52:51,052 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-18 15:52:51,094 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-18 15:52:51,347 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-18 15:52:51,348 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-18 15:52:51,349 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-18 15:52:51,351 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-18 15:52:51,370 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-18 15:52:51,424 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-18 15:52:51,434 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-18 15:53:04,901 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-18 15:53:04,903 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-18 15:53:04,903 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-18 15:53:04,904 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-18 16:19:37,153 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/verifiers/output_guard.py: Mutation detected. ROLLBACK!
+2026-05-18 16:19:47,531 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/bridge/fs.py: Mutation detected. ROLLBACK!
+2026-05-18 16:20:08,054 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/koinonia.py: Mutation detected. ROLLBACK!
+2026-05-18 16:20:28,695 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/synergeia.py: Mutation detected. ROLLBACK!
+2026-05-18 16:32:56,602 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-18 16:34:28,793 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] tests/test_ankyra_v2.py: Mutation detected. ROLLBACK!
+2026-05-18 16:35:30,229 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/bridge/fs.py: Mutation detected. ROLLBACK!
+2026-05-18 16:36:31,652 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/slm_client.py: Mutation detected. ROLLBACK!
+2026-05-18 16:36:52,157 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/control_handoff.py: Mutation detected. ROLLBACK!
+2026-05-18 16:37:43,390 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/koinonia.py: Mutation detected. ROLLBACK!
+2026-05-18 16:37:52,644 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 2701s, 3.06GB VRAM used)
+2026-05-18 16:37:52,937 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.06GB, free=4.71GB, req=0.0GB, frag=0.41)
+2026-05-18 16:37:55,267 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-18 16:38:14,211 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/synergeia.py: Mutation detected. ROLLBACK!
+2026-05-18 16:44:32,754 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] tests/test_ankyra_v2.py: Mutation detected. ROLLBACK!
+2026-05-18 16:44:53,232 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/gateway_client.py: Mutation detected. ROLLBACK!
+2026-05-18 17:17:56,375 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5105s, 6.47GB VRAM used)
+2026-05-18 17:17:56,603 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=6.47GB, free=1.3GB, req=0.0GB, frag=0.84)
+2026-05-18 17:17:58,899 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Evicting 'qwen2.5-math-7b-q4:latest' based on EVICTION_ORDER.
+2026-05-18 17:18:00,945 - cognition.morpheus.loader - INFO - Morpheus: Skipping unload of hot/core model 'qwen2.5-math-7b-q4:latest'
+2026-05-18 17:18:00,949 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Triggering deep defragmentation...
+2026-05-18 17:18:00,983 - cognition.morpheus.loader - WARNING - Morpheus: Triggering global VRAM flush...
+2026-05-18 17:18:24,843 - cognition.morpheus.loader - INFO - Morpheus: Unloaded Ollama model 'qwen2.5-math-7b-q4:latest'
+2026-05-18 17:18:25,202 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-18 17:18:41,773 - cognition.morpheus.sweeper - INFO - VRAMSweeper: PyTorch CUDA cache cleared.
+2026-05-18 17:18:41,773 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Defragmentation complete.
+2026-05-18 17:18:43,885 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Retention sweep complete. 0 raw metrics archived/purged.
+2026-05-18 17:18:44,007 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Vision cache pruned.
+2026-05-18 17:18:44,065 - cognition.mnemosyne.semantic_store - INFO - LanceDB Table 'semantic_memory' created with 256-dim Matryoshka + Session Isolation.
+2026-05-18 17:18:44,129 - cognition.mnemosyne.semantic_store - INFO - SemanticStore: FTS index ensured on table 'semantic_memory' column 'text'.
+2026-05-18 17:18:44,615 - src.atropos.matryoshka_service - INFO - MatryoshkaService: Initialized (Axis 4).
+2026-05-18 17:18:44,676 - cognition.mnemosyne.semantic_store - WARNING - SemanticStore: Optimization failed (The lance library is required to use this function. Please install with `pip install pylance`.)
+2026-05-18 17:18:44,693 - cognition.mnemosyne.semantic_store - INFO - LanceDB Failure Table 'failure_memory' created.
+2026-05-18 17:18:44,782 - cognition.mnemosyne.temporal_store - INFO - TemporalStore: Removed legacy LanceDB directory at D:\Hank\data\lancedb
+2026-05-18 17:18:44,783 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite optimized.
+2026-05-18 17:18:44,784 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Hardening complete. SQL=23, Lance=0, Files=0, Archived=0, Ebbinghaus=0
+2026-05-18 17:23:44,942 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5453s, 2.85GB VRAM used)
+2026-05-18 17:23:45,140 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.85GB, free=4.92GB, req=0.0GB, frag=0.39)
+2026-05-18 17:23:47,387 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'jina-reranker-v3:latest' is pinned and high priority. Skipping sweep.
+2026-05-18 17:29:43,765 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/grammateia.py: Mutation detected. ROLLBACK!
+2026-05-18 17:29:43,828 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/koinonia.py: Mutation detected. ROLLBACK!
+2026-05-18 17:38:47,803 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6356s, 5.24GB VRAM used)
+2026-05-18 17:38:48,058 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=5.24GB, free=2.52GB, req=0.0GB, frag=0.69)
+2026-05-18 17:38:50,344 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen3.5-4b-ud:latest' is pinned and high priority. Skipping sweep.
+2026-05-18 18:36:37,597 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-18 18:37:26,292 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-18 18:37:26,293 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-18 18:37:26,295 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-18 18:37:26,295 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-18 18:37:26,297 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-18 18:37:26,317 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-18 18:37:26,541 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-18 18:37:26,542 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-18 18:37:26,543 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-18 18:37:26,544 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-18 18:37:26,558 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-18 18:37:26,584 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-18 18:37:26,589 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-18 18:37:37,559 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-18 18:37:37,560 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-18 18:37:37,560 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-18 18:37:37,560 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-18 19:57:26,892 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .agent/skills/slm-memory-adapter/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-18 20:50:03,949 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] tests/test_mcp_categories.py: Mutation detected. ROLLBACK!
+2026-05-18 22:37:46,280 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] tests/test_mcp_categories.py: Mutation detected. ROLLBACK!
+2026-05-19 00:38:15,279 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-19 00:38:35,801 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-19 00:38:56,441 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-19 00:44:43,956 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-19 00:46:36,735 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-19 01:17:37,661 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 24011s, 3.07GB VRAM used)
+2026-05-19 01:17:38,206 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.07GB, free=4.69GB, req=0.0GB, frag=0.41)
+2026-05-19 01:17:40,767 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-19 01:22:40,975 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 24314s, 4.71GB VRAM used)
+2026-05-19 01:22:41,178 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=4.71GB, free=3.05GB, req=0.0GB, frag=0.62)
+2026-05-19 01:22:43,460 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-19 01:27:43,586 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 24617s, 2.57GB VRAM used)
+2026-05-19 01:27:43,863 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.57GB, free=5.19GB, req=0.0GB, frag=0.35)
+2026-05-19 01:27:46,165 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-19 01:32:46,283 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 24919s, 2.57GB VRAM used)
+2026-05-19 01:32:46,468 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.57GB, free=5.2GB, req=0.0GB, frag=0.35)
+2026-05-19 01:32:48,694 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-19 01:37:48,856 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 25222s, 2.61GB VRAM used)
+2026-05-19 01:37:49,096 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.61GB, free=5.15GB, req=0.0GB, frag=0.36)
+2026-05-19 01:37:51,354 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-19 01:42:51,483 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 25525s, 2.63GB VRAM used)
+2026-05-19 01:42:51,718 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.63GB, free=5.13GB, req=0.0GB, frag=0.36)
+2026-05-19 01:42:54,011 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-19 01:47:54,126 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 25827s, 2.59GB VRAM used)
+2026-05-19 01:47:54,348 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.59GB, free=5.17GB, req=0.0GB, frag=0.35)
+2026-05-19 01:47:56,660 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-19 01:52:56,800 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 26130s, 2.58GB VRAM used)
+2026-05-19 01:52:57,019 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.58GB, free=5.19GB, req=0.0GB, frag=0.35)
+2026-05-19 01:52:59,303 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-20 19:49:56,044 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-20 19:50:43,899 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-20 19:50:43,900 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-20 19:50:43,901 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-20 19:50:43,902 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-20 19:50:43,903 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-20 19:50:43,913 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-20 19:50:44,099 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-20 19:50:44,100 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-20 19:50:44,101 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-20 19:50:44,102 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-20 19:50:44,113 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-20 19:50:44,146 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-20 19:50:44,152 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-20 19:50:57,559 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-20 19:50:57,560 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-20 19:50:57,560 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-20 19:50:57,561 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-20 19:58:56,894 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 20:00:42,581 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 20:11:57,720 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 20:12:13,347 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 22:50:52,687 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 10808s, 1.78GB VRAM used)
+2026-05-20 22:59:33,780 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:12:13,904 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 12090s, 3.14GB VRAM used)
+2026-05-20 23:12:14,197 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.14GB, free=4.63GB, req=0.0GB, frag=0.42)
+2026-05-20 23:12:16,766 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-20 23:17:16,910 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 12393s, 2.01GB VRAM used)
+2026-05-20 23:21:09,207 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:23:30,616 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:23:32,621 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:28:00,316 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-20 23:30:44,416 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-20 23:33:27,987 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-20 23:37:33,334 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:39:47,830 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:39:53,395 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:41:09,578 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-20 23:41:50,674 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-20 23:41:50,676 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-20 23:41:50,678 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-20 23:41:50,678 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-20 23:41:50,680 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-20 23:41:50,690 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-20 23:41:50,885 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-20 23:41:50,887 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-20 23:41:50,889 - src.architrave.a2a.server - WARNING - A2A Server: Port 32554 is already in use. Retrying next port...
+2026-05-20 23:41:50,890 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-20 23:41:50,893 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32555
+2026-05-20 23:41:50,918 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32555'.
+2026-05-20 23:41:50,932 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-20 23:41:50,938 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-20 23:42:04,123 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-20 23:42:04,124 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-20 23:42:04,126 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-20 23:42:04,127 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-20 23:57:47,331 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:59:22,520 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-20 23:59:58,173 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 00:20:51,686 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 00:21:54,516 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 00:28:53,936 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-21 00:29:04,293 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-21 00:29:35,122 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-21 00:38:04,691 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3374s, 3.51GB VRAM used)
+2026-05-21 00:38:05,134 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.51GB, free=4.25GB, req=0.0GB, frag=0.30)
+2026-05-21 00:38:07,659 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'jina-reranker-v3:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 00:43:07,814 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3677s, 3.04GB VRAM used)
+2026-05-21 00:43:08,088 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.04GB, free=4.72GB, req=0.0GB, frag=0.41)
+2026-05-21 00:43:10,366 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 00:47:44,519 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-21 00:48:10,485 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3979s, 3.22GB VRAM used)
+2026-05-21 00:48:10,696 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.22GB, free=4.54GB, req=0.0GB, frag=0.43)
+2026-05-21 00:48:12,948 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 00:53:13,073 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 4282s, 2.51GB VRAM used)
+2026-05-21 00:53:13,270 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.51GB, free=5.25GB, req=0.0GB, frag=0.34)
+2026-05-21 00:53:15,515 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 00:58:15,639 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 4584s, 2.52GB VRAM used)
+2026-05-21 00:58:15,853 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.52GB, free=5.25GB, req=0.0GB, frag=0.34)
+2026-05-21 00:58:18,119 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:03:18,561 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 4887s, 2.54GB VRAM used)
+2026-05-21 01:03:18,959 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.54GB, free=5.22GB, req=0.0GB, frag=0.35)
+2026-05-21 01:03:21,464 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:08:21,689 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5191s, 2.56GB VRAM used)
+2026-05-21 01:08:22,055 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.56GB, free=5.2GB, req=0.0GB, frag=0.35)
+2026-05-21 01:08:24,332 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:13:24,485 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5493s, 2.55GB VRAM used)
+2026-05-21 01:13:24,725 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.55GB, free=5.21GB, req=0.0GB, frag=0.35)
+2026-05-21 01:13:26,999 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:18:27,121 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5796s, 2.56GB VRAM used)
+2026-05-21 01:18:27,377 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.56GB, free=5.2GB, req=0.0GB, frag=0.35)
+2026-05-21 01:18:29,693 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:23:29,833 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6099s, 2.57GB VRAM used)
+2026-05-21 01:23:30,019 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.57GB, free=5.19GB, req=0.0GB, frag=0.35)
+2026-05-21 01:23:32,248 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:28:32,410 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6401s, 2.56GB VRAM used)
+2026-05-21 01:28:32,660 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.56GB, free=5.2GB, req=0.0GB, frag=0.35)
+2026-05-21 01:28:34,981 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:33:35,130 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6704s, 2.58GB VRAM used)
+2026-05-21 01:33:35,354 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.58GB, free=5.18GB, req=0.0GB, frag=0.35)
+2026-05-21 01:33:37,646 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:38:37,831 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 7007s, 2.51GB VRAM used)
+2026-05-21 01:38:38,049 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.51GB, free=5.25GB, req=0.0GB, frag=0.34)
+2026-05-21 01:38:40,362 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:43:40,513 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 7309s, 2.52GB VRAM used)
+2026-05-21 01:43:40,813 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.52GB, free=5.24GB, req=0.0GB, frag=0.34)
+2026-05-21 01:43:43,176 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:48:43,319 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 7612s, 2.52GB VRAM used)
+2026-05-21 01:48:43,534 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.52GB, free=5.25GB, req=0.0GB, frag=0.34)
+2026-05-21 01:48:45,825 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:50:16,453 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-21 01:53:21,207 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-21 01:53:31,578 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-21 01:53:45,994 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 7915s, 2.57GB VRAM used)
+2026-05-21 01:53:46,243 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.57GB, free=5.2GB, req=0.0GB, frag=0.35)
+2026-05-21 01:53:48,548 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 01:53:52,191 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-21 01:57:27,463 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-21 01:57:47,981 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-21 01:58:18,862 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-21 01:58:48,743 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 8218s, 1.85GB VRAM used)
+2026-05-21 02:08:49,715 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 8819s, 5.41GB VRAM used)
+2026-05-21 02:08:50,061 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=5.41GB, free=2.35GB, req=0.0GB, frag=0.30)
+2026-05-21 02:08:52,410 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen3.5-4b-ud:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 02:15:04,051 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 12:12:15,953 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-21 12:13:09,442 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-21 12:13:09,443 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-21 12:13:09,445 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-21 12:13:09,445 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-21 12:13:09,447 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-21 12:13:09,458 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-21 12:13:09,653 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-21 12:13:09,654 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-21 12:13:09,656 - src.architrave.a2a.server - WARNING - A2A Server: Port 32554 is already in use. Retrying next port...
+2026-05-21 12:13:09,657 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-21 12:13:09,658 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32555
+2026-05-21 12:13:09,692 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32555'.
+2026-05-21 12:13:09,694 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-21 12:13:09,699 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-21 12:13:22,571 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-21 12:13:22,573 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-21 12:13:22,575 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-21 12:13:22,615 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-21 12:13:22,615 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-21 12:13:22,616 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-21 12:13:22,616 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-21 12:19:35,829 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 12:19:49,383 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 12:23:58,254 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 12:26:26,164 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 12:39:38,394 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/gateway_client.py: Mutation detected. ROLLBACK!
+2026-05-21 12:39:38,605 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-21 13:00:02,688 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 2813s, 2.94GB VRAM used)
+2026-05-21 13:00:03,206 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.94GB, free=4.82GB, req=0.0GB, frag=0.40)
+2026-05-21 13:00:05,945 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'functiongemma-270m:latest' is pinned and high priority. Skipping sweep.
+2026-05-21 13:31:27,979 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-21 14:00:53,557 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-21 14:01:44,211 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-21 14:01:44,217 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-21 14:01:44,220 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-21 14:01:44,221 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-21 14:01:44,223 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-21 14:01:44,226 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-21 14:01:44,413 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-21 14:01:44,414 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-21 14:01:44,416 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-21 14:01:44,416 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-21 14:01:44,429 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-21 14:01:44,439 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-21 14:01:44,464 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-21 14:01:56,693 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-21 14:01:56,694 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-21 14:01:56,695 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-21 14:01:56,756 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-21 14:01:56,757 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-21 14:01:56,757 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-21 14:01:56,757 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-22 08:51:15,119 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-22 08:52:03,400 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-22 08:52:03,401 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-22 08:52:03,403 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-22 08:52:03,403 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-22 08:52:03,407 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-22 08:52:03,410 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-22 08:52:03,632 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-22 08:52:03,633 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-22 08:52:03,634 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-22 08:52:03,634 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-22 08:52:03,649 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-22 08:52:03,673 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-22 08:52:03,678 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-22 08:52:15,886 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-22 08:52:15,886 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-22 08:52:15,888 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-22 08:52:15,959 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-22 08:52:15,961 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-22 08:52:15,962 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-22 08:52:15,962 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-22 08:56:07,349 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-22 08:58:53,423 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-22 09:04:15,362 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 731s, 2.32GB VRAM used)
+2026-05-22 09:20:19,611 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-22 15:41:12,267 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-22 15:42:01,951 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-22 15:42:01,958 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-22 15:42:01,962 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-22 15:42:01,962 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-22 15:42:01,965 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-22 15:42:01,968 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-22 15:42:02,157 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-22 15:42:02,170 - src.architrave.a2a.server - WARNING - A2A Server: Port 32554 is already in use. Retrying next port...
+2026-05-22 15:42:02,173 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-22 15:42:02,175 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32555
+2026-05-22 15:42:02,175 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-22 15:42:02,190 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32555'.
+2026-05-22 15:42:02,206 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-22 15:42:02,221 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-22 15:42:14,859 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-22 15:42:14,859 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-22 15:42:14,868 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-22 15:42:14,875 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-22 15:42:14,875 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-22 15:42:14,876 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-22 15:42:14,877 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-22 16:14:27,131 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-22 16:15:15,490 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-22 16:15:15,491 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-22 16:15:15,494 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-22 16:15:15,494 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-22 16:15:15,495 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-22 16:15:15,503 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-22 16:15:15,697 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-22 16:15:15,698 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-22 16:15:15,700 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-22 16:15:15,700 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-22 16:15:15,712 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-22 16:15:15,732 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-22 16:15:15,739 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-22 19:35:22,991 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-22 19:36:08,566 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-22 19:36:08,567 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-22 19:36:08,571 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-22 19:36:08,571 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-22 19:36:08,573 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-22 19:36:08,582 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-22 19:36:09,021 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-22 19:36:09,022 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-22 19:36:09,023 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-22 19:36:09,023 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-22 19:36:09,035 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-22 19:36:09,066 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-22 19:36:09,073 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-22 19:36:21,113 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-22 19:36:21,114 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-22 19:36:21,115 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-22 19:36:21,133 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-22 19:36:21,133 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-22 19:36:21,134 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-22 19:36:21,134 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-22 19:50:37,438 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/verifiers/qwed_engine.py: Mutation detected. ROLLBACK!
+2026-05-22 19:50:58,015 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .env: Mutation detected. ROLLBACK!
+2026-05-22 19:52:51,181 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .env: Mutation detected. ROLLBACK!
+2026-05-22 20:02:48,825 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .env: Mutation detected. ROLLBACK!
+2026-05-22 20:04:02,067 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .env: Mutation detected. ROLLBACK!
+2026-05-22 20:08:38,963 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .vscode/settings.json: Mutation detected. ROLLBACK!
+2026-05-22 20:53:12,765 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/semantic_store.py: Mutation detected. ROLLBACK!
+2026-05-22 20:53:13,257 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/mcp/mcp_session.py: Mutation detected. ROLLBACK!
+2026-05-22 22:48:35,470 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-22 22:49:29,342 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-22 22:49:29,343 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-22 22:49:29,348 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-22 22:49:29,348 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-22 22:49:29,350 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-22 22:49:29,369 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-22 22:49:29,576 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-22 22:49:29,577 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-22 22:49:29,578 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-22 22:49:29,579 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-22 22:49:29,596 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-22 22:49:29,620 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-22 22:49:29,635 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-22 22:49:45,572 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-22 22:49:45,573 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-22 22:49:45,574 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-22 22:49:45,635 - __main__ - INFO - Bootstrap: SLM disabled via SLM_ENABLED env var.
+2026-05-22 22:49:45,637 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-23 09:29:15,441 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-23 09:30:09,773 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-23 09:30:09,774 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-23 09:30:09,776 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-23 09:30:09,776 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-23 09:30:09,778 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-23 09:30:09,800 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-23 09:30:10,172 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-23 09:30:10,173 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-23 09:30:10,175 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-23 09:30:10,176 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-23 09:30:10,188 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-23 09:30:10,221 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-23 09:30:10,228 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-23 09:30:26,285 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-23 09:30:26,291 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-23 09:30:26,311 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-23 09:30:26,392 - __main__ - INFO - Bootstrap: SLM disabled via SLM_ENABLED env var.
+2026-05-23 09:30:26,394 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-23 12:52:02,118 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-23 12:52:51,387 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-23 12:52:51,389 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-23 12:52:51,391 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-23 12:52:51,392 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-23 12:52:51,418 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-23 12:52:51,433 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-23 12:52:51,678 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-23 12:52:51,679 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-23 12:52:51,682 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-23 12:52:51,684 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-23 12:52:51,735 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-23 12:52:51,758 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-23 12:52:51,764 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-23 12:53:05,822 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-23 12:53:05,823 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-23 12:53:05,829 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-23 12:53:05,948 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-23 12:53:05,949 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-23 12:53:05,950 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-23 12:53:05,951 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-23 13:13:29,947 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scratch_book.md: Mutation detected. ROLLBACK!
+2026-05-23 13:18:37,589 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scratch_book.md: Mutation detected. ROLLBACK!
+2026-05-23 16:32:21,586 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-23 16:33:44,356 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-23 16:33:44,356 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-23 16:33:44,362 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-23 16:33:44,362 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-23 16:33:44,363 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-23 16:33:44,370 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-23 16:33:44,584 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-23 16:33:44,584 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-23 16:33:44,586 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-23 16:33:44,594 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-23 16:33:44,599 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-23 16:33:44,600 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-23 16:33:44,602 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-23 16:33:51,581 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-23 16:33:51,582 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-23 16:33:51,584 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-23 16:33:51,676 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-23 16:33:51,677 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-23 16:33:51,677 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-23 16:33:51,678 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-23 16:43:53,361 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-23 16:47:26,609 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/gateway_client.py: Mutation detected. ROLLBACK!
+2026-05-23 16:47:57,042 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scratch_book.md: Mutation detected. ROLLBACK!
+2026-05-23 16:49:48,837 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/gateway_client.py: Mutation detected. ROLLBACK!
+2026-05-23 17:01:08,929 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scratch_book.md: Mutation detected. ROLLBACK!
+2026-05-23 17:01:39,520 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/gateway_client.py: Mutation detected. ROLLBACK!
+2026-05-23 17:01:49,726 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/gateway_client.py: Mutation detected. ROLLBACK!
+2026-05-23 17:02:10,123 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/gateway_client.py: Mutation detected. ROLLBACK!
+2026-05-23 17:19:49,461 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/eidos.py: Mutation detected. ROLLBACK!
+2026-05-23 17:20:09,957 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/deigma.py: Mutation detected. ROLLBACK!
+2026-05-23 17:20:20,218 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/ergon/deigma.py: Mutation detected. ROLLBACK!
+2026-05-23 17:23:45,725 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3001s, 6.73GB VRAM used)
+2026-05-23 17:23:46,035 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=6.73GB, free=1.03GB, req=0.0GB, frag=0.30)
+2026-05-23 17:23:46,141 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'deepscaler-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 17:27:20,955 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-23 17:27:31,243 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-23 17:27:41,538 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-23 17:28:02,070 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-23 17:28:46,267 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3301s, 5.13GB VRAM used)
+2026-05-23 17:28:46,506 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=5.13GB, free=2.64GB, req=0.0GB, frag=0.67)
+2026-05-23 17:28:46,526 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen3.5-4b-ud:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 17:30:36,572 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-23 17:38:46,805 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3902s, 2.27GB VRAM used)
+2026-05-23 17:38:47,040 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.27GB, free=5.49GB, req=0.0GB, frag=0.30)
+2026-05-23 17:38:47,051 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'deepscaler-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 19:48:39,646 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-23 19:49:28,964 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-23 19:49:28,965 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-23 19:49:28,967 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-23 19:49:28,967 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-23 19:49:28,968 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-23 19:49:28,991 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-23 19:49:29,230 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-23 19:49:29,231 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-23 19:49:29,257 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-23 19:49:29,259 - src.architrave.a2a.server - WARNING - A2A Server: Port 32554 is already in use. Retrying next port...
+2026-05-23 19:49:29,261 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32555
+2026-05-23 19:49:29,268 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-23 19:49:29,274 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32555'.
+2026-05-23 19:49:29,275 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-23 19:49:34,625 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-23 19:49:34,628 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-23 19:49:34,629 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-23 19:49:34,664 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\src\architrave\mcp\mcp_config.json
+2026-05-23 19:49:34,664 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-23 19:49:34,665 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-23 19:49:34,666 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-23 20:20:49,218 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-23 20:24:30,814 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 2101s, 3.23GB VRAM used)
+2026-05-23 20:24:31,518 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.23GB, free=4.54GB, req=0.0GB, frag=0.43)
+2026-05-23 20:24:32,083 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 20:28:26,200 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-23 20:29:57,867 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 2428s, 2.72GB VRAM used)
+2026-05-23 20:29:59,182 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.72GB, free=5.04GB, req=0.0GB, frag=0.37)
+2026-05-23 20:29:59,309 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 20:35:11,512 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 2742s, 2.28GB VRAM used)
+2026-05-23 20:35:12,436 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.28GB, free=5.48GB, req=0.0GB, frag=0.31)
+2026-05-23 20:35:12,576 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 20:40:12,845 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3043s, 2.38GB VRAM used)
+2026-05-23 20:40:13,048 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.38GB, free=5.38GB, req=0.0GB, frag=0.33)
+2026-05-23 20:40:13,061 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 20:45:13,187 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3344s, 2.38GB VRAM used)
+2026-05-23 20:45:13,389 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.38GB, free=5.38GB, req=0.0GB, frag=0.33)
+2026-05-23 20:45:13,411 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 20:50:13,522 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3644s, 2.39GB VRAM used)
+2026-05-23 20:50:13,712 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.39GB, free=5.38GB, req=0.0GB, frag=0.30)
+2026-05-23 20:50:13,722 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 20:55:13,835 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 3944s, 2.39GB VRAM used)
+2026-05-23 20:55:14,022 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.39GB, free=5.38GB, req=0.0GB, frag=0.33)
+2026-05-23 20:55:14,041 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:00:14,151 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 4245s, 2.44GB VRAM used)
+2026-05-23 21:00:14,342 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.44GB, free=5.32GB, req=0.0GB, frag=0.33)
+2026-05-23 21:00:14,365 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:05:14,502 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 4545s, 2.5GB VRAM used)
+2026-05-23 21:05:14,730 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.5GB, free=5.26GB, req=0.0GB, frag=0.34)
+2026-05-23 21:05:14,742 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:10:14,887 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 4845s, 2.5GB VRAM used)
+2026-05-23 21:10:15,081 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.5GB, free=5.26GB, req=0.0GB, frag=0.34)
+2026-05-23 21:10:15,104 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:15:15,248 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5146s, 2.5GB VRAM used)
+2026-05-23 21:15:15,456 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.5GB, free=5.26GB, req=0.0GB, frag=0.34)
+2026-05-23 21:15:15,488 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:20:15,598 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5446s, 2.5GB VRAM used)
+2026-05-23 21:20:15,804 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.5GB, free=5.26GB, req=0.0GB, frag=0.34)
+2026-05-23 21:20:15,816 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:25:15,960 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 5746s, 2.32GB VRAM used)
+2026-05-23 21:25:16,180 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.32GB, free=5.45GB, req=0.0GB, frag=0.32)
+2026-05-23 21:25:16,190 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:30:16,306 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6047s, 2.4GB VRAM used)
+2026-05-23 21:30:16,496 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.4GB, free=5.36GB, req=0.0GB, frag=0.33)
+2026-05-23 21:30:16,529 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:35:16,648 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6347s, 2.42GB VRAM used)
+2026-05-23 21:35:16,881 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.42GB, free=5.34GB, req=0.0GB, frag=0.33)
+2026-05-23 21:35:16,897 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:35:33,710 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scratch_book.md: Mutation detected. ROLLBACK!
+2026-05-23 21:35:53,955 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/rules.json: Mutation detected. ROLLBACK!
+2026-05-23 21:40:17,055 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6648s, 2.42GB VRAM used)
+2026-05-23 21:40:17,258 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.42GB, free=5.34GB, req=0.0GB, frag=0.30)
+2026-05-23 21:40:17,272 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:45:17,408 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 6948s, 2.42GB VRAM used)
+2026-05-23 21:45:17,674 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.42GB, free=5.34GB, req=0.0GB, frag=0.33)
+2026-05-23 21:45:17,689 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:50:17,828 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 7248s, 2.43GB VRAM used)
+2026-05-23 21:50:18,066 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.43GB, free=5.33GB, req=0.0GB, frag=0.33)
+2026-05-23 21:50:18,077 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 21:54:14,657 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-23 22:00:18,434 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 7849s, 2.9GB VRAM used)
+2026-05-23 22:00:18,739 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.9GB, free=4.86GB, req=0.0GB, frag=0.30)
+2026-05-23 22:00:18,775 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:05:18,923 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 8149s, 3.41GB VRAM used)
+2026-05-23 22:05:19,122 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.41GB, free=4.36GB, req=0.0GB, frag=0.45)
+2026-05-23 22:05:19,162 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:10:19,299 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 8450s, 2.46GB VRAM used)
+2026-05-23 22:10:19,508 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.46GB, free=5.31GB, req=0.0GB, frag=0.34)
+2026-05-23 22:10:19,516 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:15:19,640 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 8750s, 2.46GB VRAM used)
+2026-05-23 22:15:19,856 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.46GB, free=5.31GB, req=0.0GB, frag=0.30)
+2026-05-23 22:15:19,867 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:20:20,018 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 9051s, 2.46GB VRAM used)
+2026-05-23 22:20:20,250 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.46GB, free=5.31GB, req=0.0GB, frag=0.34)
+2026-05-23 22:20:20,283 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:25:20,527 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 9351s, 2.49GB VRAM used)
+2026-05-23 22:25:20,872 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.49GB, free=5.28GB, req=0.0GB, frag=0.34)
+2026-05-23 22:25:20,886 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:26:03,785 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/14-axis-memory/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:03,979 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/background-agent/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:04,289 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/context-slicing/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:04,416 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/hermes-bridge/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:04,686 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/logic-deadlock-resolver/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:04,894 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/mnemosyne-high-fidelity-query/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:05,123 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/mnemosyne-write-path/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:05,357 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/prompt-compression/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:05,619 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/security-first-guardian/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:05,756 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/slm-memory-adapter/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:05,912 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/sovereign-gateway/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:06,081 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/sprint-contract/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:06,240 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/system-vram-profiler/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:06,379 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/temporal-validity/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:06,611 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/ui-design-premium/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:26:06,776 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/vram-monitoring/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:27,696 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/14-axis-memory/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:27,762 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/context-slicing/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:27,837 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/file-operations/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,088 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/logic-deadlock-resolver/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,189 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/mnemosyne-high-fidelity-query/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,285 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/model-lifecycle/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,366 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/prompt-compression/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,466 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/security-first-guardian/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,550 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/sovereign-gateway/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,681 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/sprint-contract/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,775 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/system-vram-profiler/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:28,878 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/temporal-validity/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:29,009 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/ui-design-premium/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:29,093 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/vram-monitoring/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:39,478 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/discovery-mcp-scanner/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:27:59,889 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/14-axis-memory/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:28:20,102 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/14-axis-memory/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:28:20,185 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/context-slicing/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:28:20,323 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/hermes-bridge/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:28:20,499 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/logic-deadlock-resolver/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:29:21,592 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/skills/discovery-mcp-scanner/SKILL.md: Mutation detected. ROLLBACK!
+2026-05-23 22:29:40,534 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] opencode.json: Mutation detected. ROLLBACK!
+2026-05-23 22:30:21,109 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 9652s, 2.49GB VRAM used)
+2026-05-23 22:30:21,557 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.49GB, free=5.27GB, req=0.0GB, frag=0.30)
+2026-05-23 22:30:21,576 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:30:21,850 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-23 22:30:32,041 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/sophia.py: Mutation detected. ROLLBACK!
+2026-05-23 22:34:28,708 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-23 22:37:41,948 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] opencode.json: Mutation detected. ROLLBACK!
+2026-05-23 22:38:32,738 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] opencode.json: Mutation detected. ROLLBACK!
+2026-05-23 22:40:25,906 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 10256s, 3.46GB VRAM used)
+2026-05-23 22:40:26,113 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.46GB, free=4.3GB, req=0.0GB, frag=0.30)
+2026-05-23 22:40:26,127 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:45:26,256 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 10557s, 2.96GB VRAM used)
+2026-05-23 22:45:26,485 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.96GB, free=4.8GB, req=0.0GB, frag=0.40)
+2026-05-23 22:45:26,500 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:50:26,627 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 10857s, 2.96GB VRAM used)
+2026-05-23 22:50:26,829 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.96GB, free=4.8GB, req=0.0GB, frag=0.40)
+2026-05-23 22:50:26,843 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 22:55:26,987 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 11158s, 2.96GB VRAM used)
+2026-05-23 22:55:27,186 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=2.96GB, free=4.8GB, req=0.0GB, frag=0.40)
+2026-05-23 22:55:27,220 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 23:00:32,359 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 11463s, 3.0GB VRAM used)
+2026-05-23 23:00:32,588 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.0GB, free=4.76GB, req=0.0GB, frag=0.41)
+2026-05-23 23:00:32,600 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 23:05:32,861 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 11763s, 3.0GB VRAM used)
+2026-05-23 23:05:33,257 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.0GB, free=4.76GB, req=0.0GB, frag=0.41)
+2026-05-23 23:05:33,280 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 23:10:37,900 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 12068s, 3.05GB VRAM used)
+2026-05-23 23:10:38,635 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.05GB, free=4.71GB, req=0.0GB, frag=0.41)
+2026-05-23 23:10:38,685 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 23:15:38,845 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 12369s, 3.05GB VRAM used)
+2026-05-23 23:15:39,068 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.05GB, free=4.71GB, req=0.0GB, frag=0.41)
+2026-05-23 23:15:39,100 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 23:20:39,221 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 12670s, 3.05GB VRAM used)
+2026-05-23 23:20:39,420 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.05GB, free=4.71GB, req=0.0GB, frag=0.41)
+2026-05-23 23:20:39,431 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-23 23:25:39,984 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 12971s, 3.06GB VRAM used)
+2026-05-23 23:25:40,468 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.06GB, free=4.7GB, req=0.0GB, frag=0.41)
+2026-05-23 23:25:40,519 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'nomic-embed-text-v2-moe-q8:latest' is pinned and high priority. Skipping sweep.
+2026-05-24 00:06:00,923 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-24 09:12:45,860 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-24 09:13:39,764 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-24 09:15:28,356 - __main__ - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-24 09:15:28,358 - __main__ - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-24 09:15:30,360 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-24 09:15:30,367 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-24 09:15:30,367 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-24 09:15:30,369 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-24 09:15:30,381 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-24 09:15:30,788 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-24 09:15:30,790 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-24 09:15:30,807 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-24 09:15:30,815 - src.architrave.a2a.server - WARNING - A2A Server: Port 32554 is already in use. Retrying next port...
+2026-05-24 09:15:30,826 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32555
+2026-05-24 09:15:30,828 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-24 09:15:30,837 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-24 09:15:30,853 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32555'.
+2026-05-24 09:15:36,341 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-24 09:15:36,342 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-24 09:15:36,343 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-24 09:15:36,450 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\src\architrave\mcp\mcp_config.json
+2026-05-24 09:15:36,450 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-24 09:15:36,451 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-24 09:15:36,452 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-24 22:44:24,843 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-24 22:46:07,526 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-24 22:48:14,790 - __main__ - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-24 22:48:14,792 - __main__ - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-24 22:48:16,797 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-24 22:48:16,802 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-24 22:48:16,803 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-24 22:48:16,807 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-24 22:48:16,844 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-24 22:48:17,196 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-24 22:48:17,197 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-24 22:48:17,201 - src.architrave.a2a.server - WARNING - A2A Server: Port 32554 is already in use. Retrying next port...
+2026-05-24 22:48:17,203 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32555
+2026-05-24 22:48:17,205 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-24 22:48:17,207 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32555'.
+2026-05-24 22:48:17,285 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-24 22:48:17,301 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-24 22:48:18,795 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-24 22:48:18,796 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-24 22:48:18,798 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-24 22:48:18,823 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\src\architrave\mcp\mcp_config.json
+2026-05-24 22:48:18,824 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-24 22:48:18,826 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-24 22:48:18,827 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+D:\Hank\.venv\Lib\site-packages\numpy\_core\fromnumeric.py:3824: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+D:\Hank\.venv\Lib\site-packages\numpy\_core\_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+2026-05-25 01:05:19,599 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/morpheus/sweeper.py: Mutation detected. ROLLBACK!
+2026-05-25 01:05:20,437 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/context_cache.py: Mutation detected. ROLLBACK!
+2026-05-25 01:07:41,556 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/morpheus/sweeper.py: Mutation detected. ROLLBACK!
+2026-05-25 01:07:51,721 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/morpheus/sweeper.py: Mutation detected. ROLLBACK!
+2026-05-25 01:08:21,980 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/morpheus/sweeper.py: Mutation detected. ROLLBACK!
+2026-05-25 01:51:37,505 - cognition.morpheus.monitor - WARNING - Morpheus: nvidia-smi timed out (30s). GPU may be under heavy load or throttling.
+2026-05-25 02:15:47,409 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-25 02:16:20,201 - src.lachesis.verifiers.qwed_engine - ERROR - QWEDEngine: Initialization failed (openai package required. Install: pip install openai)
+Traceback (most recent call last):
+  File "D:\Hank\src\clotho\bootstrap.py", line 533, in <module>
+    from cognition.mnemosyne.temporal_store import initialize_temporal_schema
+  File "D:\Hank\cognition\__init__.py", line 3, in <module>
+    from . import morpheus
+  File "D:\Hank\cognition\morpheus\__init__.py", line 5, in <module>
+    from .sweeper import VRAMSweeper
+  File "D:\Hank\cognition\morpheus\sweeper.py", line 12, in <module>
+    from src.clotho.activity import ActivityMonitor
+  File "D:\Hank\src\clotho\__init__.py", line 4, in <module>
+    from .orchestrator import create_clotho_graph
+  File "D:\Hank\src\clotho\orchestrator.py", line 9, in <module>
+    from langgraph.graph import END, StateGraph
+  File "D:\Hank\.venv\Lib\site-packages\langgraph\graph\__init__.py", line 2, in <module>
+    from langgraph.graph.message import MessageGraph, MessagesState, add_messages
+  File "D:\Hank\.venv\Lib\site-packages\langgraph\graph\message.py", line 14, in <module>
+    from langchain_core.messages import (
+ModuleNotFoundError: No module named 'langchain_core'
+2026-05-25 02:16:20,489 - src.clotho.bootstrap - INFO - Bootstrap: Executing LIFO shutdown for all registered services...
+2026-05-25 02:16:20,490 - src.clotho.bootstrap - INFO - Bootstrap: LIFO shutdown complete.
+2026-05-25 02:16:20,490 - __main__ - INFO - Bootstrap: Executing LIFO shutdown for all registered services...
+2026-05-25 02:16:20,491 - __main__ - INFO - Bootstrap: LIFO shutdown complete.
+2026-05-25 09:27:56,804 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-25 09:28:44,340 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-25 09:28:46,355 - __main__ - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-25 09:28:46,371 - __main__ - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+D:\Hank\.venv\Lib\site-packages\superlocalmemory\__init__.py:32: UserWarning: SuperLocalMemory requires onnxruntime==1.24.4 but 1.26.0 is installed. This causes memory blow-up on Apple Silicon. Fix: pip install onnxruntime==1.24.4
+  _check_critical_deps()
+2026-05-25 09:28:48,372 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-25 09:28:48,377 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-25 09:28:48,378 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-25 09:28:48,379 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-25 09:28:48,387 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-25 09:28:48,626 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-25 09:28:48,627 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-25 09:28:48,629 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-25 09:28:48,629 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-25 09:28:48,673 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-25 09:28:48,690 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-25 09:28:48,747 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-25 09:28:48,778 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-25 09:28:55,643 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-25 09:28:55,644 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-25 09:28:55,645 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-25 09:28:55,676 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\src\architrave\mcp\mcp_config.json
+2026-05-25 09:28:55,677 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-25 09:28:55,677 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-25 09:28:55,677 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+
+\u26a0 Embedding worker did not respond within 180s.
+  Run: slm setup   (download models + verify)
+  Run: slm doctor  (diagnose issues)
+
+2026-05-25 09:41:04,343 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+D:\Hank\.venv\Lib\site-packages\numpy\_core\fromnumeric.py:3824: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+D:\Hank\.venv\Lib\site-packages\numpy\_core\_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+2026-05-25 10:11:02,821 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-25 10:12:26,478 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-25 10:12:28,485 - __main__ - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-25 10:12:28,485 - __main__ - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-25 10:12:30,486 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-25 10:12:30,488 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-25 10:12:30,490 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-25 10:12:30,492 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-25 10:12:30,510 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-25 10:12:30,628 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-25 10:12:30,755 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-25 10:12:30,756 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-25 10:12:30,757 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-25 10:12:30,759 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-25 10:12:30,759 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-25 10:12:30,785 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-25 10:12:30,786 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-25 10:12:31,606 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-25 10:12:31,607 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-25 10:12:31,609 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-25 10:12:31,685 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\src\architrave\mcp\mcp_config.json
+2026-05-25 10:12:31,686 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-25 10:12:31,686 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-25 10:12:31,687 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+D:\Hank\.venv\Lib\site-packages\superlocalmemory\__init__.py:32: UserWarning: SuperLocalMemory requires onnxruntime==1.24.4 but 1.26.0 is installed. This causes memory blow-up on Apple Silicon. Fix: pip install onnxruntime==1.24.4
+  _check_critical_deps()
+2026-05-25 10:24:27,645 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-25 10:24:37,771 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-25 10:32:19,987 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/visual_store.py: Mutation detected. ROLLBACK!
+2026-05-25 10:32:30,078 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_14_visual.py: Mutation detected. ROLLBACK!
+2026-05-25 10:33:10,311 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-25 10:34:40,803 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_14_visual.py: Mutation detected. ROLLBACK!
+2026-05-25 10:37:54,102 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_14_visual.py: Mutation detected. ROLLBACK!
+2026-05-25 10:38:24,279 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-25 10:42:35,592 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+D:\Hank\.venv\Lib\site-packages\numpy\_core\fromnumeric.py:3824: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+D:\Hank\.venv\Lib\site-packages\numpy\_core\_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+2026-05-25 10:43:25,889 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-25 10:44:16,204 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] scripts/health_check_14_axes.py: Mutation detected. ROLLBACK!
+2026-05-25 13:13:47,449 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-25 13:15:15,013 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-25 13:15:17,023 - __main__ - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-25 13:15:17,024 - __main__ - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-25 13:15:19,025 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-25 13:15:19,026 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-25 13:15:19,027 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-25 13:15:19,028 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-25 13:15:19,049 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-25 13:15:19,168 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-25 13:15:19,287 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-25 13:15:19,288 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-25 13:15:19,290 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-25 13:15:19,294 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-25 13:15:19,300 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-25 13:15:19,308 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-25 13:15:19,313 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-25 13:15:20,536 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-25 13:15:20,713 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-25 13:15:20,714 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-25 13:15:20,844 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\src\architrave\mcp\mcp_config.json
+2026-05-25 13:15:20,845 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-25 13:15:20,845 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-25 13:15:20,846 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-25 13:15:31,686 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/bootstrap.py: Mutation detected. ROLLBACK!
+2026-05-25 13:16:55,052 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/snapshot_manager.py: Mutation detected. ROLLBACK!
+D:\Hank\.venv\Lib\site-packages\superlocalmemory\__init__.py:32: UserWarning: SuperLocalMemory requires onnxruntime==1.24.4 but 1.26.0 is installed. This causes memory blow-up on Apple Silicon. Fix: pip install onnxruntime==1.24.4
+  _check_critical_deps()
+2026-05-25 13:17:16,172 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/snapshot_manager.py: Mutation detected. ROLLBACK!
+2026-05-25 13:17:36,787 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/snapshot_manager.py: Mutation detected. ROLLBACK!
+2026-05-25 13:17:47,012 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/snapshot_manager.py: Mutation detected. ROLLBACK!
+2026-05-25 13:18:37,480 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/snapshot_manager.py: Mutation detected. ROLLBACK!
+2026-05-25 13:18:57,644 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/snapshot_manager.py: Mutation detected. ROLLBACK!
+2026-05-25 13:19:58,532 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/lachesis/snapshot_manager.py: Mutation detected. ROLLBACK!
+D:\Hank\.venv\Lib\site-packages\numpy\_core\fromnumeric.py:3824: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+D:\Hank\.venv\Lib\site-packages\numpy\_core\_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+2026-05-25 13:51:59,929 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/models.py: Mutation detected. ROLLBACK!
+2026-05-25 14:16:54,014 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] CHANGELOG.md: Mutation detected. ROLLBACK!
+2026-05-25 14:17:04,131 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-25 14:17:04,184 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/walkthroughs/main_walkthrough.md: Mutation detected. ROLLBACK!
+2026-05-25 14:17:14,291 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-25 14:17:24,396 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/topography.md: Mutation detected. ROLLBACK!
+2026-05-25 14:46:40,353 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] docs/mcp_tools_guide.md: Mutation detected. ROLLBACK!
+2026-05-25 14:47:00,693 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] docs/mcp_tools_guide.md: Mutation detected. ROLLBACK!
+2026-05-25 14:47:21,005 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:48:52,133 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:49:32,593 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:50:13,111 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:50:54,127 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:51:25,355 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:51:56,655 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:53:32,188 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:53:53,879 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:54:45,750 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:56:16,788 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:58:08,634 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:58:49,218 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 14:59:40,027 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/tools.md: Mutation detected. ROLLBACK!
+2026-05-25 15:26:39,297 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/tone_store.py: Mutation detected. ROLLBACK!
+2026-05-25 15:26:49,464 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/tone_store.py: Mutation detected. ROLLBACK!
+2026-05-25 15:26:59,813 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_9_tone.py: Mutation detected. ROLLBACK!
+2026-05-25 15:27:10,336 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_11_verify.py: Mutation detected. ROLLBACK!
+2026-05-25 15:27:40,693 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_13_patterns.py: Mutation detected. ROLLBACK!
+2026-05-25 15:28:11,295 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_13_patterns.py: Mutation detected. ROLLBACK!
+2026-05-25 15:28:32,148 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_14_visual.py: Mutation detected. ROLLBACK!
+2026-05-25 15:29:02,852 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/mnemosyne/meta_cognition.py: Mutation detected. ROLLBACK!
+2026-05-25 15:29:13,209 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] cognition/sophia/gnosis/axis_4_temporal.py: Mutation detected. ROLLBACK!
+2026-05-25 15:30:24,340 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .vscode/settings.json: Mutation detected. ROLLBACK!
+2026-05-25 17:29:07,306 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-25 17:31:31,142 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-25 17:31:33,173 - __main__ - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-25 17:31:33,175 - __main__ - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-25 17:31:35,177 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-25 17:31:35,185 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-25 17:31:35,185 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-25 17:31:35,186 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-25 17:31:35,210 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-25 17:31:35,402 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-25 17:31:35,595 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-25 17:31:35,596 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-25 17:31:35,597 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-25 17:31:35,603 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-25 17:31:35,641 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-25 17:31:35,681 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-25 17:31:35,693 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-25 17:32:04,890 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-25 17:32:04,893 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-25 17:32:04,893 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-25 17:32:05,061 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\src\architrave\mcp\mcp_config.json
+2026-05-25 17:32:05,064 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-25 17:32:05,065 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-25 17:32:05,065 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+D:\Hank\.venv\Lib\site-packages\superlocalmemory\__init__.py:32: UserWarning: SuperLocalMemory requires onnxruntime==1.24.4 but 1.26.0 is installed. This causes memory blow-up on Apple Silicon. Fix: pip install onnxruntime==1.24.4
+  _check_critical_deps()
+2026-05-25 17:52:04,488 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-26 09:21:35,100 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-26 09:22:36,003 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-26 09:22:38,017 - __main__ - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-26 09:22:38,018 - __main__ - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-26 09:22:40,020 - __main__ - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-26 09:22:40,021 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-26 09:22:40,022 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-26 09:22:40,022 - __main__ - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-26 09:22:40,034 - __main__ - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-26 09:22:40,178 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-26 09:22:40,259 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-26 09:22:40,259 - __main__ - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-26 09:22:40,261 - __main__ - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-26 09:22:40,263 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-26 09:22:40,281 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-26 09:22:40,314 - __main__ - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-26 09:22:40,318 - __main__ - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-26 09:23:26,195 - __main__ - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-26 09:23:26,199 - __main__ - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-26 09:23:26,201 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-26 09:23:26,335 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-26 09:23:26,336 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-26 09:23:26,340 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'sequential-thinking' (enabled=True).
+2026-05-26 09:23:26,341 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'fetch' (enabled=True).
+2026-05-26 09:23:26,341 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'kg-mem' (enabled=True).
+2026-05-26 09:23:26,346 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'github' (enabled=True).
+2026-05-26 09:23:26,346 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'playwright' (enabled=True).
+2026-05-26 09:23:26,346 - __main__ - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-26 09:23:26,347 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+
+\u26a0 Embedding worker did not respond within 180s.
+  Run: slm setup   (download models + verify)
+  Run: slm doctor  (diagnose issues)
+
+2026-05-26 09:48:05,165 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/bootstrap.py: Mutation detected. ROLLBACK!
+2026-05-26 09:51:50,218 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-26 09:52:44,768 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 1804s, 3.25GB VRAM used)
+2026-05-26 09:52:45,203 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=3.25GB, free=4.51GB, req=0.0GB, frag=0.44)
+2026-05-26 09:52:45,385 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'qwen2.5-math-1.5b:latest' is pinned and high priority. Skipping sweep.
+2026-05-26 09:53:33,212 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] tests/test_ebbinghaus.py: Mutation detected. ROLLBACK!
+2026-05-26 09:54:04,979 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/base_models.py: Mutation detected. ROLLBACK!
+2026-05-26 09:54:05,465 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/architrave/base_models.py: Mutation detected. ROLLBACK!
+2026-05-26 09:54:38,250 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-26 09:54:49,230 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+D:\Hank\.venv\Lib\site-packages\numpy\_core\fromnumeric.py:3824: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+D:\Hank\.venv\Lib\site-packages\numpy\_core\_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+2026-05-26 09:57:45,579 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 2105s, 7.19GB VRAM used)
+2026-05-26 09:57:45,809 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=7.19GB, free=0.58GB, req=0.0GB, frag=0.93)
+2026-05-26 09:57:45,860 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Model 'functiongemma-270m:latest' is pinned and high priority. Skipping sweep.
+2026-05-26 09:57:56,955 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-26 09:58:48,022 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-26 09:58:58,279 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] agent/a2a_registry.json: Mutation detected. ROLLBACK!
+2026-05-26 09:59:59,548 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/audit/audit_report_035.md: Mutation detected. ROLLBACK!
+2026-05-26 10:01:11,157 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .env: Mutation detected. ROLLBACK!
+2026-05-26 10:02:45,975 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Autonomous sweep triggered (Idle for 2405s, 7.66GB VRAM used)
+2026-05-26 10:02:46,209 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Sweep triggered (used=7.66GB, free=0.1GB, req=0.0GB, frag=0.99)
+2026-05-26 10:02:46,231 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Evicting 'functiongemma-270m:latest' based on EVICTION_ORDER.
+2026-05-26 10:02:46,242 - cognition.morpheus.loader - INFO - Morpheus: Skipping unload of hot/core model 'functiongemma-270m:latest'
+2026-05-26 10:02:46,248 - cognition.morpheus.sweeper - WARNING - VRAMSweeper: Triggering deep defragmentation...
+2026-05-26 10:02:46,254 - cognition.morpheus.loader - WARNING - Morpheus: Triggering global VRAM flush...
+2026-05-26 10:02:50,587 - cognition.morpheus.loader - INFO - Morpheus: Unloaded Ollama model 'functiongemma-270m:latest'
+2026-05-26 10:02:51,231 - src.muscle.local_runtime - INFO - LocalRuntime: All active llama processes terminated.
+2026-05-26 10:02:55,381 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Defragmentation complete.
+2026-05-26 10:02:55,398 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] .antigravity/audit/audit_report_035.md: Mutation detected. ROLLBACK!
+2026-05-26 10:02:55,488 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Retention sweep complete. 0 raw metrics archived/purged.
+2026-05-26 10:02:55,706 - cognition.mnemosyne.semantic_store - INFO - LanceDB Table 'semantic_memory' opened.
+2026-05-26 10:02:55,823 - cognition.mnemosyne.semantic_store - INFO - SemanticStore: FTS index ensured on table 'semantic_memory' column 'text'.
+2026-05-26 10:02:55,823 - src.atropos.matryoshka_service - INFO - MatryoshkaService: Initialized (Axis 4).
+2026-05-26 10:02:56,051 - cognition.mnemosyne.semantic_store - WARNING - SemanticStore: Optimization failed (The lance library is required to use this function. Please install with `pip install pylance`.)
+2026-05-26 10:02:56,102 - cognition.mnemosyne.semantic_store - INFO - LanceDB Failure Table 'failure_memory' created.
+2026-05-26 10:02:56,205 - cognition.mnemosyne.temporal_store - INFO - TemporalStore: Removed legacy LanceDB directory at D:\Hank\data\lancedb
+2026-05-26 10:02:56,207 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite optimized.
+2026-05-26 10:02:56,208 - cognition.morpheus.sweeper - INFO - VRAMSweeper: Hardening complete. SQL=28, Lance=0, Files=0, Archived=0
+2026-05-26 10:04:17,542 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] src/clotho/bootstrap.py: Mutation detected. ROLLBACK!
+2026-05-26 13:02:33,971 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-26 13:02:34,008 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-26 13:02:36,028 - src.clotho.hermes_mcp - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-26 13:02:36,030 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-26 13:02:38,033 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-26 13:02:38,033 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-26 13:02:38,034 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-26 13:02:38,034 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-26 13:02:38,050 - src.clotho.ananke - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-26 13:02:38,234 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-26 13:02:38,315 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-26 13:02:38,315 - src.clotho.ananke - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-26 13:02:38,316 - src.clotho.ananke - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-26 13:02:38,318 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-26 13:02:38,331 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-26 13:02:38,361 - src.clotho.ananke - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-26 13:02:38,369 - src.clotho.ananke - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-26 13:02:49,351 - src.clotho.ananke - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-26 13:02:49,354 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-26 13:02:49,357 - src.clotho.ananke - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-26 13:02:49,518 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-26 13:02:49,520 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-26 13:02:49,522 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'sequential-thinking' (enabled=True).
+2026-05-26 13:02:49,523 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'fetch' (enabled=True).
+2026-05-26 13:02:49,524 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'kg-mem' (enabled=True).
+2026-05-26 13:02:49,527 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'github' (enabled=True).
+2026-05-26 13:02:49,530 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'playwright' (enabled=True).
+2026-05-26 13:02:49,533 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session initialized (enabled=True).
+2026-05-26 13:02:49,533 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+ 
+[Tue 05/26/2026 16:03:49.10] ====== Yeni oturum basliyor ====== 
+2026-05-26 16:04:04,286 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-26 16:04:04,290 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-26 16:04:06,298 - src.clotho.hermes_mcp - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-26 16:04:06,300 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-26 16:04:08,302 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-26 16:04:08,304 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-26 16:04:08,305 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-26 16:04:08,312 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-26 16:04:08,330 - src.clotho.ananke - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-26 16:04:08,422 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-26 16:04:08,425 - src.clotho.ananke - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-26 16:04:08,428 - src.clotho.ananke - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-26 16:04:08,429 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-26 16:04:08,448 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-26 16:04:08,472 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-26 16:04:08,477 - src.clotho.ananke - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-26 16:04:08,481 - src.clotho.ananke - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-26 16:04:10,816 - src.clotho.ananke - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-26 16:04:10,817 - src.clotho.ananke - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-26 16:04:10,818 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-26 16:04:10,893 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-26 16:04:10,895 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-26 16:04:10,896 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'sequential-thinking' (enabled=True).
+2026-05-26 16:04:10,896 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'fetch' (enabled=True).
+2026-05-26 16:04:10,897 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'kg-mem' (enabled=True).
+2026-05-26 16:04:10,898 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'github' (enabled=True).
+2026-05-26 16:04:10,898 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'playwright' (enabled=True).
+2026-05-26 16:04:10,900 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session initialized (enabled=True). Connecting...
+2026-05-26 16:04:10,904 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): Lazy-started background thread event loop.
+2026-05-26 16:04:33,623 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): MCP Stdio Session initialized successfully.
+[05/26/26 16:04:33] INFO     Schema initialized at               database.py:82
+                             C:\Users\Hakan\.superlocalmemory\me               
+                             mory.db                                           
+                    INFO     Schema v3.4.6 applied:          schema_v343.py:217
+                             mesh_reads table + indexes                        
+                    INFO     Schema v3.4.7 applied:          schema_v347.py:127
+                             tool_events table + indexes,                      
+                             behavioral_assertions table +                     
+                             indexes                                           
+2026-05-26 16:04:33,731 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session connected successfully.
+2026-05-26 16:04:33,732 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+                    INFO     Schema v3.4.10 applied:        schema_v3410.py:150
+                             backup_destinations table +                       
+                             indexes, entity_blacklist                         
+                             table, entity_blacklist seeded                    
+                             (110 terms)                                       
+                    INFO     Schema v3.4.11 applied:        schema_v3411.py:140
+                             pinned_facts, backend_status,                     
+                             fact_consolidations,                              
+                             lifecycle_index                                   
+                    INFO     MemoryEngine initialized: mode=b     engine.py:131
+                             profile=default capabilities=light                
+                    INFO     MCP engine pre-warmed successfully   server.py:208
+2026-05-26 16:10:44,594 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] run_morpheus.bat: Mutation detected. ROLLBACK!
+2026-05-26 16:11:25,043 - src.lachesis.file_watchdog - ERROR - [SOVEREIGN VIOLATION] run_morpheus.bat: Mutation detected. ROLLBACK!
+ 
+[Tue 05/26/2026 16:11:37.58] ====== Yeni oturum basliyor ====== 
+2026-05-26 16:11:47,388 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-26 16:11:47,390 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-26 16:11:49,401 - src.clotho.hermes_mcp - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-26 16:11:49,402 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-26 16:11:51,403 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-26 16:11:51,405 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-26 16:11:51,406 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-26 16:11:51,419 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-26 16:11:51,423 - src.clotho.ananke - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-26 16:11:51,485 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-26 16:11:51,485 - src.clotho.ananke - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-26 16:11:51,489 - src.clotho.ananke - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-26 16:11:51,490 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-26 16:11:51,492 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-26 16:11:51,496 - src.clotho.ananke - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-26 16:11:51,497 - src.clotho.ananke - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-26 16:11:51,560 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-26 16:11:52,674 - src.clotho.ananke - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-26 16:11:52,675 - src.clotho.ananke - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-26 16:11:52,677 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-26 16:11:52,697 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-26 16:11:52,698 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-26 16:11:52,698 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'sequential-thinking' (enabled=True).
+2026-05-26 16:11:52,699 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'fetch' (enabled=True).
+2026-05-26 16:11:52,700 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'kg-mem' (enabled=True).
+2026-05-26 16:11:52,700 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'github' (enabled=True).
+2026-05-26 16:11:52,700 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'playwright' (enabled=True).
+2026-05-26 16:11:52,703 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session initialized (enabled=True). Connecting...
+2026-05-26 16:11:52,705 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): Lazy-started background thread event loop.
+2026-05-26 16:12:07,164 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): MCP Stdio Session initialized successfully.
+[05/26/26 16:12:07] INFO     Schema initialized at               database.py:82
+                             C:\Users\Hakan\.superlocalmemory\me               
+                             mory.db                                           
+                    INFO     Schema v3.4.6 applied:          schema_v343.py:217
+                             mesh_reads table + indexes                        
+                    INFO     Schema v3.4.7 applied:          schema_v347.py:127
+                             tool_events table + indexes,                      
+                             behavioral_assertions table +                     
+                             indexes                                           
+                    INFO     Schema v3.4.10 applied:        schema_v3410.py:150
+                             backup_destinations table +                       
+                             indexes, entity_blacklist                         
+                             table, entity_blacklist seeded                    
+                             (110 terms)                                       
+                    INFO     Schema v3.4.11 applied:        schema_v3411.py:140
+                             pinned_facts, backend_status,                     
+                             fact_consolidations,                              
+                             lifecycle_index                                   
+                    INFO     MemoryEngine initialized: mode=b     engine.py:131
+                             profile=default capabilities=light                
+                    INFO     MCP engine pre-warmed successfully   server.py:208
+2026-05-26 16:12:07,269 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session connected successfully.
+2026-05-26 16:12:07,270 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+
+[Tue 05/26/2026 16:13:35.49] ====== Yeni oturum basliyor ======
+2026-05-26 16:13:45,257 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-26 16:13:45,258 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-26 16:13:47,275 - src.clotho.hermes_mcp - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-26 16:13:47,277 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-26 16:13:49,279 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-26 16:13:49,282 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-26 16:13:49,283 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-26 16:13:49,283 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-26 16:13:49,312 - src.clotho.ananke - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-26 16:13:49,348 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-26 16:13:49,349 - src.clotho.ananke - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-26 16:13:49,351 - src.clotho.ananke - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-26 16:13:49,352 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-26 16:13:49,354 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-26 16:13:49,361 - src.clotho.ananke - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-26 16:13:49,393 - src.clotho.ananke - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-26 16:13:49,549 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-26 16:13:50,532 - src.clotho.ananke - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-26 16:13:50,534 - src.clotho.ananke - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-26 16:13:50,535 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-26 16:13:50,555 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-26 16:13:50,557 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-26 16:13:50,557 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'sequential-thinking' (enabled=True).
+2026-05-26 16:13:50,558 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'fetch' (enabled=True).
+2026-05-26 16:13:50,559 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'kg-mem' (enabled=True).
+2026-05-26 16:13:50,559 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'github' (enabled=True).
+2026-05-26 16:13:50,560 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'playwright' (enabled=True).
+2026-05-26 16:13:50,562 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session initialized (enabled=True). Connecting...
+2026-05-26 16:13:50,565 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): Lazy-started background thread event loop.
+2026-05-26 16:14:06,002 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): MCP Stdio Session initialized successfully.
+[05/26/26 16:14:06] INFO     Schema initialized at               database.py:82
+                             C:\Users\Hakan\.superlocalmemory\me               
+                             mory.db                                           
+                    INFO     Schema v3.4.6 applied:          schema_v343.py:217
+                             mesh_reads table + indexes                        
+                    INFO     Schema v3.4.7 applied:          schema_v347.py:127
+                             tool_events table + indexes,                      
+                             behavioral_assertions table +                     
+                             indexes                                           
+                    INFO     Schema v3.4.10 applied:        schema_v3410.py:150
+                             backup_destinations table +                       
+                             indexes, entity_blacklist                         
+                             table, entity_blacklist seeded                    
+                             (110 terms)                                       
+                    INFO     Schema v3.4.11 applied:        schema_v3411.py:140
+                             pinned_facts, backend_status,                     
+                             fact_consolidations,                              
+                             lifecycle_index                                   
+2026-05-26 16:14:06,102 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session connected successfully.
+2026-05-26 16:14:06,103 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+                    INFO     MemoryEngine initialized: mode=b     engine.py:131
+                             profile=default capabilities=light                
+                    INFO     MCP engine pre-warmed successfully   server.py:208
+
+[Tue 05/26/2026 16:20:32.28] ====== Yeni oturum basliyor ======
+2026-05-26 16:21:36,197 - __main__ - INFO - === Clotho Bootstrap: Starting Morpheus Daemon ===
+2026-05-26 16:21:36,200 - cognition.mnemosyne.temporal_store - INFO - TemporalStore (Axis 4): SQLite tables ready.
+2026-05-26 16:21:38,218 - src.clotho.hermes_mcp - INFO - Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread...
+2026-05-26 16:21:38,219 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log).
+2026-05-26 16:21:40,220 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler initialized.
+2026-05-26 16:21:40,221 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: CPU Affinity set to E-cores [12, 13, 14, 15].
+2026-05-26 16:21:40,222 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Background loop started.
+2026-05-26 16:21:40,223 - src.clotho.ananke - INFO - Bootstrap: MorpheusScheduler daemon started (30s interval).
+2026-05-26 16:21:40,235 - src.clotho.ananke - INFO - Bootstrap Bridge: A2A to AgentRegistry callback bridge successfully registered.
+2026-05-26 16:21:40,439 - src.architrave.a2a.server - INFO - A2A Server: Daemon thread spawned successfully.
+2026-05-26 16:21:40,440 - src.clotho.ananke - INFO - Bootstrap: A2A Federation Server daemon started.
+2026-05-26 16:21:40,442 - src.clotho.ananke - INFO - Bootstrap: VRAM telemetry started (30.0s interval).
+2026-05-26 16:21:40,442 - src.architrave.a2a.server - INFO - A2A Server: Successfully started on 127.0.0.1:32554
+2026-05-26 16:21:40,444 - cognition.morpheus.scheduler - INFO - MorpheusScheduler: Running weekly OTL trajectory mining...
+2026-05-26 16:21:40,460 - src.architrave.a2a.server - INFO - A2A Server: Updated registry file 'agent\a2a_registry.json' with active endpoint port '32554'.
+2026-05-26 16:21:40,516 - src.clotho.ananke - INFO - Bootstrap: Initializing Sovereign Shield...
+2026-05-26 16:21:40,532 - src.clotho.ananke - INFO - Bootstrap: Performing initial baseline snapshot scan...
+2026-05-26 16:21:52,272 - src.clotho.ananke - INFO - Bootstrap: Baseline snapshot complete.
+2026-05-26 16:21:52,273 - src.clotho.ananke - INFO - Bootstrap: Polling Integrity Guardian started.
+2026-05-26 16:21:52,275 - src.lachesis.file_watchdog - INFO - Polling Integrity Guardian (SHA-256) active on: D:\Hank
+2026-05-26 16:21:52,632 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Loaded config file successfully from: D:\Hank\mcp_config.json
+2026-05-26 16:21:52,633 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'slm' (enabled=True).
+2026-05-26 16:21:52,634 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'sequential-thinking' (enabled=True).
+2026-05-26 16:21:52,635 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'fetch' (enabled=True).
+2026-05-26 16:21:52,637 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'kg-mem' (enabled=True).
+2026-05-26 16:21:52,641 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'github' (enabled=True).
+2026-05-26 16:21:52,656 - src.architrave.mcp.mcp_registry - INFO - MCPRegistry: Initialized session for server 'playwright' (enabled=True).
+2026-05-26 16:21:52,673 - src.clotho.hermes_mcp - INFO - Bootstrap: SLM MCP session initialized (enabled=True). Connecting...
+2026-05-26 16:21:52,695 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): Lazy-started background thread event loop.
+2026-05-26 16:22:22,711 - src.architrave.mcp.mcp_session - ERROR - MCPSession (slm): Failed to connect: MCPSession (slm): Future timed out (30.0s)
+2026-05-26 16:22:22,713 - src.clotho.hermes_mcp - WARNING - Bootstrap: SLM MCP connection attempt 1/3 failed.
+2026-05-26 16:22:26,755 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): Session runner task cancelled.
+2026-05-26 16:22:26,805 - src.clotho.hermes_mcp - WARNING - Bootstrap: SLM MCP connection attempt 2/3 failed.
+2026-05-26 16:22:30,842 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): Session runner task cancelled.
+2026-05-26 16:22:30,900 - src.clotho.hermes_mcp - WARNING - Bootstrap: SLM MCP connection attempt 3/3 failed.
+2026-05-26 16:22:32,902 - src.clotho.hermes_mcp - WARNING - Bootstrap: SLM MCP session failed to connect after 3 attempts. MCP tools (fetch, playwright, github, kg-mem, sequential-thinking) will be unavailable until the first task triggers retry.
+2026-05-26 16:22:32,903 - __main__ - INFO - Daemon started. Press Ctrl+C to stop.
+2026-05-26 16:23:06,583 - src.architrave.mcp.mcp_session - INFO - MCPSession (slm): MCP Stdio Session initialized successfully.
+[05/26/26 16:23:06] INFO     Schema initialized at               database.py:82
+                             C:\Users\Hakan\.superlocalmemory\me               
+                             mory.db                                           
+                    INFO     Schema v3.4.6 applied:          schema_v343.py:217
+                             mesh_reads table + indexes                        
+                    INFO     Schema v3.4.7 applied:          schema_v347.py:127
+                             tool_events table + indexes,                      
+                             behavioral_assertions table +                     
+                             indexes                                           
+                    INFO     Schema v3.4.10 applied:        schema_v3410.py:150
+                             backup_destinations table +                       
+                             indexes, entity_blacklist                         
+                             table, entity_blacklist seeded                    
+                             (110 terms)                                       
+                    INFO     Schema v3.4.11 applied:        schema_v3411.py:140
+                             pinned_facts, backend_status,                     
+                             fact_consolidations,                              
+                             lifecycle_index                                   
+                    INFO     MemoryEngine initialized: mode=b     engine.py:131
+                             profile=default capabilities=light                
+                    INFO     MCP engine pre-warmed successfully   server.py:208
+
+[2026-05-26 16:36:18] ====== Yeni oturum basliyo PID:6736 ======
+
+[2026-05-26 17:26:51] ====== Yeni oturum basliyo PID:6672 ======
+
+[2026-05-26 17:29:32] ====== Yeni oturum basliyo PID:2916 ======
+
+[2026-05-26 17:31:04] ====== Yeni oturum basliyo PID:4204 ======
+
+[2026-05-26 18:48:07] ====== Yeni oturum basliyo PID:14684 ======
+
+[2026-05-26 19:50:45] ====== Yeni oturum basliyo PID:12668 ======
+
+[2026-05-27 22:42:15] ====== Yeni oturum basliyo PID:15480 ======

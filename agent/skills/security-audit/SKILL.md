@@ -4,6 +4,15 @@ description: Code security auditing, vulnerability scanning, and AI supply chain
 version: 1.0.0
 license: MIT
 compatibility: opencode
+model_role: primary
+allowed_tools:
+  - ls
+  - mapper
+  - report
+  - verify
+  - semantic
+  - mcp_slm_recall
+tier: 2
 when_to_use:
   - Auditing code for OWASP Top 10 vulnerabilities.
   - Scanning dependencies for known CVEs.

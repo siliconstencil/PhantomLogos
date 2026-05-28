@@ -1,18 +1,17 @@
 ---
 name: state-bus
-description: Agent message bus for inter-agent communication and state sharing across the hierarchy.
+description: Agent message bus for inter-agent communication and state sharing across
+  the hierarchy.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Passing data between Sophia (L1), Clotho (L2), and Lachesis (L3).
-  - Sharing intermediate reasoning state across LangGraph nodes.
-  - Broadcasting events to multiple agent listeners.
-  - Coordinating parallel agent workflows.
-metadata:
-  audience: developers
-  tier: L1-Architect
-  workflow: orchestration
+model_role: expert
+allowed_tools:
+- report
+- mcp_slm_mesh_send
+- mcp_slm_mesh_state
+- mcp_slm_remember
+tier: 3
 ---
 # State Bus
 

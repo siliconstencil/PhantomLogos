@@ -12,7 +12,7 @@ def run_hermes(cmd_args):
     cli_path = os.path.join("scripts", "hermes_cli.py")
     if not os.path.exists(cli_path):
         pytest.skip("hermes_cli.py not found at scripts/hermes_cli.py")
-    full_cmd = [sys.executable, cli_path] + cmd_args
+    full_cmd = [sys.executable, cli_path, *cmd_args]
     result = subprocess.run(full_cmd, capture_output=True, text=True, encoding="utf-8")
     assert result.returncode == 0, f"Hermes CLI failed: {result.stderr}"
     try:

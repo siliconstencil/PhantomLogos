@@ -1,0 +1,69 @@
+{
+  "mcpServers": {
+    "slm": {
+      "args": [
+        "mcp"
+      ],
+      "command": "D:\\Hank\\.venv\\Scripts\\slm.exe",
+      "env": {
+        "PYTHONPATH": "D:\\Hank",
+        "SLM_DISABLE_WARMUP_SIDE_EFFECTS": "1"
+      }
+    },
+    "sequential-thinking": {
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "command": "cmd",
+      "env": {}
+    },
+    "fetch": {
+      "args": [
+        "-m",
+        "mcp_server_fetch"
+      ],
+      "command": "D:\\Hank\\.venv\\Scripts\\python.exe",
+      "env": {
+        "PYTHONPATH": "D:\\Hank"
+      }
+    },
+    "kg-mem": {
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "command": "cmd",
+      "env": {
+        "MEMORY_FILE_PATH": "D:\\Hank\\mcp-servers\\kg-mem\\memory.json",
+        "PYTHONPATH": "D:\\Hank"
+      }
+    },
+    "github": {
+      "args": [
+        "/c",
+        "D:\\Hank\\scripts\\run_github_mcp.bat"
+      ],
+      "command": "cmd",
+      "env": {
+        "PYTHONPATH": "D:\\Hank"
+      }
+    },
+    "playwright": {
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ],
+      "command": "cmd",
+      "env": {
+        "PYTHONPATH": "D:\\Hank"
+      }
+    }
+  }
+}

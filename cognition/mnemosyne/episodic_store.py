@@ -1,13 +1,11 @@
-import datetime
 import threading
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.utils.logging_config import setup_logger
-
 # Standardized import for Phase 1.0.25
-from cognition.mnemosyne.models import MnemosyneBase, Episode, Event
+from cognition.mnemosyne.models import Episode, Event, MnemosyneBase
+from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -165,8 +163,8 @@ class EpisodicStore:
 
 
 if __name__ == "__main__":
-    import sys
     import os
+    import sys
 
     # Ensure project root is in PYTHONPATH for absolute imports
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

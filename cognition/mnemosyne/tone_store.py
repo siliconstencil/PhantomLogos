@@ -3,10 +3,8 @@ Mnemosyne Creative/Tone Memory Layer (Axis 9).
 Persona adaptation and user message tone analysis.
 """
 
-import datetime
-
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
 
@@ -19,8 +17,9 @@ TONE_KEYWORDS = {
     "frustrated": ["bug", "error", "broken", "fail", "wrong", "stupid", "hate"],
     "creative": ["idea", "design", "think", "imagine", "create", "style"],
     "analytical": ["data", "report", "stats", "logic", "reason", "proof"],
-    "casual": ["hey", "hi", "hello", "thanks", "ok", "cool"]
+    "casual": ["hey", "hi", "hello", "thanks", "ok", "cool"],
 }
+
 
 class ToneStore:
     AXIS_ID = 9
@@ -56,7 +55,7 @@ class ToneStore:
             tone = "neutral"
 
         urgency = min(1.0, scores.get("urgent", 0) * 0.5 + scores.get("frustrated", 0) * 0.3)
-        verbosity = "short" if len(message) < 50 else ("long" if len(message) > 500 else "normal")
+        verbosity = 0.25 if len(message) < 50 else (0.75 if len(message) > 500 else 0.5)
 
         return {"tone": tone, "urgency": urgency, "verbosity": verbosity}
 

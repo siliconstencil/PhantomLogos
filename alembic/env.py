@@ -2,9 +2,10 @@ import os
 import sys
 from logging.config import fileConfig
 
-from sqlalchemy import create_engine
-from alembic import context
 from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine
+
+from alembic import context
 
 sys.path.append(os.getcwd())
 from cognition.mnemosyne.models import MnemosyneBase, ReliabilityBase, SpatialBase
@@ -31,7 +32,7 @@ _BASE = os.path.dirname(__file__)
 
 def run_migrations_online():
     section_name = config.config_ini_section
-    
+
     if section_name == "alembic":
         print("Lutfen spesifik bir veritabani secin (Ornek: alembic -n mnemosyne upgrade head)")
         return
@@ -53,9 +54,15 @@ def run_migrations_online():
         with context.begin_transaction():
             context.run_migrations()
 
+
 if context.is_offline_mode():
     url = DATABASES["mnemosyne"]["url"]
-    context.configure(url=url, target_metadata=DATABASES["mnemosyne"]["metadata"], literal_binds=True, dialect_opts={"paramstyle": "named"})
+    context.configure(
+        url=url,
+        target_metadata=DATABASES["mnemosyne"]["metadata"],
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
     with context.begin_transaction():
         context.run_migrations()
 else:

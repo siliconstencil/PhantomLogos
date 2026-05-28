@@ -1,19 +1,14 @@
-import datetime
+import contextlib
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
 
-try:
-    from .models import MnemosyneBase, GovernanceRule, Fact
-except ImportError:
-    from base import Base
+with contextlib.suppress(ImportError):
+    from .models import Fact, GovernanceRule, MnemosyneBase
 
 logger = setup_logger(__name__)
-
-
-from .models import GovernanceRule, Fact
 
 
 class MnemosyneRationalStore:

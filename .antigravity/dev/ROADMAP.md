@@ -489,7 +489,7 @@ ONEMLI: Group C getter'lari (_get_store, _get_episodic, _get_goals,
   TASINAMAZ - circular import. Bunlar accessor.py'de kalmali.
 
 ------------------------------------------------------------------------
-K2.2 | morpheus/registry.py Shim Removal
+K2.2 | morpheus/registry.py Shim Removal [DONE 2026-05-26 Phase 1.1.26]
 ------------------------------------------------------------------------
 Efor: 20 dk | Dosya: cognition/morpheus/registry.py
 Oncelik: DUSUK | Risk: Dusuk
@@ -501,7 +501,7 @@ COZUM: 3 caller'i dogrudan src/architrave/model_registry.py'ye yonlendir.
   registry.py'yi sil.
 
 ------------------------------------------------------------------------
-K2.3 | temperature_control.py Fold
+K2.3 | temperature_control.py Fold [DONE 2026-05-26 Phase 1.1.26]
 ------------------------------------------------------------------------
 Efor: 15 dk | Dosya: cognition/sophia/temperature_control.py (14 satir)
 Oncelik: DUSUK | Risk: Sifir
@@ -513,7 +513,7 @@ COZUM: get_temperature()'i sophia.py'ye tasi, temperature_control.py'yi sil.
   __init__.py'deki import'u guncelle.
 
 ------------------------------------------------------------------------
-K2.4 | tool_validator.py Fold
+K2.4 | tool_validator.py Fold [DONE 2026-05-26 Phase 1.1.26]
 ------------------------------------------------------------------------
 Efor: 15 dk | Dosya: cognition/sophia/tool_validator.py (41 satir)
 Oncelik: DUSUK | Risk: Sifir
@@ -524,7 +524,7 @@ COZUM: ToolValidator'i sophia.py'ye tasi veya bridge/base.py'ye entegre et.
   tool_validator.py'yi sil.
 
 ------------------------------------------------------------------------
-K2.5 | Token Budget Persistence
+K2.5 | Token Budget Persistence [DONE 2026-05-26 Phase 1.1.26]
 ------------------------------------------------------------------------
 Efor: 30 dk | Dosya: src/atropos/token_budget.py, context_pruner.py
 Oncelik: ORTA | Risk: Dusuk
@@ -582,7 +582,7 @@ COZUM:
   d) Mevcut veriyi migrate et (INSERT INTO yeni_tablo SELECT * FROM eski_tablo)
 
 ------------------------------------------------------------------------
-K2.9 | Duplicate Import Cleanup
+K2.9 | Duplicate Import Cleanup [DONE 2026-05-26 Phase 1.1.26]
 ------------------------------------------------------------------------
 Efor: 20 dk | Dosya: birden fazla
 Oncelik: DUSUK | Risk: Sifir
@@ -594,7 +594,7 @@ COZUM: Tum lazy import'lari gozden gecir. Ayni modul hem top-level hem
   lazy import ediliyorsa top-level'da birlestir.
 
 ------------------------------------------------------------------------
-K2.10 | BLACKLISTED_MODELS Leak Fix
+K2.10 | BLACKLISTED_MODELS Leak Fix [DONE 2026-05-26 Phase 1.1.26]
 ------------------------------------------------------------------------
 Efor: 15 dk | Dosya: src/architrave/model_registry.py
 Oncelik: DUSUK | Risk: Sifir
@@ -737,7 +737,13 @@ UYGULAMA:
 CONFLICT: Mevcut retrieval pipeline ile SLM paralel calisamaz.
   Feature flag ile kontrollu gecis. Rollback plani hazir.
 
-------------------------------------------------------------------------
+[DONE 2026-05-26 Phase 1.1.27] SLM MCP + Daemon Stability: 5 MCP root cause
+  fixed (Phase 1.1.26) + 3 daemon fixes (Phase 1.1.27). Formatter crash patched
+  via log_config=None. Embedding OSError bypassed via auto-detect Ollama path
+  (provider="auto"). stderr=DEVNULL->PIPE. run_morpheus.bat PowerShell rewrite.
+  104 MCP tools operational. Daemon stable, 0 layer violations.
+
+-----------------------------------------------------------------------
 K3.2 | Ebbinghaus Forgetting Curve Automation
 ------------------------------------------------------------------------
 Efor: 2 saat | Dosya: cognition/mnemosyne/memory_arbitrator.py, sweeper.py

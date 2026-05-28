@@ -1,6 +1,4 @@
-from datetime import UTC, datetime
-
-from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, func
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
@@ -8,9 +6,6 @@ from src.utils.logging_config import setup_logger
 from .models import MnemosyneBase, OperationalLog
 
 logger = setup_logger(__name__)
-
-
-from .models import OperationalLog
 
 
 class OperationalStore:

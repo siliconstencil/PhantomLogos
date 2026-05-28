@@ -1,22 +1,17 @@
 ---
 name: local-runtime
-description: Managing llama.cpp subprocess runtime, dynamic NGL offloading, and local model lifecycle.
+description: Managing llama.cpp subprocess runtime, dynamic NGL offloading, and local
+  model lifecycle.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Running VLM models via llama.cpp subprocess.
-  - Dynamic GPU layer offloading (-ngl) for VRAM stability.
-  - Model loading/unloading in LocalRuntime.
-  - Vision pipeline execution for MiMo-VL-7B-RL.
-metadata:
-  audience: developers
-  tier: L2-Runner
-  workflow: runtime
-allowed-tools:
-  - ls
-  - shell
-  - report
+model_role: light
+allowed_tools:
+- vram
+- run_code
+- ls
+- report
+tier: 1
 ---
 # Local Runtime (Muscle)
 

@@ -6,6 +6,7 @@ import numpy as np
 
 from src.utils.logging_config import setup_logger
 from src.utils.ollama_utils import get_ollama_client
+from src.utils.run_async import run_async
 
 logger = setup_logger(__name__)
 
@@ -13,10 +14,10 @@ logger = setup_logger(__name__)
 class JinaReranker:
     """
     Reranker using Ollama backend. [HH:MM AM/PM PT]
-    Fixed thread-safety issues (asyncio.run removal) and N+1 embedding latency.
+    Fixed thread-safety issues (dedicated asyncio loop) and N+1 embedding latency.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = get_ollama_client()
         from src.architrave.model_registry import get_embedding_model
 
@@ -33,21 +34,8 @@ class JinaReranker:
         return await self._execute_pipeline(query, documents, top_n)
 
     def rerank(self, query: str, documents: list[str], top_n: int = 5) -> dict[str, Any]:
-        """Backward compatible sync entry point using thread-safe loop access. [HH:MM AM/PM PT]"""
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # We are in an async environment, use a task (caution: blocking if not awaited)
-                from concurrent.futures import ThreadPoolExecutor
-
-                with ThreadPoolExecutor() as executor:
-                    return executor.submit(
-                        lambda: asyncio.run(self.rerank_async(query, documents, top_n))
-                    ).result()
-            else:
-                return asyncio.run(self.rerank_async(query, documents, top_n))
-        except Exception:
-            return asyncio.run(self.rerank_async(query, documents, top_n))
+        """Backward compatible sync entry point using dedicated asyncio loop thread."""
+        return run_async(self.rerank_async(query, documents, top_n), timeout=60.0)
 
     async def _execute_pipeline(
         self, query: str, documents: list[str], top_n: int
@@ -64,15 +52,18 @@ class JinaReranker:
             return await self._rerank_jina(query, documents, top_n)
         except Exception as jina_err:
             logger.error(f"JinaReranker: Jina rank failed ({jina_err})")
-            raise RuntimeError(f"JinaReranker: All ranking methods failed. Embedding error: {embed_err}. Jina error: {jina_err}") from jina_err
+            raise RuntimeError(
+                f"JinaReranker: All ranking methods failed. Embedding error: {embed_err}. Jina error: {jina_err}"
+            ) from jina_err
 
     async def _rerank_embeddings(
         self, query: str, documents: list[str], top_n: int
     ) -> dict[str, Any]:
         # Batching query and docs via gather
         tasks = [self.client.embeddings(model=self.embedding_model, prompt=query)]
-        for doc in documents:
-            tasks.append(self.client.embeddings(model=self.embedding_model, prompt=doc))
+        tasks.extend(
+            self.client.embeddings(model=self.embedding_model, prompt=doc) for doc in documents
+        )
 
         all_res = await asyncio.gather(*tasks)
         q_vec = np.array(all_res[0]["embedding"])
@@ -108,4 +99,3 @@ class JinaReranker:
 
         scored.sort(key=lambda x: x["score"], reverse=True)
         return {"results": scored[:top_n], "integrity_warning": "Jina precision mode active"}
-

@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
@@ -9,13 +9,9 @@ try:
     from .models import MnemosyneBase, ToolPath
     from .temporal_store import TemporalStore
 except ImportError:
-    from base import Base
     from temporal_store import TemporalStore
 
 logger = setup_logger(__name__)
-
-
-from .models import ToolPath
 
 
 class ProceduralStore:

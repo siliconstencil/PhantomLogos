@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     "opencode-wakatime",
@@ -13,11 +13,14 @@
   "default_agent": "build",
   "agent": {
     "build": {
-      "temperature": 0.2,
+      "temperature": 0.0,
       "options": {
         "reasoningEffort": 80
       }
     }
+  },
+  "formatter": {
+    "ruff": {}
   },
   "lsp": {
     "pyright": {
@@ -30,6 +33,17 @@
       "extensions": [
         ".py"
       ]
+    },
+    "ruff": {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "-m",
+        "ruff",
+        "server"
+      ],
+      "extensions": [
+        ".py"
+      ]
     }
   },
   "tools": {
@@ -37,15 +51,74 @@
     "codesearch": true,
     "filesearch": true
   },
+  "mcp": {
+    "slm": {
+      "type": "local",
+      "command": [
+        "D:\\Hank\\.venv\\Scripts\\slm.exe",
+        "mcp"
+      ],
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "cmd",
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "enabled": true
+    },
+    "fetch": {
+      "type": "local",
+      "command": [
+        "D:\\Hank\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mcp_server_fetch"
+      ],
+      "enabled": true
+    },
+    "kg-mem": {
+      "type": "local",
+      "command": [
+        "cmd",
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "D:\\Hank\\mcp-servers\\kg-mem\\memory.json"
+      },
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": [
+        "cmd",
+        "/c",
+        "D:\\Hank\\scripts\\run_github_mcp.bat"
+      ],
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "cmd",
+        "/c",
+        "npx",
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ],
+      "enabled": true
+    }
+  },
   "skills": {
     "paths": [
       "agent/skills"
-    ],
-    "permission": {
-      "skill": {
-        "*": "allow"
-      }
-    }
+    ]
   },
   "instructions": [
     "AGENTS.md",

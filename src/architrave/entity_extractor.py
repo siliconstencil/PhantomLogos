@@ -1,3 +1,4 @@
+import contextlib
 import os
 import sys
 
@@ -5,13 +6,10 @@ import sys
 os.environ["PYTHONIOENCODING"] = "utf-8"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 if sys.stdout.encoding != "utf-8":
-    try:
-        # Safer reconfigure for various Python environments
+    with contextlib.suppress(Exception):
         reconfig = getattr(sys.stdout, "reconfigure", None)
         if reconfig:
             reconfig(encoding="utf-8")
-    except Exception:
-        pass
 
 import json
 import threading
@@ -33,7 +31,7 @@ class EntityExtractor:
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):  # noqa: ARG004
         if not cls._instance:
             with cls._lock:
                 if not cls._instance:
@@ -41,7 +39,7 @@ class EntityExtractor:
         return cls._instance
 
     @staticmethod
-    def harvest_knowledge(text: str, session_id: str):
+    def harvest_knowledge(text: str, session_id: str) -> None:
         """
         Centralized Knowledge Scavenger (Axis 6).
         Extracts and persists knowledge from any text source.
@@ -55,19 +53,20 @@ class EntityExtractor:
 
         if results.get("entities") or results.get("relations"):
             from cognition.sophia.hephaestus import _get_reflection
+
             store = _get_reflection()
-            
+
             # Persistence (Sync calls wrapped in thread safety if needed)
             if results.get("entities"):
                 store.store_entities(session_id, results["entities"])
             if results.get("relations"):
                 store.store_relations(session_id, results["relations"])
-            
+
             logger.info(
                 f"Scavenger: Harvested {len(results['entities'])} entities from session {session_id}"
             )
 
-    def __init__(self, model_name: str | None = None):
+    def __init__(self, model_name: str | None = None) -> None:
         if not hasattr(self, "initialized"):
             self.model_name = model_name or resolve_local_model("ner")
             self.model: Any | None = None
@@ -93,7 +92,7 @@ class EntityExtractor:
             ]
             self.initialized = True
 
-    def _load_model(self):
+    def _load_model(self) -> None:
         if self.model is None:
             with self._lock:
                 if self.model is None:
@@ -101,13 +100,15 @@ class EntityExtractor:
                         from gliner2 import GLiNER2
 
                         # Monkey-patch to prevent UnicodeEncodeError on Windows (Brain emoji in _print_config)
-                        GLiNER2._print_config = lambda self, config: None
+                        GLiNER2._print_config = lambda self, config: None  # noqa: ARG005
 
                         # Load model to CPU explicitly
                         self.model = GLiNER2.from_pretrained(self.model_name)
                         logger.info(f"EntityExtractor: GLiNER2 loaded on CPU ({self.model_name})")
                     except Exception as e:
-                        raise RuntimeError(f"EntityExtractor: Failed to load GLiNER2 model '{self.model_name}' ({e})") from e
+                        raise RuntimeError(
+                            f"EntityExtractor: Failed to load GLiNER2 model '{self.model_name}' ({e})"
+                        ) from e
 
     def extract_unified(self, text: str) -> dict[str, Any]:
         """
@@ -120,7 +121,9 @@ class EntityExtractor:
             return {"entities": [], "relations": []}
 
         if self.model is None:
-            raise RuntimeError("EntityExtractor: GLiNER2 model failed to load, cannot proceed with extraction.")
+            raise RuntimeError(
+                "EntityExtractor: GLiNER2 model failed to load, cannot proceed with extraction."
+            )
 
         # Phase 1.0.2: GLiNER2 Unified Schema
         schema = (
@@ -135,18 +138,18 @@ class EntityExtractor:
         # GLiNER2 results are structured: results['entities'] = {label: [texts...]}
         # results['relations'] = {label: [[s, o], ...]}
 
-        entities = []
         raw_entities = results.get("entities", {})
-        for label, texts in raw_entities.items():
-            for t in texts:
-                entities.append({"text": t, "type": label})
+        entities = [
+            {"text": t, "type": label} for label, texts in raw_entities.items() for t in texts
+        ]
 
-        relations = []
         raw_relations = results.get("relations", {})
-        for label, pairs in raw_relations.items():
-            for pair in pairs:
-                if len(pair) == 2:
-                    relations.append({"s": pair[0], "p": label, "o": pair[1]})
+        relations = [
+            {"s": pair[0], "p": label, "o": pair[1]}
+            for label, pairs in raw_relations.items()
+            for pair in pairs
+            if len(pair) == 2
+        ]
 
         return {"entities": entities, "relations": relations}
 
@@ -186,7 +189,11 @@ class EntityExtractor:
 
             # Use Tier 1 reasoning model for high-fidelity extraction
             critique_model = resolve_local_model("critique")
-            resp = await client.generate(model=critique_model, prompt=prompt, format="json")
+            import asyncio
+
+            resp = await asyncio.wait_for(
+                client.generate(model=critique_model, prompt=prompt, format="json"), timeout=30.0
+            )
             if not resp or not resp.response:
                 logger.warning("EntityExtractor: Deep Path returned empty response.")
                 return []
@@ -195,12 +202,13 @@ class EntityExtractor:
             # Handle both single object and list of objects
             data = raw_data if isinstance(raw_data, list) else [raw_data]
 
-            valid_relations = []
-            for item in data:
-                if isinstance(item, dict) and all(k in item for k in ("s", "p", "o")):
-                    # Validate predicate against schema
-                    if item["p"] in self._relation_labels:
-                        valid_relations.append(item)
+            valid_relations = [
+                item
+                for item in data
+                if isinstance(item, dict)
+                and all(k in item for k in ("s", "p", "o"))
+                and item["p"] in self._relation_labels
+            ]
 
             if valid_relations:
                 logger.info(

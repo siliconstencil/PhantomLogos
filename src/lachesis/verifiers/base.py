@@ -14,7 +14,7 @@ class SympyVerifier:
 
     AXIS_ID = 11
 
-    def __init__(self, model: str | None = None):
+    def __init__(self, model: str | None = None) -> None:
         from .llm_engine import LLMMathEngine
         from .qwed_engine import QWEDEngine
 
@@ -32,9 +32,9 @@ class SympyVerifier:
         return verify_math(problem)
 
     def verify_logic(self, problem: str) -> dict[str, Any]:
-        from .z3_engine import verify_logic
+        from .z3_engine import verify_logic_sync
 
-        return verify_logic(problem)
+        return verify_logic_sync(problem)
 
     def validate_algebraic_solution(self, problem: str, proposed_solution: str) -> dict[str, Any]:
         from .sympy_engine import validate_algebraic_solution
@@ -43,24 +43,26 @@ class SympyVerifier:
 
     def verify_math_expression(self, problem: str) -> dict[str, Any]:
         """Complexity detection for routing (Axis 11). [HH:MM AM/PM PT]"""
-        math_keywords = [
-            "solve", "calculate", "find", "determine", "evaluate", "hesapla", "nedir"
-        ]
-        has_keywords = any(kw in problem.lower() for kw in math_keywords)
+        math_keywords = ["solve", "calculate", "find", "determine", "evaluate", "hesapla", "nedir"]
+        any(kw in problem.lower() for kw in math_keywords)
         is_pure_math = bool(re.search(r"^[0-9xyzXYZ\s\+\-\*\/\=\(\)\.\^]+$", problem))
         length = len(problem)
 
         if is_pure_math and length < 30:
             return {"category": "deterministic", "score": 0.1}
-        
-        if length < 100 and not any(kw in problem.lower() for kw in ["explain", "proof", "step-by-step"]):
+
+        if length < 100 and not any(
+            kw in problem.lower() for kw in ["explain", "proof", "step-by-step"]
+        ):
             if is_pure_math:
                 return {"category": "ultra_light", "score": 0.3}
             return {"category": "light", "score": 0.5}
-        
-        if length > 500 or any(kw in problem.lower() for kw in ["proof", "theorem", "lemma", "derivative", "integral"]):
+
+        if length > 500 or any(
+            kw in problem.lower() for kw in ["proof", "theorem", "lemma", "derivative", "integral"]
+        ):
             return {"category": "expert", "score": 0.9}
-            
+
         return {"category": "medium", "score": 0.7}
 
     async def verify_math_llm(self, problem: str, tier: str = "light") -> dict[str, Any]:

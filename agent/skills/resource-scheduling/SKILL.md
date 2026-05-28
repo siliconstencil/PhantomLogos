@@ -4,13 +4,13 @@ description: Optimizing task execution based on available hardware and token bud
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Planning complex multi-stage tasks.
-  - Prioritizing background operations vs interactive tasks.
-metadata:
-  audience: system-admins
-  tier: Morpheus
-  workflow: scheduling
+model_role: primary
+allowed_tools:
+- vram
+- report
+- mcp_slm_remember
+- ls
+tier: 2
 ---
 # Skill: Resource Scheduling (Sovereign Edition)
 

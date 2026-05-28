@@ -1,17 +1,18 @@
 ---
 name: mcp-orchestration
-description: Autonomously discovers, binds, and orchestrates Model Context Protocol (MCP) tools and servers.
+description: Autonomously discovers, binds, and orchestrates Model Context Protocol
+  (MCP) tools and servers.
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Discovering new MCP-compatible tools at runtime.
-  - Binding external MCP servers to the agent loop.
-  - Extending system capabilities without code modifications.
-metadata:
-  audience: architects
-  tier: L1-Sophia
-  workflow: integration
+model_role: primary
+allowed_tools:
+- ls
+- mapper
+- report
+- mcp_slm_remember
+- mcp_slm_context
+tier: 2
 ---
 # Skill: MCP Orchestration (Sovereign Edition)
 

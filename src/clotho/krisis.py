@@ -6,16 +6,67 @@ logger = setup_logger(__name__)
 
 from cognition.mnemosyne.operational_store import OperationalStore
 from cognition.mnemosyne.procedural_store import ProceduralStore
+from src.architrave.otl_engine import get_otl_engine
+
+# AUDIT-04.2: FunctionGemma Router — tool dispatch keyword detection
+_TOOL_DISPATCH_KEYWORDS = [
+    "read ",
+    "write ",
+    "list ",
+    "find ",
+    "search ",
+    "grep ",
+    "rg ",
+    "delete ",
+    "move ",
+    "copy ",
+    "rename ",
+    "create ",
+    "show ",
+    "get ",
+    "cat ",
+    "ls ",
+    "open ",
+    "fetch ",
+    "check ",
+    "run ",
+    "execute ",
+]
+
+
+def is_tool_dispatch_task(task: str) -> bool:
+    task_lower = task.lower().strip()
+    if len(task_lower) > 100:
+        return False
+    return any(task_lower.startswith(kw) for kw in _TOOL_DISPATCH_KEYWORDS)
+
 
 # Phase 11.18.4: Session-level model blacklist to handle Hallucination Penalties
 BLACKLISTED_MODELS = {}  # {session_id: [model_names]}
 
 
-def clear_session_blacklist(session_id: str):
+def clear_session_blacklist(session_id: str) -> None:
     """[SRC:axis_12] Purges the model blacklist for a specific session to prevent memory leaks."""
     if session_id in BLACKLISTED_MODELS:
         del BLACKLISTED_MODELS[session_id]
         logger.info(f"krisis: Session {session_id} model blacklist cleared.")
+
+
+def get_blacklisted_models(session_id: str) -> list:
+    """Returns a copy of the blacklisted models for a session (thread-safe read)."""
+    return list(BLACKLISTED_MODELS.get(session_id, []))
+
+
+def determine_tier(complexity: float) -> int:
+    """[SRC:axis_2] Maps a task complexity score (0.0 to 1.0) to a RuFlow Tier (0 to 3)."""
+    if complexity < 0.3:
+        return 0
+    elif complexity < 0.5:
+        return 1
+    elif complexity < 0.8:
+        return 2
+    else:
+        return 3
 
 
 def get_hermes_bridge_context(session_id: str) -> str:
@@ -24,6 +75,7 @@ def get_hermes_bridge_context(session_id: str) -> str:
     Includes Axis 7 (Operational telemetry), Axis 8 (Meta-Cog reliability),
     and Axis 2 (Procedural best tools).
     """
+    _ = session_id
     ctx = ""
     try:
         # -- Axis 7: Hermes + Tool events --
@@ -40,6 +92,7 @@ def get_hermes_bridge_context(session_id: str) -> str:
 
         # -- Axis 8: Agent Reliability Score --
         from cognition.mnemosyne.meta_cognition import MetaCognitionStore
+
         meta = MetaCognitionStore()
         rel = meta.get_reliability("sophia")
         ctx += "\n### SYSTEM RELIABILITY (AXIS 8):\n"
@@ -79,7 +132,7 @@ def get_hermes_bridge_context(session_id: str) -> str:
     return ctx
 
 
-def should_use_tier(state: Any):
+def should_use_tier(state: Any) -> str:
     """Router: Directs flow based on RuFlow Tier and Model Blacklist (Rotation)."""
     tier = state.get("ru_flow_tier", 2)
     session_id = state.get("session_id", "default")
@@ -90,7 +143,22 @@ def should_use_tier(state: Any):
         logger.info("Krisis: Vision-heavy task detected. Forcing Tier 3 (Expert) for fidelity.")
         tier = 3
 
-    # 4. Phase 11.18.4: Model Rotation Check
+    # OTL-informed tier override
+    try:
+        otl = get_otl_engine()
+        node_name = "draft" if tier != 3 else "expert_draft"
+        otl_result = otl.select_tier(node_name)
+        tier_map = {"ultra_light": 0, "light": 1, "primary": 2, "expert": 3, "expert_fallback": 3}
+        otl_tier = tier_map.get(otl_result.best_tier, tier)
+        if otl_result.confidence > 0.7 and otl_result.weight > 0.3:
+            logger.info(
+                f"krisis: OTL override for '{node_name}': tier {tier} -> {otl_tier} "
+                f"(w={otl_result.weight:.3f} c={otl_result.confidence:.2f})"
+            )
+            tier = otl_tier
+    except Exception as e:
+        logger.debug(f"krisis: OTL tier suggestion failed ({e})")
+
     current_blacklisted = BLACKLISTED_MODELS.get(session_id, [])
 
     if tier == 0:
@@ -111,7 +179,7 @@ def should_use_tier(state: Any):
     return "standard"
 
 
-def blacklist_model(session_id: str, model_name: str):
+def blacklist_model(session_id: str, model_name: str) -> None:
     """Adds a model to the session blacklist for rotation."""
     if session_id not in BLACKLISTED_MODELS:
         BLACKLISTED_MODELS[session_id] = []
@@ -120,7 +188,7 @@ def blacklist_model(session_id: str, model_name: str):
         logger.error(f"krisis: Model '{model_name}' has been BLACKLISTED for session {session_id}")
 
 
-def should_call_tools(state: Any):
+def should_call_tools(state: Any) -> str:
     """
     Bypasses tools for Tier 1 tasks.
     Enforces loopback to draft if verification failed.
@@ -204,6 +272,7 @@ def should_continue(state: Any):
         from langgraph.graph import END
 
         from cognition.mnemosyne.meta_cognition import MetaCognitionStore
+
         meta = MetaCognitionStore()
         reliability = meta.get_reliability("sophia")
         if reliability < 0.2:
@@ -255,23 +324,28 @@ Output only a JSON object:
 <start_of_turn>model
 """
     try:
+        import asyncio
         import json
+
         client = get_ollama_client()
-        resp = await client.generate(
-            model=model_name,
-            prompt=prompt,
-            format="json",
-            options={"temperature": 0.0, "stop": ["<end_of_turn>"]}
+        resp = await asyncio.wait_for(
+            client.generate(
+                model=model_name,
+                prompt=prompt,
+                format="json",
+                options={"temperature": 0.0, "stop": ["<end_of_turn>"]},
+            ),
+            timeout=15.0,
         )
         if resp and resp.response:
             return json.loads(resp.response)
     except Exception as e:
         logger.warning(f"krisis: classify_tool_needs failed ({e}). Defaulting to all False.")
-    
+
     return {"needs_file_ops": False, "needs_search": False, "needs_vision": False}
 
 
-def should_after_reflection(state: Any):
+def should_after_reflection(state: Any) -> str:
     """Router: After reflection, decide if we refine (end) or draft (continue)."""
     critique = state.get("critique", {})
     confidence = 0.0

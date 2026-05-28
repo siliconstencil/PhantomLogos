@@ -1,13 +1,6 @@
 @echo off
-REM File Integrity Watchdog Daemon
-REM Launched via: wscript.exe scripts\hide_watchdog.vbs
-REM Stop:  scripts\stop_watchdog_daemon.bat
-
-set ROOT=D:\Hank
-cd /d "%ROOT%"
-set PYTHONPATH=%ROOT%
-
-if not exist "logs\system\watchdog" mkdir logs\system\watchdog
-
-echo [%DATE% %TIME%] Starting File Integrity Watchdog...
-"%ROOT%\.venv\Scripts\pythonw.exe" -u -m src.lachesis.file_watchdog --root "%ROOT%" >> "logs\system\watchdog\watchdog.log" 2>&1
+REM DEPRECATED: Watchdog is now part of Morpheus Daemon.
+REM Redirecting to unified daemon entry point.
+echo [%DATE% %TIME%] run_watchdog_daemon.bat is deprecated - Watchdog now runs inside Morpheus.
+echo [%DATE% %TIME%] Delegating to run_morpheus.bat...
+call "%~dp0run_morpheus.bat"

@@ -1,5 +1,4 @@
 import asyncio
-import re
 from typing import Any
 
 from src.utils.logging_config import setup_logger
@@ -12,38 +11,70 @@ _embedding_healthy = True
 _health_check_counter = 0
 
 
-async def _check_embedding_health(bridge) -> bool:
+async def _check_embedding_health(bridge: Any) -> bool:
     """
     Performs periodic health checks on the embedding model.
     In Emergency Mode (unhealthy), triggers every call until recovery.
+    Uses async slm.ahealth() to prevent blocking the event loop.
     """
+    import os
+
     global _embedding_healthy, _health_check_counter
     _health_check_counter += 1
 
     # Check every 30 calls or every call if already unhealthy (Emergency Mode)
     if not _embedding_healthy or _health_check_counter % 30 == 0:
-        try:
-            model_name = bridge._resolve_model("embedding")
-            await asyncio.wait_for(
-                get_ollama_client().embeddings(model=model_name, prompt="health"), timeout=3.0
-            )
-            if not _embedding_healthy:
-                logger.info("retrieval: Embedding model recovered. Healthy state restored.")
-            _embedding_healthy = True
-        except Exception as e:
-            if _embedding_healthy:
-                logger.warning(
-                    f"retrieval: Embedding health check failed ({e}). Entering degraded mode."
+        if os.getenv("SLM_ENABLED", "true").lower() == "true":
+            try:
+                from src.architrave.mcp import get_slm_client
+
+                slm = get_slm_client()
+                is_ok = await slm.ahealth()
+                if is_ok:
+                    if not _embedding_healthy:
+                        logger.info("retrieval: SLM MCP recovered. Healthy state restored.")
+                    _embedding_healthy = True
+                else:
+                    raise RuntimeError("SLM health check returned False")
+            except Exception as e:
+                # Fallback to local Ollama health check if SLM is dead
+                try:
+                    model_name = bridge._resolve_model("embedding")
+                    await asyncio.wait_for(
+                        get_ollama_client().embeddings(model=model_name, prompt="health"),
+                        timeout=3.0,
+                    )
+                    _embedding_healthy = True
+                    logger.info(
+                        "retrieval: SLM is offline, but local embedding model is healthy. Continuing in fallback mode."
+                    )
+                except Exception as local_err:
+                    if _embedding_healthy:
+                        logger.warning(
+                            f"retrieval: SLM health check failed ({e}) and local embedding check failed ({local_err}). Entering degraded mode."
+                        )
+                    _embedding_healthy = False
+        else:
+            try:
+                model_name = bridge._resolve_model("embedding")
+                await asyncio.wait_for(
+                    get_ollama_client().embeddings(model=model_name, prompt="health"), timeout=3.0
                 )
-            _embedding_healthy = False
+                if not _embedding_healthy:
+                    logger.info("retrieval: Embedding model recovered. Healthy state restored.")
+                _embedding_healthy = True
+            except Exception as e:
+                if _embedding_healthy:
+                    logger.warning(
+                        f"retrieval: Embedding health check failed ({e}). Entering degraded mode."
+                    )
+                _embedding_healthy = False
 
     return _embedding_healthy
 
 
-async def _semantic(bridge, input_data):
+async def _semantic(bridge: Any, input_data: Any) -> Any:
     try:
-        import numpy as np
-
         from cognition.mnemosyne.semantic_store import SemanticStore
 
         query = input_data.get("query", "") if isinstance(input_data, dict) else str(input_data)
@@ -56,10 +87,13 @@ async def _semantic(bridge, input_data):
 
         try:
             from src.utils.service_locator import get_matryoshka
+
             matryoshka = get_matryoshka()
             vec = await matryoshka.embed_query(query)
         except Exception as e:
-            logger.warning(f"retrieval: Matryoshka embedding failed ({e}). Falling back to Keyword search if supported.")
+            logger.warning(
+                f"retrieval: Matryoshka embedding failed ({e}). Falling back to Keyword search if supported."
+            )
             vec = None
 
         store = SemanticStore()
@@ -81,8 +115,8 @@ async def _semantic(bridge, input_data):
                     message=f"Retrieval integrity compromised: {warning}",
                     agent_id=bridge.session_id[:12],
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"ToolBridge: integrity event record skipped ({e})")
             return {"results": reranked[:limit], "integrity_warning": warning, "status": "degraded"}
         return reranked[:limit]
     except Exception as e:
@@ -90,7 +124,7 @@ async def _semantic(bridge, input_data):
         return f"Semantic search error: {e!s}"
 
 
-async def _skill(bridge, input_data):
+async def _skill(_bridge: Any, input_data: Any) -> Any:
     try:
         from src.clotho.skill_loader import get_skill_loader
 
@@ -113,7 +147,7 @@ async def _skill(bridge, input_data):
         return f"Skill loader error: {e!s}"
 
 
-async def _mapper(bridge, input_data):
+async def _mapper(_bridge: Any, _input_data: Any) -> dict[str, str]:
     return {
         "status": "deprecated",
         "message": "Spatial context is now auto-injected via anchor_inject_node.",
@@ -121,7 +155,7 @@ async def _mapper(bridge, input_data):
     }
 
 
-async def _prune(bridge, input_data):
+async def _prune(_bridge: Any, input_data: Any) -> Any:
     try:
         from src.atropos.context_pruner import ContextPruner
 
@@ -137,16 +171,50 @@ def _rerank_results(query: str, candidates: list[dict]) -> dict[str, Any]:
     if not candidates:
         return {"results": [], "integrity_warning": None}
 
-    from src.muscle.reranker import JinaReranker
+    import os
 
-    reranker = JinaReranker()
-    texts = [doc.get("text", "") for doc in candidates]
-    results = reranker.rerank(query, texts, top_n=len(candidates))
-    reranked_docs = []
-    for res in results.get("results", []):
-        idx = res["index"]
-        if idx < len(candidates):
-            doc = candidates[idx].copy()
-            doc["rerank_score"] = res["score"]
-            reranked_docs.append(doc)
-    return {"results": reranked_docs, "integrity_warning": results.get("integrity_warning")}
+    from src.architrave.mcp import get_slm_client
+
+    slm = get_slm_client()
+
+    use_slm = os.getenv("SLM_ENABLED", "true").lower() == "true" and slm.health()
+    if use_slm:
+        try:
+            texts = [doc.get("text", "") for doc in candidates]
+            results = slm.rerank(query, texts, top_n=len(candidates))
+            if results and results.get("results"):
+                reranked_docs = []
+                for res in results.get("results", []):
+                    idx = res["index"]
+                    if idx < len(candidates):
+                        doc = candidates[idx].copy()
+                        doc["rerank_score"] = res["score"]
+                        reranked_docs.append(doc)
+                return {
+                    "results": reranked_docs,
+                    "integrity_warning": results.get("integrity_warning"),
+                }
+        except Exception as e:
+            logger.warning(
+                f"retrieval: SLM rerank failed ({e}). Falling back to local Jina Reranker."
+            )
+
+    try:
+        from src.muscle.reranker import JinaReranker
+
+        reranker = JinaReranker()
+        texts = [doc.get("text", "") for doc in candidates]
+        results = reranker.rerank(query, texts, top_n=len(candidates))
+        reranked_docs = []
+        for res in results.get("results", []):
+            idx = res["index"]
+            if idx < len(candidates):
+                doc = candidates[idx].copy()
+                doc["rerank_score"] = res["score"]
+                reranked_docs.append(doc)
+        return {"results": reranked_docs, "integrity_warning": results.get("integrity_warning")}
+    except Exception as e:
+        logger.error(
+            f"retrieval: Local Jina Reranker also failed ({e}). Returning un-reranked candidates."
+        )
+        return {"results": candidates, "integrity_warning": f"Reranker Error: {e!s}"}

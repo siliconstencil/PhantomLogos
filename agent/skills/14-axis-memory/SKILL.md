@@ -1,17 +1,18 @@
 ---
 name: 14-axis-memory
-description: Mnemosyne 14-axis memory architecture access protocols and autonomous querying strategy.
+description: Mnemosyne 14-axis memory architecture access protocols and autonomous
+  querying strategy.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Performing complex cross-session context assembly.
-  - Verifying facts against the RationalStore (Axis 10).
-  - Retrieving episodic logs from the Mnemosyne write path.
-metadata:
-  audience: architects
-  tier: L1-Sophia
-  workflow: memory-retrieval
+model_role: light
+allowed_tools:
+- semantic
+- mcp_slm_recall
+- mcp_slm_search
+- mcp_slm_context
+- mcp_slm_fetch
+tier: 1
 ---
 # Skill: 14-Axis Memory (Mnemosyne)
 

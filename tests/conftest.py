@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 def setup_test_env():
     # Setup test env (e.g. env vars)
     os.environ["SVR_ENV"] = "test"
-    os.environ["Sovereign_INTEGRITY_LEVEL"] = "0.95"
+    os.environ["SOVEREIGN_INTEGRITY_LEVEL"] = "0.95"
     os.environ["ANTIGRAVITY_GATEWAY_URL"] = "http://localhost:32553/mock"
     yield
 

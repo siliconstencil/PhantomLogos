@@ -1,6 +1,6 @@
 # Phantom Logos: System Topography & Micro-Level Data Flow
 
-*Status: v1.1.0 Stable - Crash Recovery & Security Hardening - 0 Layer Violations*
+*Status: v1.1.26 - SLM MCP Repair & K2 Debt Cleanup (6 K2 items cleared, 3 dead files eliminated, SLM MCP fully operational), 0 Layer Violations, System STABLE*
 
 This document provides a high-fidelity mapping of the Phantom Logos Agentic OS, detailing module interactions, data persistence across the 14-axis Mnemosyne memory, and the Sovereign Gateway architecture.
 
@@ -28,7 +28,8 @@ graph TB
     subgraph L1["L1 — Sophia (Strategy)"]
         KR -->|Tier 0-3| SOPHIA[Sophia — Strategist]
         SOPHIA --> GNO[Gnosis — 14-Axis Context Assembly]
-        SOPHIA --> HEP[hephaestus — 24 Singletons]
+        SOPHIA --> TEL[telos/ — 4 Draft Modules]
+        SOPHIA --> HES[hestia/ — 3 Singleton Modules]
         SOPHIA --> EID[eidos — 5 Pydantic Schemas]
         GNO --> ANK[Ankyra — JIT XML Anchors]
     end
@@ -60,9 +61,9 @@ graph TB
         direction LR
         AX1[Axis 1: Episodic<br/>SQLite WAL] --- AX2[Axis 2: Procedural<br/>SQLite]
         AX3[Axis 3: Goal<br/>SQLite] --- AX4[Axis 4: Temporal<br/>SQLite]
-        AX5[Axis 5: Spatial<br/>245 modules] --- AX6[Axis 6: Semantic<br/>LanceDB+FTS]
+        AX5[Axis 5: Spatial<br/>266 modules] --- AX6[Axis 6: Semantic<br/>LanceDB+FTS]
         AX7[Axis 7: Operational<br/>SQLite+Sweeper] --- AX8[Axis 8: Meta-Cog<br/>SQLite]
-        AX9[Axis 9: Creative<br/>ToneStore] --- AX10[Axis 10: Rational<br/>SQLite]
+        AX9[Axis 9: Tone<br/>ToneStore] --- AX10[Axis 10: Rational<br/>SQLite]
         AX11[Axis 11: Verification<br/>SymPy+Z3+QWED] --- AX12
         AX13 --- AX14[Axis 14: Visual<br/>SQLite+VisualStore]
     end
@@ -114,13 +115,14 @@ graph TB
 
 | Layer | Agent | Role | Model Tier | Axis Anchor |
 | :--- | :--- | :--- | :--- | :--- |
-| **L1** | **Sophia** | Strategist | Sovereign Gateway (Cloud) / Qwen 3.5 9B (Local) | Axis 10 (Rational) |
+| **L1** | **Sophia** | Strategist | Sovereign Gateway (Cloud) / Qwen 3.5 4B (Local) | Axis 10 (Rational) |
 | **L2** | **Clotho** | Executor | Qwen 3.5 4B UD | Axis 2 (Procedural) |
 | **L3** | **Lachesis** | Adversarial Auditor | Phi-4 Mini Reasoning / Qwen 2.5 Coder 3B | Axis 11 (Verification) |
 | **L2** | **Atropos** | Context Engineer | Deterministic / Tiktoken | Axis 12 (Efficiency) |
 | **L2** | **Morpheus** | VRAM Manager | Deterministic / Nvidia-SMI | Axis 7 (Operational) |
 | **L3** | **Hermes** | Bridge Auditor | CLI / Cross-Session | Axis 13 (Cross-Session) |
 | **L2** | **Sophia-14** | Vision Pipeline | Qwen2.5-VL (Default) / MiMo-VL-7B-RL (Flagship) | Axis 14 (Visual) |
+| **L0** | **FunctionGemma** | Tool Dispatcher | FunctionGemma 270M (Tier 2, on tool dispatch) | Axis 2 (Procedural) |
 
 ---
 
@@ -149,6 +151,9 @@ graph LR
 | `GatewayArchitrave` | `src/architrave/gateway_client.py` | Unified gateway client with SovereignProvider |
 | `SovereignProvider` | `src/architrave/gateway_client.py` | Pydantic AI compatible provider wrapping genai.Client |
 | `SovereignProvider.get_provider()` | `gateway_client.py:86` | Returns configured provider for GoogleModel injection |
+| `CircuitBreaker` | `src/architrave/kratos.py` | Circuit breaker + 60s cooldown + async_retry/retry + build_safety_settings |
+| `NomosSyncGateway` | `src/architrave/nomos.py` | Sync generate() + MockResponse + local_distill + _local_fallback |
+| `AriadneAsyncGateway` | `src/architrave/ariadne.py` | Async generate_async() + context caching integration |
 | `ANTIGRAVITY_GATEWAY_URL` | Env var / `gateway_client.py:68` | `http://localhost:32553` — local proxy endpoint |
 | `api_key` | `gateway_client.py:72` | `"antigravity-native"` — dummy key for IDE routing |
 
@@ -171,14 +176,14 @@ Mnemosyne maintains OS agility via autonomous pruning and strict 7GB VRAM hygien
 | **2** | **Procedural** | SQLite | Tool usage patterns and successful execution routes. | `_get_procedural().record_usage()` per tool call |
 | **3** | **Goal** | SQLite | Active objectives and task state tracking. | `_get_goals().update()` per phase |
 | **4** | **Temporal** | SQLite | Time-series event sequences and latency metrics. | `_get_temporal().record()` per operation |
-| **5** | **Spatial** | SQLite | CodebaseMapper with AST parser + SQL LIKE optimization. Incremental remap with prune support. 250 modules, 7 circular dependencies detected (Phase 1.0.31). Persisted to `spatial.db`. | `_get_spatial().record_dependency()` on scan |
+| **5** | **Spatial** | SQLite | CodebaseMapper with AST parser + SQL LIKE optimization. Incremental remap with prune support. 266 modules, 10 circular dependencies detected. Persisted to `spatial.db`. | `_get_spatial().record_dependency()` on scan |
 | **6** | **Semantic** | LanceDB + Hybrid | Vector + FTS (RRF Merge) + Jina Reranker (v3). | `_get_semantic().store()` per memory |
-| **7** | **Operational** | SQLite + Sweeper | VRAM metrics, DB Pruning (30d retention), telemetry. Note: 30d raw retention may conflict with Axis 13 pattern analysis — archival strategy pending. | `_get_sweeper().log()` periodic |
+| **7** | **Operational** | SQLite + Sweeper | VRAM metrics, DB Pruning (30d retention), telemetry. Pruning implemented in `sweeper.py::_prune_sqlite()` — `operational_logs_v2` table, 30d cutoff. Axis 13 opencode.db files pruned separately via same sweep cycle. | `_get_sweeper().log()` periodic |
 | **8** | **Meta-Cog** | SQLite | Behavioral reliability tracking, execution failure analysis, agent success rates. | `_get_meta().adjust_reliability()` + `failure_memory` |
-| **9** | **Creative** | ToneStore | Persona and communication style tokens. | Auto-updated via interaction analysis |
+| **9** | **Tone** | ToneStore | Persona and communication style tokens. | Auto-updated via interaction analysis |
 | **10** | **Rational** | SQLite | Formal logic, governance rules (`rules.json`), decision trees. | `_get_store().record_fact()` per governance rule |
 | **11** | **Verification** | SymPy + Z3 + QWED + LLM | Sovereign local verification of mathematical/logical claims and expressions. [Phase 1.0.24: Asynchronous Pipeline + 7 New Math Models] | `sympy_verifier.verify_expression()` per technical claim |
-| **12** | **Efficiency** | SQLite + ContextCacheStore | Context caching (Axis 12) for 1-hour TTL anchors. Cache eviction is TTL-based only; no active sweep integrated yet. | `architrave.create_context_cache()` on anchor build |
+| **12** | **Efficiency** | SQLite + axis_12_cache_metrics | Context caching (Axis 12) with Gemini implicit cache tracking. Metrics table logs request count, cached tokens, avg latency, hit/partial/miss distribution per session. | `gateway_client.generate_async/generate()` auto-logged |
 | **13** | **Cross-Session** | SQLite (External) | Cross-session bridge and inter-session pattern recognition (OpenCode). | `opencode_store.log()` via Hermes CLI |
 | **14** | **Visual** | SQLite + VisualStore | VLM output storage with Nomic text embedding. 50-entry LRU retention, 30-day TTL. | `VisualStore.store_vision()` per vision call |
 
@@ -323,9 +328,9 @@ sequenceDiagram
 | Infrastructure SSOT | Completed | PEP 621 metadata, ruff replaces black/isort, selective mypy (Phase 1.0.15) |
 | Quality Gate Actuation | Completed | pre-commit hooks, auto-fix mode, 239 violation audit (Phase 1.0.16) |
 | Dynamic Quality Remediation | Completed | pyproject.toml lint migration, organic remediation (Phase 1.0.17) |
-| MCP Runtime | Proposed | Native MCP server integration for dynamic tool discovery |
-| Distributed Memory | Proposed | Remote Mnemosyne sync across agent clusters |
-| SLM MCP Integration | Proposed | SuperLocalMemory V3.4 memory system via MCP |
+| MCP Runtime | Completed | Native MCP server integration for dynamic tool discovery via src/architrave/mcp/ (Phase 1.1.5). Wave 1+2: 6 servers, 69 tools (Phase 1.1.24) |
+| Distributed Memory | Proposed | Remote Mnemosyne sync across agent clusters. Tracked in `.antigravity/dev/ROADMAP.md` (K5 tier). |
+| SLM MCP Integration | Completed | SuperLocalMemory V3.4 memory system via MCP, 7-module dual-path fallback architecture (Phases 1.1.5, 1.1.9) |
 
 ---
 
@@ -340,32 +345,41 @@ sequenceDiagram
 | `bridge/` | `src/clotho/bridge/` | 6 files | 4 handlers | Tool dispatcher package (base + fs + retrieval + vision + verify) |
 | `mapper_bridge` | `src/clotho/mapper_bridge.py` | 40 | 2 | Debounced incremental remap with asyncio Lock separation |
 | `control_handoff` | `src/clotho/control_handoff.py` | 68 | 2 | Entry point with 120s global timeout |
-| `bootstrap` | `src/clotho/bootstrap.py` | 185 | 9 | Morpheus daemon startup, CPU_HEAVY_EXECUTOR |
+| `bootstrap` | `src/clotho/bootstrap.py` | 112 | 9 | Thin CLI entry point (daemon logic in ananke/hermes_mcp) |
+| `ananke` | `src/clotho/ananke.py` | 375 | 9 | Morpheus daemon lifecycle: scheduler/sweeper/loader, start/stop, shield, telemetry |
+| `hermes_mcp` | `src/clotho/hermes_mcp.py` | 106 | 3 | SLM daemon: discover_slm_port, start_slm_server, start_slm |
 | `krisis` | `src/clotho/krisis.py` | 173 | 6 | Routing and decision logic, adaptive draft cycle (confidence>0.9 skip refine) |
 | `activity` | `src/clotho/activity.py` | 26 | 1 | Singleton ActivityMonitor (thread-safe is_busy) |
 | `skill_loader` | `src/clotho/skill_loader.py` | 109 | 7 | SKILL.md loader with YAML frontmatter parser |
 | `agent_loader` | `src/clotho/agent_loader.py` | 138 | 8 | Agent YAML definitions registry |
-| `gateway_client` | `src/architrave/gateway_client.py` | 251 | 18 | GatewayArchitrave + SovereignProvider, circuit breaker, 60s timeout, local fallback, MockResponse |
+| `gateway_client` | `src/architrave/gateway_client.py` | 276 | 18 | GatewayArchitrave + SovereignProvider (delegates to kratos/nomos/ariadne) |
+| `kratos` | `src/architrave/kratos.py` | 174 | 4 | CircuitBreaker, async_retry, retry, build_safety_settings |
+| `nomos` | `src/architrave/nomos.py` | 344 | 5 | NomosSyncGateway, MockResponse, local_distill, _local_fallback |
+| `ariadne` | `src/architrave/ariadne.py` | 228 | 3 | AriadneAsyncGateway, generate_async, context caching |
 | `model_registry` | `src/architrave/model_registry.py` | 161 | 6 | Capability-based model resolution (benchmarks in `data/model_benchmarks.json`) |
-| `context_cache` | `src/architrave/context_cache.py` | 172 | 2 | Axis 12 context caching |
+| `context_cache` | `src/architrave/context_cache.py` | 172 | 2 | Axis 12 context caching (read+query from SQLite) |
+| `otl_engine` | `src/architrave/otl_engine.py` | new | 3 | EWMA + epsilon-greedy OTL trajectory engine |
 | `opencode_store` | `src/architrave/opencode_store.py` | 117 | 6 | Cross-session bridge store |
 | `base_models` | `src/architrave/base_models.py` | new | 1 | SSOT for model_registry imports, circular dep resolver (Phase 1.0.4) |
 | `entity_extractor` | `src/architrave/entity_extractor.py` | 192 | 7 | Entity extraction for graph |
+| `mcp/` | `src/architrave/mcp/` | 6 files | 4 classes | SLM MCP client package (slm_client + mcp_session + mcp_registry + mcp_models + mcp_tool_bridge + mcp_config) |
 | `mapper/` | `src/lachesis/mapper/` | 3 files | 2 classes | Codebase dependency graph (AST parser + GraphManager/CodebaseMapper) |
 | `verifiers/` | `src/lachesis/verifiers/` | 8 files | 4 engines | Axis 11: SymPy+Z3+QWED+LLM verification, 8-pillar evaluator, output guard |
 | `file_watchdog` | `src/lachesis/file_watchdog.py` | 94 | 6 | Sovereign Shield: OS-level file integrity, 30s polling, mtime change detection (Phase 11.18.16) |
 | `snapshot_manager` | `src/lachesis/snapshot_manager.py` | 109 | 8 | Sovereign Shield: Periodic SHA-256 snapshots of 120 critical files (Phase 11.18.16) |
 | `self_tuner` | `src/lachesis/self_tuner.py` | 76 | 6 | Meta-cognitive performance tuning, cross-tier import via service_locator |
-| `sophia` | `cognition/sophia/sophia.py` | 285 | 4 | Core reasoning: draft, critique, refine |
+| `sophia` | `cognition/sophia/sophia.py` | 13 | 4 | Thin re-export (logic in telos/) |
+| `telos/` | `cognition/sophia/telos/` | 4 files | 4 modules | sophia.py split: _gateway.py, draft.py (418L), critique.py (97L), refine.py (109L) |
 | `gnosis/` | `cognition/sophia/gnosis/` | 16 files | 14 axis builders | 14-axis context assembly package (stable/dynamic split, JSON minification) |
-| `hephaestus` | `cognition/sophia/hephaestus.py` | 296 | 24 | Singleton getters, schemas from `.eidos`, SovereignProvider injection, JIT scan_pattern |
+| `hephaestus` | `cognition/sophia/hephaestus.py` | 47 | 24 | Thin re-export (logic in hestia/) |
+| `hestia/` | `cognition/sophia/hestia/` | 3 files | 3 modules | hephaestus split: singletons.py (206L), text_utils.py (55L), instructions.py (28L) |
 | `eidos` | `cognition/sophia/eidos.py` | new | 5 schemas | Pydantic models: TechnicalClaim, SophiaOutput, InconsistencyEvidence, ReasoningState, CritiqueResult |
 | `sweeper` | `cognition/morpheus/sweeper.py` | 391 | 17 | VRAM fragmentation cleanup, heal_ollama, gateway health check, weekly/monthly summary |
 | `scheduler` | `cognition/morpheus/scheduler.py` | 148 | 9 | Load/unload scheduler, periodic 30s tick |
 | `loader` | `cognition/morpheus/loader.py` | 89 | 7 | Ollama model loader with CORE_MODELS protection, `sync_from_ollama()`, `keep_alive=-1` |
 | `vram_config` | `cognition/morpheus/vram_config.py` | new | constants | CORE_MODELS list, VRAM budget constants |
 | `visual_store` | `cognition/mnemosyne/visual_store.py` | 171 | 10 | Axis 14: Visual memory store with Nomic text embedding |
-| `file_changelog` | `cognition/mnemosyne/file_changelog.py` | 167 | 10 | Append-only file change audit log (watchdog backing store) |
+| `trajectory_store` | `cognition/mnemosyne/trajectory_store.py` | new | 5 | Axis 2: Trajectory session/step ORM models for OTL |
 | `episodic_store` | `cognition/mnemosyne/episodic_store.py` | 131 | 9 | Axis 1: Session logging with Write Path |
 | `procedural_store` | `cognition/mnemosyne/procedural_store.py` | 103 | 5 | Axis 2: Tool usage history |
 | `goal_store` | `cognition/mnemosyne/goal_store.py` | 105 | 7 | Axis 3: Active objectives |
@@ -399,7 +413,7 @@ sequenceDiagram
 | `muscle.local_runtime` | Subprocess management for llama.cpp |
 | `clotho.bridge` | `mnemosyne.*`, `lachesis.verifiers`, `architrave.*`, `mu scle.reranker` |
 
-Total: **250 modules, 7 circular deps detected** (AST mapper scan via `scripts/update_mapper.py`)
+Total: **266 modules, 10 circular deps detected** (AST mapper scan via `scripts/update_mapper.py`)
 
 ---
 
@@ -454,12 +468,14 @@ D:\HANK/
 |   |   |   |-- vision.py                # Vision pipeline handler
 |   |   |   |-- verify.py                # Verification handler
 |   |   |-- krisis.py                    # Judgment: Routing and decision logic
-|   |   |-- bootstrap.py                 # Morpheus daemon startup
+|   |   |-- bootstrap.py                 # Thin CLI entry point (daemon logic in ananke/hermes_mcp)
 |   |   |-- agent_loader.py              # Agent YAML definitions
 |   |   |-- skill_loader.py              # SKILL.md capability loader
 |   |   |-- mapper_bridge.py             # Debounced incremental remap (Phase 11.18.10)
 |   |   |-- control_handoff.py           # Task handoff entry point (120s timeout)
 |   |   |-- activity.py                  # Singleton ActivityMonitor (Phase 11.20)
+|   |   |-- ananke.py                    # Morpheus daemon lifecycle (Phase 1.1.25)
+|   |   |-- hermes_mcp.py                # SLM daemon management (Phase 1.1.25)
 |   |-- lachesis/                        # L3 Audit & Verification
 |   |   |-- __init__.py                  # Lazy import entry point
 |   |   |-- mapper/                      # Codebase dependency graph (AST parser + GraphManager/CodebaseMapper)
@@ -470,12 +486,23 @@ D:\HANK/
 |   |   |-- snapshot_manager.py          # SHA-256 snapshot manager (Phase 11.18.16)
 |   |   |-- self_tuner.py                # Meta-cognitive performance tuning
 |   |-- architrave/                      # Cloud connectivity (Gateway)
-|   |   |-- gateway_client.py            # GatewayArchitrave + SovereignProvider
+|   |   |-- kratos.py                    # Circuit breaker + retry logic (Phase 1.1.25)
+|   |   |-- nomos.py                     # Sync gateway + local fallback (Phase 1.1.25)
+|   |   |-- ariadne.py                   # Async gateway + context cache (Phase 1.1.25)
+|   |   |-- gateway_client.py            # Thin re-export (logic in kratos/nomos/ariadne)
 |   |   |-- context_cache.py             # Context caching (Axis 12)
 |   |   |-- base_models.py               # SSOT for circular dep resolution (Phase 1.0.4)
 |   |   |-- model_registry.py            # Capability-based model registry
 |   |   |-- opencode_store.py            # Cross-session bridge store
 |   |   |-- entity_extractor.py          # Entity extraction for graph
+|   |   |-- otl_engine.py                # OTL trajectory engine (EWMA + epsilon-greedy)
+|   |   |-- mcp/                          # SLM MCP client package
+|   |   |   |-- slm_client.py             # SLMClient wrapper for SLM MCP server
+|   |   |   |-- mcp_session.py            # MCPSession stdio protocol manager
+|   |   |   |-- mcp_registry.py           # MCP session lifecycle manager
+|   |   |   |-- mcp_models.py             # Pydantic config models (MCPServerConfig, MCPRuntimeConfig)
+|   |   |   |-- mcp_tool_bridge.py        # MCP tool discovery + ToolBridge registration
+|   |   |   |-- mcp_config.json           # Default MCP configuration (slm.exe -> mcp)
 |   |-- atropos/                         # Context engineering (L2)
 |   |   |-- context_pruner.py            # Token-aware context pruning
 |   |   |-- matryoshka_service.py        # Matryoshka embedding + slice/normalize
@@ -497,11 +524,13 @@ D:\HANK/
 |
 |-- cognition/                           # COGNITIVE LAYER
 |   |-- sophia/                          # Tier-1 Reasoning (Sophia)
-|   |   |-- sophia.py                    # Core reasoning: draft/critique/refine
+|   |   |-- sophia.py                    # Thin re-export (logic in telos/)
 |   |   |-- gnosis/                      # 14-axis context assembly (stable/dynamic split)
 |   |   |   |-- base.py                  # get_dynamic_context() orchestrator
 |   |   |   |-- axis_1_episodic.py ... axis_14_visual.py  # Individual axis builders (14 files)
-|   |   |-- hephaestus.py                # Singleton getters + SovereignProvider injection
+|   |   |-- telos/                       # sophia.py split: draft/critique/refine/gateway (Phase 1.1.25)
+|   |   |-- hephaestus.py                # Thin re-export (logic in hestia/)
+|   |   |-- hestia/                      # hephaestus split: singletons/text/instructions (Phase 1.1.25)
 |   |   |-- eidos.py                     # Pydantic schemas (5 models)
 |   |   |-- router.py                    # Task capability classification
 |   |   |-- tool_validator.py            # Tool JSON schema validator
@@ -520,6 +549,7 @@ D:\HANK/
 |   |   |-- tone_store.py                # Axis 9: Creative persona
 |   |   |-- rational_store.py            # Axis 10: Governance and facts
 |   |   |-- reflection_store.py          # Axis 11: Verification records
+|   |   |-- trajectory_store.py          # Axis 2: OTL trajectory session/step models
 |   |   |-- memory_arbitrator.py         # Memory scoring engine
 |   |   |-- session_log.py               # Session event log
 |   |   |-- base.py                      # SQLAlchemy base
@@ -537,7 +567,8 @@ D:\HANK/
 |   |-- verify_models.py                 # Model verification
 |   |-- test_bridge_hardening.py         # Bridge hardening tests
 |   |-- create_l0_token.py               # L0 auth token generator
-|   |-- health_check.py                  # 14-axis integrity check
+|   |-- migrate_slm_metadata.py          # SLM m:json -> meta:key:value migration
+|   |-- health_check_14_axes.py          # 14-axis integrity check
 |
 |-- tests/                               # TEST SUITE
 |   |-- test_axis_stability.py           # 14-axis stability audit
@@ -557,11 +588,24 @@ D:\HANK/
 |   |-- sophia.yaml                      # Sophia agent config (14 axes)
 |   |-- clotho.yaml                      # Clotho execution profile
 |   |-- ...hermes.yaml, lachesis.yaml, atropos.yaml, morpheus.yaml
-|   |-- skills/                          # SKILL CAPABILITY FILES (35 total)
+|   |-- skills/                          # SKILL CAPABILITY FILES (51 total)
 |       |-- agent-orchestrator/          # Complex project management
 |       |-- code-generation/             # Production code implementation
 |       |-- discovery-mcp-scanner/       # MCP JIT tool discovery
-|       |-- (29 more skills...)
+|       |-- review-pipeline/             # Multi-AI code review pipeline
+|       |-- ship-deploy/                 # Release automation pipeline
+|       |-- autoplan/                    # Automated planning + review
+|       |-- design-suite/                # UI/UX design workflow
+|       |-- browser-qa/                  # Browser E2E testing automation
+|       |-- safety-guardrails/           # Operational safety layer
+|       |-- audit/                       # Comprehensive 6-phase audit pipeline
+|       |-- sequential-thinking/         # Structured reasoning via MCP
+|       |-- fetch/                       # Web page fetching via MCP
+|       |-- kg-mem/                      # Knowledge graph memory via MCP
+|       |-- browse/                      # Headless browser via MCP
+|       |-- github/                      # GitHub API via MCP
+|       |-- playwright/                  # Playwright browser automation via MCP
+|       |-- (35 more skills...)
 |
 |-- docs/                                # AUXILIARY DOCS
 |-- scratch/                             # LOCAL ARTIFACTS (gitignored)
@@ -593,11 +637,11 @@ D:\HANK/
 | **L3 Math Bridge**| **qwq-math-io-500m**| **0.4** | **Ollama** | **Axis 11 (Phase 1.0.24)** |
 | L3 Fallback | Qwen 2.5 Coder 0.5B | 0.5 | Ollama | Axis 11 |
 | Router | Granite 3B | 1.6 | Ollama | RuFlow |
-| Vision Default | Qwen2.5-VL 3B | 2.5 | LocalRuntime | Vision (Stable primary) |
+| Vision Default | Qwen2.5-VL 3B | 2.5 | Ollama | Vision (primary, light variants) |
 | Vision OCR | Qwen2-VL OCR 2B | 1.1 | LocalRuntime | Vision (Document OCR) |
-| Vision Flagship | MiMo-VL-7B-RL | 5.7 | LocalRuntime | Vision (Flagship, active) |
-| Vision Thinking | Qwen3-VL Thinking 4B | 3.15 | LocalRuntime | Vision (BYPASSED, replaced by MiMo) |
-| Vision Creative | Gemma 4 E4B 4B | 5.67 | LocalRuntime | Vision (BYPASSED, replaced by MiMo) |
+| Vision Flagship | MiMo-VL-7B-RL | 5.7 | Ollama | Vision (thinking/creative variants — UNSTABLE, standby) |
+| Vision Thinking | Qwen3-VL Thinking 4B | 3.15 | LocalRuntime | Vision (BYPASSED) |
+| Vision Creative | Gemma 4 E4B 4B | 5.67 | LocalRuntime | Vision (BYPASSED) |
 | Embedding | Nomic Embed MoE Q8 | 0.5 | Ollama | Axis 6 |
 | Reranker | Jina Reranker V3 | 0.6 | Muscle | Retrieval |
 | Math Verifier | Qwen 2.5 Math 7B | 4.0 | Ollama | Axis 11 |
@@ -699,6 +743,8 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 
 | Decision | Status | Rationale |
 |----------|--------|-----------|
+| Content Guard Sync Path | ACTIVE | Phase 1.1.8: `CLOUD_TOKEN_THRESHOLD` truncation added to sync `generate()`. Both sync and async Gateway paths now enforce token budget. Sync callers (reranker.py) no longer bypass cloud limits. |
+| Z3 Sync Wrapper | ACTIVE | Phase 1.1.8: `verify_logic_sync()` added to `z3_engine.py` for direct `solver.check()` without asyncio. Resolved coroutine-as-dict bug in `SympyVerifier.verify_logic()` + test suite. |
 | Phantom Logos v1.0.0 | SEALED | Rebrand from Phantom Logos to eliminate Claude model confusion. "Logos" = Universal Reason/Order. |
 | Absolute Agnosticism | ENFORCED | No hardcoded model names. All traffic via Sovereign Gateway. `GATEWAY_API_KEY` primary. |
 | SovereignProvider Injection | ACTIVE | Pydantic AI hijacked via custom `Provider[genai.Client]` to enforce local gateway routing. |
@@ -750,7 +796,8 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 | Infrastructure SSOT | COMPLETED | PEP 621 metadata standardization (authors, license, classifiers, urls), dependency cleanup (gliner, langchain removal), ruff replaces black/isort, selective mypy, base_models integration for EntityExtractor (Phase 1.0.15) |
 | Quality Gate Actuation | COMPLETED | pre-commit installation with auto-fix hooks (ruff --fix + ruff-format), pip recovery via get-pip.py, quality debt audit (239 violations), global exclude for logs/data/scratch (Phase 1.0.16) |
 | Dynamic Quality Remediation | COMPLETED | pyproject.toml lint config migration to [tool.ruff.lint], pre-commit transition from check-only to auto-fix mode, organic (no bulk --all-files) remediation strategy (Phase 1.0.17) |
-| SLM MCP Integration | Proposed | SuperLocalMemory V3.4 memory system via MCP |
+| SLM MCP Integration | COMPLETED | SuperLocalMemory V3.4 via MCP, 7-module dual-path fallback: SLMClient→MCPSession→slm.exe, fallback to LanceDB+Ollama+Jina (Phase 1.1.5) |
+| SLM Zombie Remediation | COMPLETED | MCPSession async shutdown, CancelledError handling, zombie process cleanup verified (Phase 1.1.9) |
 | ServiceLocator Cross-Tier | COMPLETED | `src/utils/service_locator.py` — L2-L3 circular dependency resolved, self_tuner→bootstrap via locator pattern (Phase 11.19.19) |
 | Sovereign Shield Hardening | ACTIVE | Full Mutation Detection via SHA-256 Hash. Replaces 10% size-drop threshold to catch unauthorized additions/overwrites (Phase 1.0.22). |
 | **Math Pipeline Modernization**| **ACTIVE** | **Integration of 7 specialized math/reasoning models (DeepSeek-R1-8B, Open-Xi, etc.), asynchronous verification refactor, and Morpheus VRAM-aware eviction (Phase 1.0.24).** |
@@ -759,9 +806,26 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 | **Pyright 0-Error Policy** | **ACTIVE** | **Phase 1.0.27.1: Entire codebase at 0 errors, 0 warnings. Type overload noise resolved via cast/guard. Null-check pattern standardized.** |
 | GLiNER2 Schema Hardening | COMPLETED | Phase 1.0.28.2: 11 entity labels (Person, Organization, Location, Date, Time, Money, Percent, Product, Event, Facility, GPE). Scavenger Mode: tool output -> reflection_store. Constraint Guardian: GLiNER2 violation detection in deigma.py. |
 | Mapper Hardening + Auth Compliance | COMPLETED | Phase 1.0.28.3: Relative import resolution in AST parser. LAYER_RULES whitelist for 17 intentional cross-layer deps. Dead code reduced from 22 to 1. Layer violations from 20 to 3. file_changelog.py deleted (dead module). L0_AUTH_TOKEN compliance enforced. |
-| Stability & Code Structure Optimization | COMPLETED | Phase 1.0.31: MatryoshkaEmbedding adapter for offline testing. Circular deps resolved via lazy imports in self_tuner.py/krisis.py. websearch.py deleted (backed up). LAYER_RULES whitelist for 3 intentional cross-layer deps. Layer violations: 0. Tests: 16/16 passing. |
+| Stability & Code Structure Optimization | COMPLETED | Phase 1.1.1: MatryoshkaEmbedding adapter for offline testing. Circular deps resolved via lazy imports in self_tuner.py/krisis.py. websearch.py deleted (backed up). LAYER_RULES whitelist for 3 intentional cross-layer deps. Layer violations: 0. Tests: 16/16 passing. |
 | Crash Recovery & Security Hardening | COMPLETED | v1.1.0 Stable: ainvoke(None) checkpoint resume in control_handoff.py. Morpheus->Axis 7 log_system_event integration in sweeper.py. SHA-256 hash migration in ast_parser.py. Subprocess whitelist in local_runtime.py _validate_path. 18/18 tests PASSED. 0 layer violations. |
-| GLiNER2 Integration + L0 Cleanup | COMPLETED | Phase 1.0.28.1: spatial_context removed from GraphState. EntityExtractor wired to elenchos + theoria. 4 DB entities confirmed. |
+| A2A Federation Protocol | COMPLETED | Phase 1.1.4: Remote agent routing with HMAC-SHA256 signature verification, UDP-free file-based discovery registry, client-side port fallback, and callback-based dynamic routing bypass. (Layer violations: 0, Circular deps: 6). |
+| Guarded Async Client | COMPLETED | Phase 1.1.4: GuardedAsyncClient wrapper in ollama_utils.py intercepts direct chat/embeddings calls to enforce Morpheus VRAMBudgetGuard with 0 layer violations via dynamic callback registration. (Layer violations: 0, Circular deps: 6). |
+| GLiNER2 Integration + L0 Cleanup | COMPLETED | Phase 1.1.1: spatial_context removed from GraphState. EntityExtractor wired to elenchos + theoria. 4 DB entities confirmed. |
+| Gemini 3.5 Flash Cache Integration | ACTIVE | Phase 1.1.18: `get_active_cache_name()` + `cached_content` wired to both `generate_async()` and `generate()` sync. `genai_manager.py` MODEL_NAME updated to `gemini-3.5-flash`. |
+| 9B->4B VRAM Swap | ACTIVE | Phase 1.1.18: `qwen3.5-9b-ud` replaced with `qwen3.5-4b-ud` across 5 files (base.py, rules.json, base_models.py, vram_config.py) to eliminate OOM risk. |
+| FUNCTIONAL_TOOL_PRIORITY | ACTIVE | Phase 1.1.18: Rules mandating `mapper`/`semantic_store`/`slm_*`/`verify`/`report` over raw fs/bash added to 4 docs (rules.json, CONSTITUTION.md, AGENTS.md, GEMINI.md). |
+| Sophia Tier Routing | ACTIVE | Phase 1.1.18: Tier-based elif block (ultra_light/light/primary/expert) in `run_draft` for dynamic model fallback selection without cloud gateway. |
+| Temperature 0.1 Standardization | ACTIVE | Phase 1.1.18: `get_temperature()` default 0.3->0.1. All TEMPERATURE_PROFILES updated. test_full_pipeline assertions synced. |
+| QWED/OutputGuard Key Sync | ACTIVE | Phase 1.1.18: `output_guard.py` `has_contradiction`->`not is_valid`. `deigma.py` `sync_verify` sets `audit_fail=True` on failure. Dead code eliminated. |
+| SLM Metadata Standardization | ACTIVE | Phase 1.1.21: m:json -> meta:key:value individual tags via _flatten_meta_tags. Backward-compat dual parsing in _normalize_result. |
+| FunctionGemma Router Activation | ACTIVE | Phase 1.1.21: krisis.py _TOOL_DISPATCH_KEYWORDS + is_tool_dispatch_task() detection. sophia.py routes pure tool tasks to functiongemma-270m (0.3 GB, saves 2.6 GB VRAM). |
+| Axis 6 Matryoshka Dim Fix | ACTIVE | Phase 1.1.21: 768->256 dim slicing in semantic_store.py add_memories and search. LanceDB schema mismatch resolved. Crash fixed. |
+| OTL Trajectory Learning | ACTIVE | Phase 1.1.20: 4-phase feedback loop (record -> store -> mine -> optimize). EWMA weight updates, epsilon-greedy exploration. Reward clamp, decay threshold. |
+| SLM Unified Daemon | ACTIVE | Phase 1.1.20: bootstrap.py _STARTUP_REGISTRY + atexit LIFO shutdown. _is_our_slm() port 8765 health check (ours/foreign/none). SLM + Morpheus combined. |
+| Guardian Rollback Workflow | ACTIVE | Phase 1.1.21: Token refresh + write + 35s wait discovered empirically. 4/4 OTL files survived on final attempt after guardian rollback of 3/4. |
+| Gateway 7-Package Refactoring | COMPLETED | Phase 1.1.25: gateway_client.py 919L->276L split into kratos/nomos/ariadne. bootstrap.py 580L->112L split into ananke/hermes_mcp. sophia.py 639L->13L split into telos/. hephaestus.py 330L->47L split into hestia/. |
+| Soph/Hep Mono-Split | COMPLETED | Phase 1.1.25: sophia.py run_draft/run_critique/run_refine extracted to telos package (4 files, 634L). hephaestus.py 16 singleton getters extracted to hestia (3 files, 289L). Backward-compat re-export paths preserved. |
+| Bootstrap Daemon Extraction | COMPLETED | Phase 1.1.25: bootstrap.py LIFO registry/startup/telemetry/shield logic moved to ananke.py (375L). SLM discovery/startup moved to hermes_mcp.py (106L). bootstrap.py now 112L pure CLI entry point. |
 
 ---
 
@@ -769,11 +833,25 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 
 | Version | Date | Summary |
 |---------|------|---------|
+| **1.1.26** | **2026-05-26** | **SLM MCP Repair & K2 Debt Cleanup (6 K2 items cleared, 3 dead files eliminated, SLM MCP fully operational).** 5 SLM ROOT CAUSES fixed (MCP never connected, 3-strike permanent disable, _is_our_slm bug, orphan retry_disabled_sessions, embedding worker race). 104 MCP tools re-registered. K2.2/2.3/2.4: 3 dead files (-90L) folded into existing modules. K2.5: TokenBudgetGuard Axis 4 persistence. K2.9: 8 files duplicate import cleanup. K2.10: BLACKLISTED_MODELS public API. bootstrap.py _is_our_slm restored to function ref. Tests: 16/16 critical PASSED. Mapper: 266 modules, 0 layer violations. |
+| **1.1.25** | **2026-05-26** | **Gateway & Bootstrap Refactoring (7 Greek Packages).** gateway_client.py 919L->276L (kratos/nomos/ariadne). bootstrap.py 580L->112L (ananke/hermes_mcp). sophia.py 639L->13L (telos/). hephaestus.py 330L->47L (hestia/). 7 new packages (kratos/nomos/ariadne/ananke/hermes_mcp/telos/hestia). 27/28 tests PASSED. Mapper: 266 modules, 0 layer violations. |
+| **1.1.24** | **2026-05-25** | **MCP Ecosystem Expansion (Wave 1+2) + Skill Consolidation.** 6 MCP servers active (sequential-thinking, fetch, kg-mem, github, playwright, slm) = 69 tools. 51 skills total. audit skill created (6-phase pipeline, merged autonomous-qa-evals). 5 new MCP skill files. All 5 config files synced. MCP governance rules: tools.md sections 11-15, rules.json RULE-039, AGENTS.md FUNCTIONAL_TOOL_PRIORITY updated. 250 modules, 0 layer violations. |
+| **1.1.23** | **2026-05-25** | **Sovereign HTTP Middleware Proxy + 6 New Skills (gstack-inspired).** FastAPI middleware proxy (port 32556) with Genkit-style 3-layer hooks (before/around/after). AntiLoopCircuitBreaker, Token Budget Middleware, Context Cache Middleware (cache hit short-circuit), Local Repair Middleware (qwen3.5-2b-ud). MODEL_NAME -> gemini-3.5-flash. 4 new middleware files. 6 new skills: review-pipeline, ship-deploy, autoplan, design-suite, browser-qa, safety-guardrails. 250 modules, 44 skills total, 0 layer violations. |
+| **1.1.22** | **2026-05-25** | **Axis Remediation (9-11-13-14-8-4) + DCP Plugin Reinstall.** Axis 9 Turkish keywords, Axis 11 reflection queries, Axis 13 pattern expansion, Axis 14 VisualStore query, Axis 4 weekly_summary reader. cycle_count fix in meta_cognition. Guardian workflow: token refresh + write + 35s wait. 22 packages reinstalled. Mapper: 250 modules, 28141 lines, 0 layer violations. |
+| **1.1.21** | **2026-05-25** | **Gemini Implicit Cache & Metadata Architecture Overhaul.** Axis 12 SQLite cache metrics, Gemini implicit caching integration, prefix/suffix prompt structure. Grup A-F (6 audit groups) completed. SLM metadata m:json->meta:key:value. FunctionGemma router. OTL reward clamping + epsilon decay. Dependency cleanup (29 pkgs, 12 scripts). Tests: 8/8 PASSED. Mapper: 250 modules, 0 layer violations. |
+| **1.1.20** | **2026-05-24** | **Operational Trajectory Learning (OTL).** 4-phase feedback loop: trajectory_store/otl_engine/kosinonia. EWMA weights (alpha=0.15), epsilon-greedy (0.1->0.05). SLM Unified Daemon merge (bootstrap.py + SLM). Weekly mining/optimize scripts. ToolBridge GAP-3 fix (_is_our_slm). Ruff formatter. 250 modules, 28141 LoC. |
+| **1.1.19** | **2026-05-23** | **Local-First Governance & Think Tool Integration.** 37/37 SKILL.md frontmatter (model_role, allowed_tools, tier). System prompt optimized: topography.md+tools.md removed from opencode.json (~40k tokens saved). Think Tool pattern (Governing Rules Injection) in sophia.py. 6 ADR entries ratified. Mapper: 245 modules, 6 circular deps, 0 layer violations. |
+| **1.1.18** | **2026-05-21** | **Gemini 3.5 Flash Integration & 19 Bugfix.** VRAM 9B->4B swap (5 files), Gemini 3.5 Flash caching (genai_manager MODEL_NAME, gateway_client cached_content sync+async), FUNCTIONAL_TOOL_PRIORITY (4 docs), temperature 0.1 default, sophia dict normalizasyon + tier routing, QWED/OutputGuard mismatch fix, test_sophia_routing.py (9 tests). Tests: 22/22 PASSED. |
+| **1.1.9** | **2026-05-19** | **SLM Integration Topography Sync.** `src/architrave/mcp/` package (6 files) documented. SLMClient, MCPSession, MCPRegistry, MCPToolBridge mapped. 7-module dual-path fallback architecture catalogued. Future Features/ADR tables synced. |
+| **1.1.8** | **2026-05-18** | **Content Guard & Test Stability.** `verify_logic_sync()` sync Z3 wrapper. `CLOUD_TOKEN_THRESHOLD` truncation in sync `generate()`. Tests: 4/4 PASSED. Pyright: 0 errors. |
+| **1.1.7** | **2026-05-18** | **A2A Federation & Guarded Client.** GuardedAsyncClient, A2A HMAC verification, 0 layer violations. |
+| **1.1.6** | **2026-05-18** | **SLM Heartbeat & Fallback Hardening (Phase 1.1.5).** SLMHeartbeatCache (15s TTL), retrieval/rerank Ollama+Jina fallback, semantic_store `_is_slm_active()` health check, matryoshka_service SLM→Ollama Nomic auto-fallback. Tests: 8/8 PASSED. |
+| **1.1.5** | **2026-05-19** | **SLM MCPSession Zombie Remediation (Phase 1.1.9).** `_shutdown_async` timeout=5.0s, CancelledError handling, running guards in polling loops. Zero zombie process leakage verified. |
 | **1.1.0** | **2026-05-17** | **Crash Recovery & Security Hardening.** ainvoke(None) checkpoint resume in control_handoff.py. Morpheus->Axis 7 log_system_event integration in sweeper.py. SHA-256 hash migration in ast_parser.py. Subprocess whitelist in local_runtime.py _validate_path. 18/18 tests PASSED. 0 layer violations. |
 | **1.0.27.1** | **2026-05-16** | **Overload & Import Closure.** round/join overload fix (meta_cognition, sophia, local_runtime). Null-check standardization (deigma, theoria). ddgs→duckduckgo_search websearch fix. langgraph-checkpoint-sqlite pip install. Pyright: 0 errors. |
 | **1.0.28.3** | **2026-05-15** | **Mapper Hardening.** Relative import resolution in AST parser. LAYER_RULES whitelist for 17 intentional cross-layer deps. Dead code reduced from 22 to 1 (websearch). Layer violations from 20 to 3. file_changelog.py removed. L0_AUTH_TOKEN compliance enforced. |
 | **1.0.28.2** | **2026-05-15** | **GLiNER2 Optimizations.** B1 Schema Hardening: 11 entity labels (Person, Organization, Location, Date, Time, Money, Percent, Product, Event, Facility, GPE). B2 Scavenger Mode: tool output -> reflection_store. B3 Constraint Guardian: GLiNER2 violation detection in deigma. B4 Stability >0.98. |
-| **1.0.28.1** | **2026-05-15** | **GLiNER2 Integration + L0 Cleanup.** spatial_context removed from GraphState. EntityExtractor wired to elenchos (critique) + theoria (reflection). 4 DB entities confirmed. |
+| **1.1.1** | **2026-05-15** | **GLiNER2 Integration + L0 Cleanup.** spatial_context removed from GraphState. EntityExtractor wired to elenchos (critique) + theoria (reflection). 4 DB entities confirmed. |
 | **1.0.27** | **2026-05-16** | **Pyright Remediation.** 106→5 errors. P0 runtime fixes (loader subprocess, observability logger, deigma draft/retry_count, gateway_client assert). P1 stale import clean (4 script/test, sync_governance type guard). pyrightconfig exclude noise suppression (projects, scratch, logs, agent, tests). |
 | **1.0.24** | **2026-05-14** | **Hardening Sovereign Math Pipeline.** 7 specialized models integrated. Asynchronous verify_math_llm refactor. Morpheus pre_model_load integration. partial_correction bridge in Clotho. Secure Sympy parse_expr migration. Axis 11 logic_score priority in SelfTuner. |
 | **1.0.23** | **2026-05-14** | **Neuro-Symbolic Cognitive Pipeline.** 4-stage verification chain (AST -> QWED -> Math -> Z3). Phi-4 Mini logic extraction to SMT-LIB2. Fail-closed policy for UNSAT results. |
@@ -820,5 +898,5 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 ---
 
 *Created by Antigravity (Phantom Logos)*
-*Last Updated: 2026-05-17 [01:04 AM PT]*
-*Status: v1.1.0 Stable - Crash Recovery & Security Hardening - 0 Layer Violations, System STABLE*
+*Last Updated: 2026-05-26 [06:00 PM PT]*
+*Status: v1.1.27 - SLM Daemon Stability (formatter crash fixed, embedding OSError bypassed, run_morpheus.bat rewritten), 0 Layer Violations, System STABLE*

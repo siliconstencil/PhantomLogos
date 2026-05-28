@@ -1,5 +1,6 @@
-from src.lachesis.mapper.graph_manager import CodebaseMapper
 from src.lachesis.mapper.ast_parser import ASTParser
+from src.lachesis.mapper.graph_manager import CodebaseMapper
+
 
 def test_axis_mapping_logic():
     # Test specific module names
@@ -12,21 +13,23 @@ def test_axis_mapping_logic():
     assert ASTParser._resolve_axis("random_module") is None
     print("\n[SUCCESS] Axis mapping logic verified.")
 
+
 def test_mapper_report_axis():
     mapper = CodebaseMapper()
     # Fake index some core files if not already cached
     mapper.index_file("D:\\Hank\\src\\clotho\\orchestrator.py", force=True)
     report = mapper.generate_report()
-    
+
     found_axis = False
     for mod in report["modules"]:
         if mod["module"] == "src.clotho.orchestrator":
             assert mod["axis"] == 2
             found_axis = True
             break
-    
+
     assert found_axis, "Could not find src.clotho.orchestrator in report"
     print("[SUCCESS] Mapper report contains Axis labels.")
+
 
 if __name__ == "__main__":
     test_axis_mapping_logic()

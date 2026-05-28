@@ -4,6 +4,15 @@ description: High-performance code generation following clean architecture and S
 version: 1.1.0
 license: MIT
 compatibility: opencode
+model_role: primary
+allowed_tools:
+  - semantic
+  - write_file
+  - replace_content
+  - run_code
+  - mcp_slm_remember
+  - mcp_slm_recall
+tier: 2
 when_to_use:
   - User requests a new feature implementation.
   - Refactoring existing code for better performance or modularity.

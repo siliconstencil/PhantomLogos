@@ -4,6 +4,13 @@ description: Autonomous tool failure recovery and fallback execution protocols.
 version: 1.0.0
 license: MIT
 compatibility: opencode
+model_role: light
+allowed_tools:
+  - report
+  - semantic
+  - mcp_slm_remember
+  - mcp_slm_observe
+tier: 1
 when_to_use:
   - Tool execution returns an error (e.g., Permission Denied, File Not Found).
   - Environment mismatch detected during runtime.
@@ -17,7 +24,8 @@ metadata:
 Enables agents to diagnose tool failures and attempt alternative paths (Plan B) without halting the session. Implements the Sovereign 3-Strike Rule with Axis 7 Operational Audit integration.
 
 ## Workflow
-1.  **Diagnose**: Categorize the error as `Transient` (retryable), `Environmental` (path/config mismatch), or `Logical` (hallucination/syntax error).
+1.  **Diagnose**: Categorize the error as `Transient` (retryable), `Environmental` (path/config mismatch), or `Logical` (hallucination/syntax/logic error).
+    - **For `Logical` errors:** Delegate immediately to the `investigate` skill (5-phase root-cause protocol). Do not attempt a fix before root cause is confirmed. [SRC:axis_10]
 2.  **Audit Strike Count**: Query the `OperationalStore` (Axis 7) to retrieve the strike counter for the current goal.
 3.  **Execute Fallback Cascade**:
     - **Strike 1 (Soft Retry)**: Retry with normalized parameters, cleared cache, or directory anchoring fix.

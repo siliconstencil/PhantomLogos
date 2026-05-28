@@ -1,5 +1,3 @@
-from . import sophia
-from . import mnemosyne
-from . import morpheus
+from . import mnemosyne, morpheus, sophia
 
-__all__ = ["sophia", "mnemosyne", "morpheus"]
+__all__ = ["mnemosyne", "morpheus", "sophia"]

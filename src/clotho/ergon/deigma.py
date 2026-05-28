@@ -2,9 +2,22 @@ import asyncio
 import re
 from typing import Any
 
+from cognition.sophia.eidos import ConstraintValidationResult, ConstraintViolation
+from src.architrave import GatewayArchitrave
 from src.utils.logging_config import setup_logger
 
+from .koinonia import record_step
+
 logger = setup_logger(__name__)
+
+_gateway_instance = None
+
+
+def _get_gateway():
+    global _gateway_instance
+    if _gateway_instance is None:
+        _gateway_instance = GatewayArchitrave()
+    return _gateway_instance
 
 
 async def extract_logic_llm(draft: str) -> str:
@@ -30,7 +43,7 @@ SMT-LIB2:"""
 
         client = get_ollama_client()
         model = resolve_local_model("critique", "primary")
-        resp = await client.generate(model=model, prompt=prompt)
+        resp = await asyncio.wait_for(client.generate(model=model, prompt=prompt), timeout=30.0)
         return (resp.response or "").strip().replace("```smt2", "").replace("```", "")
     except Exception as e:
         logger.warning(f"deigma: Logic extraction failed ({e})")
@@ -54,9 +67,9 @@ async def verify_node(state: Any):
         from src.lachesis.verifiers.llm_engine import LLMMathEngine
         from src.lachesis.verifiers.qwed_engine import QWEDEngine
 
-        verifier = SympyVerifier()  # Legacy support
+        SympyVerifier()  # Legacy support
         qwed = QWEDEngine()
-        math_engine = LLMMathEngine()
+        LLMMathEngine()
         guard = get_output_guard()
 
         # Step 1: OutputGuard (BA-01 & Safety)
@@ -73,6 +86,9 @@ async def verify_node(state: Any):
 
             qwed_expert = QWEDEngine(model=get_qwed_models()["fallback"])
             audit = qwed_expert.audit_code_logic(draft)
+        # Set audit_fail based on logic_score after expert fallback
+        if audit.get("logic_score", 0.0) < 0.6 or not audit.get("is_valid", False):
+            audit["audit_fail"] = True
         return audit
 
     # Core checks in sync pool (BA-01 & QWED)
@@ -105,38 +121,78 @@ async def verify_node(state: Any):
                 "memory_sync": False,
             }
 
-    # Layer 4: Constraint Guardian - Determinisitic rule verification via GLiNER2
+    await asyncio.to_thread(record_step, state, "verify")
+    # Layer 4: Constraint Guardian - Pydantic structured output via response_schema with fallback
+    violation_result = None
     try:
-        from src.architrave.entity_extractor import EntityExtractor
-        extractor = EntityExtractor()
-        extract_res = await asyncio.to_thread(extractor.extract_unified, draft)
-        
-        constraints = [e["text"] for e in extract_res.get("entities", []) if e["type"] == "constraint"]
-        if constraints:
-            logger.info(f"deigma: Detected {len(constraints)} constraints in draft. Verifying...")
-            # For each constraint, check if it's violated in the draft (simple keyword search for now)
-            violations = []
-            for c in constraints:
-                # Rule: "NO_EMOJI" or "No emojis"
-                if "emoji" in c.lower() and re.search(r"[\U00010000-\U0010ffff]", draft):
-                    violations.append(f"Emoji constraint violation: {c}")
-                # Rule: "7GB VRAM"
-                if "vram" in c.lower() and "7" in c and re.search(r"\b[8-9]\s*GB\b|\b[1-9][0-9]\s*GB\b", draft):
-                     violations.append(f"VRAM constraint violation: {c}")
+        gw = _get_gateway()
+        if gw.client is not None:
+            resp = await asyncio.wait_for(
+                gw.generate_async(
+                    prompt=f"Analyze the following draft for constraint violations.\nDraft:\n{draft}",
+                    system_instruction="You are a constraint validation system. Check the draft against known system constraints: NO_EMOJI (no emoji characters), 7GB VRAM limit, BA-01 Turkish communication for L0, ASCII-only code, and no hallucinated tool calls. Return structured violation results.",
+                    response_schema=ConstraintValidationResult,
+                    response_mime_type="application/json",
+                ),
+                timeout=30.0,
+            )
+            if resp and hasattr(resp, "text") and resp.text:
+                validation = ConstraintValidationResult.model_validate_json(resp.text)
+                violation_result = validation
+    except Exception:
+        logger.info("deigma: Gateway constraint validation unavailable, using local fallback...")
 
-            if violations:
-                logger.warning(f"deigma: Constraint Guardian REJECTED draft: {violations}")
-                return {
-                    "partial_correction": {
-                        "error_type": "axis_11_constraint",
-                        "details": f"Deterministic rule violation: {', '.join(violations)}",
-                        "hint": "Ensure your output strictly follows all system constraints and NO_EMOJI rules.",
-                    },
-                    "verification_retry": retry_count + 1,
-                    "memory_sync": False,
-                }
-    except Exception as e_guard:
-        logger.warning(f"deigma: Constraint Guardian failed ({e_guard})")
+    if violation_result is None:
+        try:
+            from src.architrave.entity_extractor import EntityExtractor
+
+            extractor = EntityExtractor()
+            extract_res = await asyncio.to_thread(extractor.extract_unified, draft)
+
+            raw_constraints = [
+                e["text"] for e in extract_res.get("entities", []) if e["type"] == "constraint"
+            ]
+            violations = []
+            if raw_constraints:
+                for c in raw_constraints:
+                    if "emoji" in c.lower() and re.search(r"[\U00010000-\U0010ffff]", draft):
+                        violations.append(
+                            ConstraintViolation(
+                                constraint=c, severity="critical", detail="Emoji detected in output"
+                            )
+                        )
+                    if (
+                        "vram" in c.lower()
+                        and "7" in c
+                        and re.search(r"\b[8-9]\s*GB\b|\b[1-9][0-9]\s*GB\b", draft)
+                    ):
+                        violations.append(
+                            ConstraintViolation(
+                                constraint=c, severity="critical", detail="VRAM limit exceeded"
+                            )
+                        )
+            violation_result = ConstraintValidationResult(
+                is_valid=len(violations) == 0,
+                violations=violations,
+                confidence=0.8,
+            )
+        except Exception as e_guard:
+            logger.warning(f"deigma: Constraint Guardian fallback failed ({e_guard})")
+
+    if violation_result and not violation_result.is_valid:
+        details = "; ".join(
+            f"[{v.severity}] {v.constraint}: {v.detail}" for v in violation_result.violations
+        )
+        logger.warning(f"deigma: Constraint Guardian REJECTED draft: {details}")
+        return {
+            "partial_correction": {
+                "error_type": "axis_11_constraint",
+                "details": details,
+                "hint": "Ensure your output strictly follows all system constraints and NO_EMOJI rules.",
+            },
+            "verification_retry": retry_count + 1,
+            "memory_sync": False,
+        }
 
     # Step 4: Z3 SAT Bridge (Async due to LLM extraction) [TIER 1.2 FIX]
     smt_problem = await extract_logic_llm(draft)
@@ -166,3 +222,4 @@ async def verify_node(state: Any):
         "verification_retry": retry_count,
         "selected_model_tier": suggested_tier,
     }
+    # Fall-through: return at end of function

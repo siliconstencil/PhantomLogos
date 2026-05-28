@@ -4,6 +4,16 @@ description: Engages in deep inquiry, hypothesis testing, and identification of 
 version: 1.1.0
 license: MIT
 compatibility: opencode
+model_role: expert
+allowed_tools:
+  - ls
+  - mapper
+  - semantic
+  - report
+  - verify
+  - mcp_slm_recall
+  - mcp_slm_search
+tier: 3
 when_to_use:
   - Task is complex, ambiguous, or underspecified.
   - Strategic depth is required before committing to a plan.
@@ -11,11 +21,6 @@ metadata:
   audience: architects
   tier: L1-Sophia
   workflow: analysis
-allowed-tools:
-  - ls
-  - mapper
-  - semantic
-  - report
 ---
 
 # Socratic Analyst Skill

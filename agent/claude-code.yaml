@@ -1,0 +1,83 @@
+id: claude-code
+name: Claude Code CLI
+version: 1.0.0
+description: "Sovereign cloud orchestrator. Operates as L1 strategist (Sophia role) and spawns Claude sub-agents as L2 executor (Clotho role) via Agent tool. Triggered for complexity > 0.8 or when local models fail after 3-strike escalation."
+capability: orchestration
+
+model:
+  primary: claude-sonnet-4-6
+  fallback: claude-haiku-4-5-20251001
+
+tier_config:
+  tier: expert
+  model: cloud-gateway
+
+# Claude Code natively handles both roles via Agent tool spawn
+multi_agent:
+  mode: native
+  orchestrator_role: sophia      # This instance = L1 strategist
+  executor_role: clotho          # Sub-agent spawned via Agent tool = L2 executor
+  parallel: true                 # Sub-agents can run in parallel
+
+entry_point: cli
+interface: claude-code-cli
+bridge: hermes                   # Routes through Hermes for cross-system sync
+
+response_format: markdown
+temperature: 0.1                 # Low for deterministic orchestration
+max_iterations: 10
+
+activation_criteria:
+  complexity_threshold: 0.8      # RuFlow Tier 3 gate
+  escalation_trigger: strike_3   # 3-strike rule exhausted on local models
+  explicit_l0_request: true      # Hank directly opens Claude Code
+
+skills:
+  # Orchestration
+  - agent-orchestrator
+  - ruflow-tier-routing
+  - sprint-contract
+  - socratic-analyst
+  # Execution (via sub-agent)
+  - code-generation
+  - file-operations
+  - codebase-topography-analysis
+  - error-self-recovery
+  # Memory
+  - mnemosyne-high-fidelity-query
+  - mnemosyne-write-path
+  - 14-axis-memory
+  # Security & Audit
+  - security-audit
+  - security-first-guardian
+
+memory_axes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+
+# Sub-agent role definitions (spawned via Agent tool)
+sub_agents:
+  clotho_runner:
+    role: executor
+    subagent_type: claude
+    model: claude-sonnet-4-6
+    skills:
+      - code-generation
+      - file-operations
+      - error-self-recovery
+    memory_axes: [2, 7]
+  lachesis_auditor:
+    role: auditor
+    subagent_type: claude
+    model: claude-sonnet-4-6
+    skills:
+      - security-audit
+      - autonomous-qa-evals
+      - logic-deadlock-resolver
+    memory_axes: [5, 10, 11]
+
+guardrails:
+  - emoji_ban
+  - ba01_protocol
+  - l0_auth_required           # Write ops require L0_AUTH_TOKEN
+  - vram_exempt                # Cloud model, no VRAM constraint
+  - cost_gate                  # Most expensive model — use last
+  - three_strike_only          # Do not use if local tier can handle it

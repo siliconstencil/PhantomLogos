@@ -52,6 +52,24 @@ async def get_dynamic_context(
     Dynamic context contains task-specific and rapidly changing axes.
     """
     cache_key = f"{agent_id}:{task_hint[:40]}:{session_id}"
+
+    # [SRC:axis_12] Query disk-based cache first
+    try:
+        import hashlib
+
+        from src.architrave.context_cache import ContextCacheStore
+
+        hashed_key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
+        disk_cache = ContextCacheStore(start_sweep=False)
+        cached_val = disk_cache.get_by_key(hashed_key)
+        if cached_val:
+            data = json.loads(cached_val)
+            res = (data["stable_context"], data["dynamic_context"], data["block_signal"])
+            _context_cache_local[cache_key] = res
+            return res
+    except Exception as e:
+        logger.warning(f"Gnosis: ContextCacheStore lookup failed ({e})")
+
     if cache_key in _context_cache_local:
         _context_cache_local.move_to_end(cache_key)
         return _context_cache_local[cache_key]
@@ -116,7 +134,7 @@ async def get_dynamic_context(
 
     try:
         # Dynamic Axes (Session/Task specific)
-        dynamic_context.append(_build_axis_1(session_id))
+        dynamic_context.append(await _build_axis_1(session_id))
         dynamic_context.append(_build_axis_2())
         dynamic_context.append(_build_axis_3())
         dynamic_context.append(_build_axis_4(session_id))
@@ -126,7 +144,7 @@ async def get_dynamic_context(
 
         # [SRC:axis_8] Failure Memory & Meta-Cognition Recall (P3)
         fail_str, block_signal = await _build_axis_8_failures(task_hint, embedding_vec)
-        dynamic_context.append(_build_axis_8_meta(session_id))
+        dynamic_context.append(await _build_axis_8_meta(session_id))
         dynamic_context.append(fail_str)
         dynamic_context.append(_build_axis_14(session_id))
 
@@ -134,7 +152,7 @@ async def get_dynamic_context(
         stable_context.append(_build_axis_9(session_id, task_hint))
         stable_context.append(_build_axis_10(agent_id))
         stable_context.append(_build_axis_11())
-        stable_context.append(_build_axis_12())
+        stable_context.append(_build_axis_12(session_id))
         stable_context.append(_build_axis_13())
     except Exception as e:
         logger.warning(f"Gnosis: Memory Axis retrieval partially failed ({e})")
@@ -147,7 +165,33 @@ async def get_dynamic_context(
     sliced_stable = pruner.slice_context_window(stable_str, "task")  # Static part should be small
     sliced_dynamic = pruner.slice_context_window(dynamic_str, "reasoning")
 
+    # Budget-Gate (Yeni)
+    if pruner.budget_exceeded and not block_signal.get("block"):
+        block_signal["block"] = True
+        block_signal["reason"] = "Daily token budget exceeded"
+        block_signal["fallback_model"] = "qwen3.5-4b-ud:latest"
+
     result = (sliced_stable, sliced_dynamic, block_signal)
+
+    # [SRC:axis_12] Store in disk-based cache
+    try:
+        import hashlib
+
+        from src.architrave.context_cache import ContextCacheStore
+
+        hashed_key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
+        disk_cache = ContextCacheStore(start_sweep=False)
+        serialized_val = json.dumps(
+            {
+                "stable_context": sliced_stable,
+                "dynamic_context": sliced_dynamic,
+                "block_signal": block_signal,
+            }
+        )
+        disk_cache.set_by_key(hashed_key, serialized_val, ttl_seconds=3600)
+    except Exception as e:
+        logger.warning(f"Gnosis: ContextCacheStore population failed ({e})")
+
     _context_cache_local[cache_key] = result
     if len(_context_cache_local) > _MAX_CACHE_ENTRIES:
         _context_cache_local.popitem(last=False)

@@ -7,7 +7,13 @@ from datetime import datetime
 
 from src.utils.logging_config import setup_logger
 
-from .snapshot_manager import IGNORE_DIRS, WATCH_DIRS, WATCH_PATTERNS, SnapshotManager
+from .snapshot_manager import (
+    IGNORE_DIRS,
+    WATCH_DIRS,
+    WATCH_PATTERNS,
+    WHITELIST_FILES,
+    SnapshotManager,
+)
 
 logger = setup_logger(__name__)
 
@@ -18,7 +24,7 @@ class PollingGuardian:
     [SRC:axis_11] Enforces absolute L0 authorization for all system mutations. [HH:MM AM/PM PT]
     """
 
-    def __init__(self, project_root: str | None = None):
+    def __init__(self, project_root: str | None = None) -> None:
         from src.utils.project_path import get_project_root
 
         self.project_root = (
@@ -37,7 +43,7 @@ class PollingGuardian:
                 return True
         return False
 
-    def _update_system_status(self, status: str, details: dict | None = None):
+    def _update_system_status(self, status: str, details: dict | None = None) -> None:
         """Atomic update of the system status flag for agent awareness."""
         status_path = os.path.join(self.project_root, "data/system_status.json")
         os.makedirs(os.path.dirname(status_path), exist_ok=True)
@@ -59,7 +65,7 @@ class PollingGuardian:
                     continue
                 logger.error(f"Guardian: Status update failed ({e})")
 
-    def _log_violation(self, rel_path: str, reason: str):
+    def _log_violation(self, rel_path: str, reason: str) -> None:
         """Log sovereign violations to both file and Mnemosyne axes."""
         log_path = os.path.join(self.project_root, "logs/system/watchdog/integrity_violations.log")
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
@@ -93,6 +99,12 @@ class PollingGuardian:
                 vram_gb=0,
                 extra={"rel_path": rel_path, "reason": reason, "rollback": True},
             )
+            try:
+                from cognition.sophia.hephaestus import _get_meta
+
+                _get_meta().adjust_reliability("sophia", -0.15, "watchdog_rollback")
+            except Exception as exc:
+                logger.warning("MetaCognitionStore reliability update failed: %s", exc)
         except Exception as e:
             logger.error(f"Sovereign Shield: Mnemosyne sync failed ({e})")
 
@@ -111,10 +123,11 @@ class PollingGuardian:
         path_key = rel_path.lower().replace("\\", "/")
 
         if not os.path.exists(full_path):
-            if not self._is_l0_authorized():
-                if self.manager.restore_file(rel_path):
-                    self._log_violation(rel_path, "Unauthorized deletion")
-                    return True
+            if rel_path in WHITELIST_FILES:
+                return False
+            if not self._is_l0_authorized() and self.manager.restore_file(rel_path):
+                self._log_violation(rel_path, "Unauthorized deletion")
+                return True
             return False
 
         try:
@@ -134,15 +147,14 @@ class PollingGuardian:
                     (path_key,),
                 ).fetchone()
 
-                if row:
-                    if current_hash != row[0]:
-                        if not self._is_l0_authorized():
-                            logger.error(
-                                f"[SOVEREIGN VIOLATION] {rel_path}: Mutation detected. ROLLBACK!"
-                            )
-                            self.manager.restore_file(rel_path)
-                            self._log_violation(rel_path, "Unauthorized mutation (Hash mismatch)")
-                            return True
+                if row and current_hash != row[0] and not self._is_l0_authorized():
+                    if rel_path in WHITELIST_FILES:
+                        self.manager.take_snapshot(rel_path)
+                        return False
+                    logger.error(f"[SOVEREIGN VIOLATION] {rel_path}: Mutation detected. ROLLBACK!")
+                    self.manager.restore_file(rel_path)
+                    self._log_violation(rel_path, "Unauthorized mutation (Hash mismatch)")
+                    return True
 
                 self.manager.take_snapshot(rel_path)
                 return False
@@ -150,7 +162,7 @@ class PollingGuardian:
             logger.error(f"Guardian check error [{rel_path}]: {e}")
             return False
 
-    def run(self):
+    def run(self) -> None:
         logger.info(f"Polling Integrity Guardian (SHA-256) active on: {self.project_root}")
         cycle_count = 0
         while True:

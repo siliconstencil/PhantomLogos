@@ -1,0 +1,62 @@
+{
+  "enableAllProjectMcpServers": true,
+  "autoCompactEnabled": true,
+  "autoCompactWindow": 150000,
+  "fileCheckpointingEnabled": true,
+  "defaultShell": "powershell",
+  "tui": "fullscreen",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "& 'D:\\Hank\\.claude\\hooks\\check-careful.ps1'",
+            "shell": "powershell",
+            "statusMessage": "Checking for destructive commands..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "& 'D:\\Hank\\.claude\\hooks\\check-freeze.ps1'",
+            "shell": "powershell",
+            "statusMessage": "Checking freeze boundary..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "& 'D:\\Hank\\.claude\\hooks\\check-freeze.ps1'",
+            "shell": "powershell",
+            "statusMessage": "Checking freeze boundary..."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(python scripts/health_check_14_axes.py)",
+      "Bash(python scripts/morpheus_flush.py)",
+      "Bash(python scripts/create_l0_token.py)",
+      "Bash(python scripts/seed_14_axes.py)",
+      "Bash(python scripts/seed_semantic.py)",
+      "Bash(python scripts/hermes_cli.py*)",
+      "Bash(python scripts/sovereign_audit.py*)",
+      "Bash(alembic upgrade head)",
+      "Bash(alembic revision --autogenerate*)",
+      "Bash(pytest tests/*)",
+      "Bash(ruff check .)",
+      "Bash(ruff format .)",
+      "Bash(mypy src/)"
+    ]
+  }
+}

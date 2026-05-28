@@ -14,14 +14,14 @@ class AnchorGenerator:
     Uses Lachesis (SpatialStore) for codebase graph, not raw os.walk.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.rational_store = MnemosyneRationalStore()
         self._spatial = SpatialStore()
         self.mapper = CodebaseMapper(
             project_path=str(get_project_root()), spatial_store=self._spatial
         )
 
-    def generate_atomic_anchors(self):
+    def generate_atomic_anchors(self) -> None:
         """Generates atomic anchor fragments and stores them in Axis 12 ContextCache."""
         print("Generating Ankyra Atomic Anchors...")
 

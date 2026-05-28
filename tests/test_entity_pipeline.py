@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -32,15 +32,15 @@ async def test_relation_logic_stub():
     extractor = EntityExtractor()
     test_text = "JWT token expires in 30 minutes."
 
-    with patch.object(EntityExtractor, "extract_unified") as mock_unified:
-        mock_unified.return_value = {
-            "entities": [
-                {"text": "JWT", "type": "tech_term"},
-                {"text": "30 minutes", "type": "duration"},
-            ],
-            "relations": [{"s": "JWT", "p": "expires_in", "o": "30 minutes"}],
-        }
-        # In current implementation, extract_relations_batch calls extract_unified
-        relations = await extractor.extract_relations_batch(test_text, [], None)
+    with patch("src.utils.ollama_utils.get_ollama_client") as mock_get_client:
+        mock_client = AsyncMock()
+        mock_client.generate = AsyncMock(
+            return_value=MagicMock(response='[{"s": "JWT", "p": "expires_in", "o": "30 minutes"}]')
+        )
+        mock_get_client.return_value = mock_client
+        relations = await extractor.extract_relations_batch(
+            test_text,
+            [{"text": "JWT", "type": "tech_term"}, {"text": "30 minutes", "type": "duration"}],
+        )
         assert len(relations) == 1
         assert relations[0]["p"] == "expires_in"

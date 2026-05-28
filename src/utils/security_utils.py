@@ -17,7 +17,7 @@ except ImportError:
 SERVICE_NAME = "PhantomLogos"
 
 
-def load_secrets_to_env():
+def load_secrets_to_env() -> None:
     """
     Loads critical API keys into os.environ.
     Hierarchy:

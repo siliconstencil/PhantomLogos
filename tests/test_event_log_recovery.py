@@ -1,7 +1,10 @@
-import pytest
 import uuid
-from cognition.mnemosyne.session_log import SessionLog
+
+import pytest
+
 from cognition.mnemosyne.episodic_store import EpisodicStore
+from cognition.mnemosyne.session_log import SessionLog
+
 
 # [SRC:axis_4]
 @pytest.mark.asyncio
@@ -15,12 +18,14 @@ async def test_session_log_append_and_get():
     assert history[0]["type"] == "task.start"
     assert history[1]["type"] == "tool.call"
 
+
 @pytest.mark.asyncio
 async def test_session_log_wake_new():
     log = SessionLog("test_recovery_new")
     result = log.wake()
     assert result["status"] == "new"
     assert result["last_seq"] == -1
+
 
 @pytest.mark.asyncio
 async def test_session_log_wake_recovered():
@@ -31,6 +36,7 @@ async def test_session_log_wake_recovered():
     assert result["status"] == "recovered"
     assert result["last_seq"] >= 0
     assert result["event_count"] >= 2
+
 
 @pytest.mark.asyncio
 async def test_session_log_compact():
@@ -43,6 +49,7 @@ async def test_session_log_compact():
     assert result["event_count"] >= 20
     assert result["truncated"] is True
     assert "Tools used" in result["summary"]
+
 
 @pytest.mark.asyncio
 async def test_event_model_persists():

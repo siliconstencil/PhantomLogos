@@ -7,12 +7,11 @@ MODEL_SETS = {
         "models": ["smollm3-3b:latest", "qwq-math-io-500m:latest"],
         "strategy": "all_at_once",
     },
-    "expert_reasoning": {"models": ["qwen3.5-9b-ud:latest"], "strategy": "all_at_once"},
+    "expert_reasoning": {"models": ["qwen3.5-4b-ud:latest"], "strategy": "all_at_once"},
 }
 
 # [Phase 1.0.24] Updated Eviction Order (Heavy to Light)
 EVICTION_ORDER = [
-    "qwen3.5-9b-ud:latest",  # Heavy expert (6.0 GB)
     "deepseek-r1-8b:latest",  # Heavy expert (5.1 GB)
     "deepseek-r1-qwen3-8b:latest",  # Heavy expert (5.1 GB)
     "qwen2.5-math-7b-q4:latest",  # Math high (4.7 GB)
@@ -30,4 +29,8 @@ EVICTION_ORDER = [
     "qwq-math-io-500m:latest",  # Math bridge (0.4 GB)
     "nomic-embed-text-v2-moe-q8:latest",  # Embeddings (0.5 GB)
     "tinyllama:latest",  # OOM Recovery (0.7 GB)
+]
+
+CORE_MODELS = [
+    "tinyllama:latest",
 ]

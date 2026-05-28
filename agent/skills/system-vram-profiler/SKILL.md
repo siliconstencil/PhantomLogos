@@ -4,13 +4,13 @@ description: Predictive VRAM and NGL analysis for local model optimization.
 version: 1.0.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Planning a task that requires switching model tiers.
-  - Periodic system health checks to ensure 7.0 GB hygiene.
-metadata:
-  audience: system-admins
-  tier: Morpheus
-  workflow: profiling
+model_role: primary
+allowed_tools:
+- vram
+- report
+- mcp_slm_remember
+- run_code
+tier: 2
 ---
 # Skill: System VRAM Profiler (Sovereign Edition)
 

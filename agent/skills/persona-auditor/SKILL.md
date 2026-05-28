@@ -4,6 +4,15 @@ description: Specializes in process analysis, quality control, and reporting of 
 version: 1.1.0
 license: MIT
 compatibility: opencode
+model_role: primary
+allowed_tools:
+  - ls
+  - mapper
+  - report
+  - verify
+  - semantic
+  - mcp_slm_recall
+tier: 2
 when_to_use:
   - Post-task audits and safety reviews.
   - Verifying structural sustainability and architectural debt.
@@ -11,10 +20,6 @@ metadata:
   audience: developers
   tier: L3-Auditor
   workflow: audit
-allowed-tools:
-  - ls
-  - mapper
-  - report
 ---
 
 # Persona: Auditor (The Analyst)

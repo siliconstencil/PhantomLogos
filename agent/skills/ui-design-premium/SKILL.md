@@ -4,17 +4,14 @@ description: Designs and implements modern, premium, and aesthetic web interface
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - User requests a "wow" factor or premium aesthetics.
-  - Starting a new frontend project or revamping an existing UI.
-metadata:
-  audience: designers
-  tier: L2-Runner
-  workflow: frontend
-allowed-tools:
-  - vision
-  - shell
+model_role: primary
+allowed_tools:
+- write_file
+- vision
+- ls
+- run_code
+- mcp_slm_remember
+tier: 2
 ---
-
 # Premium UI Design Skill
 Implements state-of-the-art web design with rich aesthetics and micro-animations.

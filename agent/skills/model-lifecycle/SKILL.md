@@ -4,15 +4,14 @@ description: Managing local model loading, offloading, and flushing to optimize 
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Switching between heavy models (e.g., Vision to Reasoning).
-  - VRAM usage exceeds 6.0 GB threshold.
-metadata:
-  audience: developers
-  tier: L1-Morpheus
-  workflow: resource-management
+model_role: primary
+allowed_tools:
+- vram
+- run_code
+- ls
+- mcp_slm_remember
+tier: 2
 ---
-
 # Skill: Model Lifecycle
 
 Optimizes VRAM usage through proactive loading and offloading of local models.

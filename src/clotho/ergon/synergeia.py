@@ -3,6 +3,8 @@ from typing import Any
 
 from src.utils.logging_config import setup_logger
 
+from .koinonia import record_step
+
 logger = setup_logger(__name__)
 
 
@@ -24,6 +26,7 @@ async def tool_exec_node(state: Any):
     # Phase 1.0.29: Local Tool Needs Classification (FunctionGemma)
     try:
         from src.clotho.krisis import classify_tool_needs
+
         needs = await classify_tool_needs(task)
         logger.info(f"ergon: Task classification: {needs}")
     except Exception as e:
@@ -38,27 +41,44 @@ async def tool_exec_node(state: Any):
         whitelist = set(agent.tools if agent else [])
     except Exception as e:
         logger.error(f"ergon: tool_exec_node agent load failed ({e})")
-        whitelist = {"ls", "semantic", "vram", "report", "write_file", "replace_content", "run_code", "vision", "verify", "prune", "skill"}
+        whitelist = {
+            "ls",
+            "semantic",
+            "vram",
+            "report",
+            "write_file",
+            "replace_content",
+            "run_code",
+            "vision",
+            "verify",
+            "prune",
+            "skill",
+        }
 
-    READ_ONLY_TOOLS = {"ls", "semantic", "report", "vram", "vision", "verify", "prune"}
+    READ_ONLY_TOOLS = {"ls", "semantic", "report", "vram", "vision", "verify", "prune"}  # noqa: N806
     bridge = ToolBridge(session_id, agent_id=agent_id)
     new_results = []
 
     # Separate calls into Parallel (Read-Only) and Sequential (Side-Effect)
     parallel_calls = []
     sequential_calls = []
-    
+
     priority_tools = set()
-    if needs.get("needs_search"): priority_tools.update({"semantic", "report"})
-    if needs.get("needs_vision"): priority_tools.add("vision")
-    if needs.get("needs_file_ops"): priority_tools.update({"write_file", "replace_content", "run_code"})
+    if needs.get("needs_search"):
+        priority_tools.update({"semantic", "report"})
+    if needs.get("needs_vision"):
+        priority_tools.add("vision")
+    if needs.get("needs_file_ops"):
+        priority_tools.update({"write_file", "replace_content", "run_code"})
 
     for call in tool_calls:
         tool = call.get("tool")
         if tool not in whitelist:
-            new_results.append({"tool": tool, "input": call.get("input"), "output": "Error: Unauthorized."})
+            new_results.append(
+                {"tool": tool, "input": call.get("input"), "output": "Error: Unauthorized."}
+            )
             continue
-        
+
         if tool in READ_ONLY_TOOLS:
             # Sort prioritized read-only tools to the front
             if tool in priority_tools:
@@ -82,7 +102,9 @@ async def tool_exec_node(state: Any):
                 last_err = e
                 if attempt < max_retries:
                     wait = 0.5 * (attempt + 1)
-                    logger.warning(f"ergon: Tool '{tool_name}' failed (attempt {attempt+1}/{max_retries+1}). Retrying in {wait}s...")
+                    logger.warning(
+                        f"ergon: Tool '{tool_name}' failed (attempt {attempt + 1}/{max_retries + 1}). Retrying in {wait}s..."
+                    )
                     await asyncio.sleep(wait)
         return f"Error after {max_retries} retries: {last_err}"
 
@@ -91,8 +113,10 @@ async def tool_exec_node(state: Any):
         logger.info(f"ergon: Parallel execution for {len(parallel_calls)} tools.")
         tasks = [execute_with_retry(c.get("tool"), c.get("input")) for c in parallel_calls]
         results = await asyncio.gather(*tasks)
-        for call, output in zip(parallel_calls, results):
-            new_results.append({"tool": call.get("tool"), "input": call.get("input"), "output": output})
+        for call, output in zip(parallel_calls, results, strict=False):
+            new_results.append(
+                {"tool": call.get("tool"), "input": call.get("input"), "output": output}
+            )
 
     # 2) Sequential Execution (Side-Effect preservation)
     for call in sequential_calls:
@@ -102,13 +126,16 @@ async def tool_exec_node(state: Any):
 
         # Pillar 3: Debounce Pattern
         if tool in ("write_file", "replace_content") and output and "Error" not in str(output):
-            target_file = (arg.get("TargetFile") or arg.get("target_file")) if isinstance(arg, dict) else None
+            target_file = (
+                (arg.get("TargetFile") or arg.get("target_file")) if isinstance(arg, dict) else None
+            )
             if target_file:
                 await schedule_remap(target_file)
 
     # Layer 3: Scavenger Mode (Axis 6)
     try:
         from src.architrave.entity_extractor import EntityExtractor
+
         for res in new_results:
             text = res.get("output", "")
             if len(text) > 10:
@@ -119,6 +146,7 @@ async def tool_exec_node(state: Any):
     # Phase 2.3: Log tool execution to episodic store
     try:
         from cognition.sophia.hephaestus import _get_episodic
+
         _get_episodic().log(
             session_id=session_id,
             agent_id=agent_id,
@@ -129,6 +157,54 @@ async def tool_exec_node(state: Any):
     except Exception as le:
         logger.warning(f"ergon: Failed to log tool episode ({le})")
 
+    # Centralized Mnemosyne Hypergraph edge addition
+    try:
+        import os
+
+        from cognition.mnemosyne.hypergraph_models import Hyperedge, HypernodeRef
+        from cognition.mnemosyne.hypergraph_store import HypergraphStore
+
+        tools_used = ",".join(
+            list(set([res.get("tool") for res in new_results if res.get("tool")]))
+        )
+
+        nodes = [
+            HypernodeRef(
+                axis_id=1,
+                entity_type="episodic",
+                entity_key=session_id,
+                label=f"Exec: {tools_used[:30]}",
+            ),
+            HypernodeRef(
+                axis_id=2, entity_type="procedural", entity_key=agent_id, label=f"Tools: {agent_id}"
+            ),
+        ]
+
+        for res in new_results:
+            tool = res.get("tool")
+            arg = res.get("input")
+            if tool in ("write_file", "replace_content") and isinstance(arg, dict):
+                target_file = arg.get("TargetFile") or arg.get("target_file")
+                if target_file:
+                    nodes.append(
+                        HypernodeRef(
+                            axis_id=5,
+                            entity_type="module",
+                            entity_key=os.path.basename(target_file),
+                            label=os.path.basename(target_file),
+                        )
+                    )
+                    break
+
+        edge = Hyperedge(nodes=nodes, relation_type="tool_execution_flow", weight=1.0)
+        HypergraphStore().add_edge(edge)
+        logger.info(
+            f"HypergraphStore: Added tool execution hyperedge {edge.edge_id} connecting Axes 1, 2, 5."
+        )
+    except Exception as e_hg:
+        logger.warning(f"ergon: Hypergraph update failed in tool_exec_node ({e_hg})")
+
+    await asyncio.to_thread(record_step, state, "tool_exec")
     return {
         "tool_results": tool_results + new_results,
         "tool_iteration": iteration + 1,

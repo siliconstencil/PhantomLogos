@@ -7,7 +7,7 @@ from google.genai import types
 
 # --- CONFIG ---
 API_KEY = os.environ.get("GOOGLE_API_KEY", "api")
-MODEL_NAME = "gemini-3.1-flash-lite-preview"
+MODEL_NAME = "gemini-3.5-flash"
 CACHE_THRESHOLD = 4096  # New lower threshold for Gemini 3.1 series
 
 
@@ -21,8 +21,26 @@ def count_tokens(file_path, encoding_name="cl100k_base"):
 
 
 def sync_cache(files):
-    """Creates a cache using the google-genai SDK."""
-    client = genai.Client(api_key=API_KEY)
+    """Creates a cache using the google-genai SDK via Sovereign Gateway."""
+    # Enforce L0 Auth Token check
+    token_path = "d:\\Hank\\data\\snapshots\\L0_AUTH_TOKEN"
+    import time
+
+    if not os.path.exists(token_path) or (time.time() - os.stat(token_path).st_mtime >= 60):
+        print(
+            "[!] Security Violation: L0 Authorization required to perform synchronization. Run create_l0_token.py first."
+        )
+        sys.exit(1)
+
+    gateway_url = os.getenv("ANTIGRAVITY_GATEWAY_URL", "http://localhost:32553")
+    print(f"[*] Initializing GenAI Client over Sovereign Gateway: {gateway_url}")
+    client = genai.Client(
+        api_key="antigravity-native",
+        http_options=types.HttpOptions(
+            base_url=gateway_url,
+            timeout=30.0,
+        ),
+    )
 
     # Merge file contents
     full_content = ""
@@ -59,6 +77,8 @@ def main():
     files = [
         os.path.join(base_path, "AGENTS.md"),
         os.path.join(base_path, "GEMINI.md"),
+        os.path.join(base_path, "CONSTITUTION.md"),
+        os.path.join(base_path, ".antigravity", "rules.json"),
         os.path.join(base_path, ".cursorrules"),
     ]
 

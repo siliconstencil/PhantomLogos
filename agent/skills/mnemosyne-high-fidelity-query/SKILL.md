@@ -4,18 +4,14 @@ description: Intelligent 14-axis memory retrieval with semantic reranking.
 version: 1.1.0
 license: MIT
 compatibility: opencode
-when_to_use:
-  - Deep context retrieval is required for complex debugging.
-  - Correlating facts across multiple cognitive axes (e.g., Temporal + Efficiency).
-metadata:
-  audience: developers
-  tier: L2-Clotho
-  workflow: memory-retrieval
-allowed-tools:
-  - semantic
-  - report
+model_role: light
+allowed_tools:
+- semantic
+- mcp_slm_recall
+- mcp_slm_search
+- mcp_slm_rerank
+tier: 1
 ---
-
 # Skill: Mnemosyne High-Fidelity Query (Sovereign Edition)
 
 Optimizes context injection by executing a hybrid search cascade across all 14 cognitive axes, merging vector embeddings with full-text search (FTS) for maximum accuracy.

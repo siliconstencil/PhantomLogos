@@ -4,6 +4,12 @@ description: Complexity-based model routing (Tier 0-3) logic following the RuFlo
 version: 1.0.0
 license: MIT
 compatibility: opencode
+model_role: ultra_light
+allowed_tools:
+  - ls
+  - semantic
+  - mcp_slm_recall
+tier: 0
 when_to_use:
   - Determining the optimal model for a specific sub-task.
   - Balancing VRAM efficiency vs reasoning depth.

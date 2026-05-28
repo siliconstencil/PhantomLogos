@@ -38,6 +38,38 @@ class SovereignAuditor:
             stages["ast"] = {"status": "FAIL", "is_valid": False, "error": str(e)}
             return {"status": "UNSAT", "violations": ["Syntax Error"], "stages": stages}
 
+        # Stage 1.5: Ruff Linter Check
+        try:
+            import subprocess
+
+            venv_ruff = os.path.join(project_root, ".venv", "Scripts", "ruff.exe")
+            ruff_cmd = venv_ruff if os.path.exists(venv_ruff) else "ruff"
+
+            proc = subprocess.run(
+                [ruff_cmd, "check", "-"],
+                input=code.encode("utf-8"),
+                capture_output=True,
+                check=False,
+            )
+            if proc.returncode == 0:
+                stages["ruff"] = {"status": "VALID", "is_valid": True}
+            else:
+                stderr = proc.stderr.decode("utf-8", errors="ignore")
+                stdout = proc.stdout.decode("utf-8", errors="ignore")
+                err_msg = stdout or stderr or "Ruff linting failed"
+                stages["ruff"] = {"status": "FAIL", "is_valid": False, "error": err_msg}
+                return {
+                    "status": "UNSAT",
+                    "violations": ["Ruff Linting Violations"],
+                    "stages": stages,
+                }
+        except Exception as e:
+            stages["ruff"] = {
+                "status": "WARNING",
+                "is_valid": True,
+                "error": f"Failed to run ruff: {e}",
+            }
+
         # Stage 2: QWED Code Audit (Logic)
         qwed_res = self.qwed.audit_code_logic(code)
         stages["qwed_code"] = qwed_res
