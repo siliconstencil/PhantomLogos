@@ -106,7 +106,7 @@ class MCPRegistry:
 
         Deliberately does NOT filter by parent process name: multiple IDEs, CLIs,
         and agents (Python, Node, Electron, etc.) may each own a healthy slm.exe
-        simultaneously. Any live parent — regardless of type — means the SLM is
+        simultaneously. Any live parent - regardless of type - means the SLM is
         not an orphan and must be left alone.
         """
         import sys
@@ -114,7 +114,7 @@ class MCPRegistry:
         if sys.platform != "win32":
             return
         try:
-            import psutil
+            import psutil  # type: ignore
         except ImportError:
             logger.debug("MCPRegistry: psutil unavailable, orphan SLM cleanup skipped")
             return
@@ -130,14 +130,14 @@ class MCPRegistry:
 
                     is_orphan = False
                     if ppid is None or not psutil.pid_exists(ppid):
-                        # Parent PID is gone — true orphan
+                        # Parent PID is gone - true orphan
                         is_orphan = True
                     else:
                         try:
                             parent_create_time = psutil.Process(ppid).create_time()
                             if parent_create_time > slm_create_time:
                                 # A new process reused the parent PID after the real
-                                # parent died — treat as orphan
+                                # parent died - treat as orphan
                                 is_orphan = True
                         except psutil.NoSuchProcess:
                             is_orphan = True

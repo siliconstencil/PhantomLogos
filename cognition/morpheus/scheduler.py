@@ -74,7 +74,7 @@ class MorpheusScheduler:
         """
         predictions = []
 
-        # 1. Transition pattern: son 3 geçişte en sık görülen role1 -> role2 transition
+        # 1. Transition pattern: most common role1 -> role2 transition in the last 3 transitions
         if self._last_role:
             prefix = f"{self._last_role}->"
             transitions = {k: v for k, v in self._session_patterns.items() if k.startswith(prefix)}
@@ -87,7 +87,7 @@ class MorpheusScheduler:
                     if len(predictions) >= 2:
                         break
 
-        # 2. Role frequency: son 24 saatteki kullanım sıklığına göre doldur
+        # 2. Role frequency: fill based on usage frequency in the last 24 hours
         if len(predictions) < 2:
             now = time.time()
             twenty_four_hours_ago = now - 86400
@@ -181,7 +181,7 @@ class MorpheusScheduler:
     def _run_loop(self):
         """Internal tick loop for autonomous VRAM management + weekly OTL mining."""
         try:
-            import psutil
+            import psutil  # type: ignore
 
             p = psutil.Process()
             p.cpu_affinity([12, 13, 14, 15])
