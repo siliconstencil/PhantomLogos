@@ -22,7 +22,9 @@ _SHUTDOWN_HARD_TIMEOUT = 10  # Seconds before os._exit
 
 
 def _signal_handler(sig, _frame) -> None:
-    """Sovereign Signal Handler: Initiates graceful shutdown sequence."""
+    """Sovereign Signal Handler: Initiates graceful shutdown sequence.
+    Handles: SIGINT (Ctrl+C), SIGBREAK (Ctrl+Break), SIGTERM.
+    """
     global _shutdown_requested
     if not _shutdown_requested:
         _shutdown_requested = True
@@ -31,6 +33,16 @@ def _signal_handler(sig, _frame) -> None:
             f"clotho_handoff: Signal {sig_name} received. "
             f"Graceful shutdown initiated. Current tasks will attempt cleanup."
         )
+
+    # SIGTERM'de dogrudan emergency cleanup baslat
+    if sig == signal.SIGTERM:
+        logger.warning("clotho_handoff: SIGTERM received - forcing immediate cleanup.")
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.call_soon_threadsafe(lambda: asyncio.ensure_future(_emergency_cleanup()))
+        except Exception:
+            pass
 
 
 def _asyncio_exception_handler(_loop, context) -> None:
@@ -51,7 +63,7 @@ def _asyncio_exception_handler(_loop, context) -> None:
 
 
 def _register_signals() -> None:
-    """Register OS signals for Windows (SIGINT, SIGBREAK)."""
+    """Register OS signals for graceful shutdown (SIGINT, SIGBREAK, SIGTERM)."""
     try:
         signal.signal(signal.SIGINT, _signal_handler)
         logger.debug("clotho_handoff: SIGINT (Ctrl+C) handler registered.")
@@ -65,6 +77,12 @@ def _register_signals() -> None:
             logger.debug("clotho_handoff: SIGBREAK (Ctrl+Break) handler registered.")
     except (ValueError, AttributeError) as e:
         logger.warning(f"clotho_handoff: SIGBREAK registration failed ({e})")
+
+    try:
+        signal.signal(signal.SIGTERM, _signal_handler)
+        logger.debug("clotho_handoff: SIGTERM handler registered.")
+    except (ValueError, AttributeError) as e:
+        logger.warning(f"clotho_handoff: SIGTERM registration failed ({e})")
 
     # Hook into the event loop exception handler
     try:

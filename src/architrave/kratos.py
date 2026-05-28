@@ -94,7 +94,9 @@ def retry(
                 except Exception as e:
                     last_err = e
                     if attempt < max_attempts:
-                        delay = base_delay * (2 ** (attempt - 1))
+                        delay = (
+                            base_delay * (2 ** (attempt - 1))
+                        ) + secrets.SystemRandom().uniform(0.5, 2.0)
                         logger.warning(
                             f"Kratos: Sync retry {attempt}/{max_attempts} ({delay:.1f}s) -> {e}"
                         )

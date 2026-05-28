@@ -332,6 +332,145 @@ class TemporalStore:
         except Exception as e:
             logger.warning(f"TemporalStore: Optimization failed ({e})")
 
+    def get_last_24h_summary(self) -> dict:
+        """Son 24 saatte kaydedilen metric ozeti."""
+        now = time.time()
+        cutoff = now - 86400.0
+        conn = sqlite3.connect(self._db_path, timeout=30)
+        try:
+            cursor = conn.execute(
+                "SELECT event_type, COUNT(*), AVG(latency_ms) FROM temporal_metrics WHERE timestamp > ? GROUP BY event_type",
+                (cutoff,)
+            )
+            by_type = {}
+            total_events = 0
+            latency_sum = 0.0
+            for row in cursor.fetchall():
+                e_type = row[0] or "unknown"
+                count = row[1]
+                avg_lat = row[2] or 0.0
+                by_type[e_type] = count
+                total_events += count
+                latency_sum += avg_lat * count
+            
+            avg_latency_ms = (latency_sum / total_events) if total_events > 0 else 0.0
+            
+            cursor_err = conn.execute(
+                "SELECT COUNT(*) FROM temporal_metrics WHERE timestamp > ? AND (event_type LIKE '%error%' OR metadata LIKE '%error%' OR metadata LIKE '%ERROR%')",
+                (cutoff,)
+            )
+            error_count = cursor_err.fetchone()[0] or 0
+
+            cursor_span = conn.execute(
+                "SELECT MIN(timestamp), MAX(timestamp) FROM temporal_metrics WHERE timestamp > ?",
+                (cutoff,)
+            )
+            span_row = cursor_span.fetchone()
+            earliest_ts = span_row[0] if span_row and span_row[0] is not None else None
+            latest_ts = span_row[1] if span_row and span_row[1] is not None else None
+            
+            return {
+                'total_events': total_events,
+                'by_type': by_type,
+                'avg_latency_ms': avg_latency_ms,
+                'error_count': error_count,
+                'timespan': [earliest_ts, latest_ts]
+            }
+        except Exception as e:
+            logger.error(f"TemporalStore: get_last_24h_summary failed ({e})")
+            return {
+                'total_events': 0,
+                'by_type': {},
+                'avg_latency_ms': 0.0,
+                'error_count': 0,
+                'timespan': [None, None]
+            }
+        finally:
+            conn.close()
+
+    def get_weekly_report(self) -> dict:
+        """Haftalik ozet: gunluk event count + trend."""
+        now = time.time()
+        cutoff = now - (7 * 86400.0)
+        conn = sqlite3.connect(self._db_path, timeout=30)
+        try:
+            cursor = conn.execute(
+                "SELECT DATE(timestamp, 'unixepoch') as day, COUNT(*) as cnt FROM temporal_metrics WHERE timestamp > ? GROUP BY day ORDER BY day ASC",
+                (cutoff,)
+            )
+            daily_counts = []
+            total_week = 0
+            busiest_day = None
+            max_count = -1
+            
+            for row in cursor.fetchall():
+                day = row[0] or "unknown"
+                count = row[1]
+                daily_counts.append({'date': day, 'count': count})
+                total_week += count
+                if count > max_count:
+                    max_count = count
+                    busiest_day = day
+            
+            avg_daily = (total_week / len(daily_counts)) if daily_counts else 0.0
+            
+            return {
+                'daily_counts': daily_counts,
+                'total_week': total_week,
+                'busiest_day': busiest_day,
+                'avg_daily': avg_daily
+            }
+        except Exception as e:
+            logger.error(f"TemporalStore: get_weekly_report failed ({e})")
+            return {
+                'daily_counts': [],
+                'total_week': 0,
+                'busiest_day': None,
+                'avg_daily': 0.0
+            }
+        finally:
+            conn.close()
+
+    def get_recent_errors(self, limit: int = 10) -> list[dict]:
+        """Son hata kayitlari."""
+        conn = sqlite3.connect(self._db_path, timeout=30)
+        conn.row_factory = sqlite3.Row
+        try:
+            cursor = conn.execute(
+                "SELECT timestamp, event_type, metadata FROM temporal_metrics "
+                "WHERE event_type LIKE '%error%' OR metadata LIKE '%error%' OR metadata LIKE '%ERROR%' "
+                "ORDER BY timestamp DESC LIMIT ?",
+                (limit,)
+            )
+            errors = []
+            for row in cursor.fetchall():
+                try:
+                    meta = json.loads(row['metadata'] or '{}')
+                except Exception:
+                    meta = {}
+                details = meta.get('error') or meta.get('details') or row['metadata']
+                errors.append({
+                    'timestamp': row['timestamp'],
+                    'event_type': row['event_type'],
+                    'details': details
+                })
+            return errors
+        except Exception as e:
+            logger.error(f"TemporalStore: get_recent_errors failed ({e})")
+            return []
+        finally:
+            conn.close()
+
+
+_store_instance: TemporalStore | None = None
+
+
+def _get_temporal() -> TemporalStore:
+    global _store_instance
+    if _store_instance is None:
+        _store_instance = TemporalStore()
+    return _store_instance
+
 
 if __name__ == "__main__":
     import sys

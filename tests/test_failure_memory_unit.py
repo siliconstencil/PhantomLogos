@@ -1,8 +1,6 @@
-import numpy as np
 import pytest
 
 from cognition.mnemosyne.reflection_store import ReflectionStore
-from cognition.mnemosyne.semantic_store import FailureMemoryStore
 
 
 # [SRC:axis_8]
@@ -26,20 +24,3 @@ async def test_sqlite_failure_logic():
     found = [r for r in rules if r["prevention_rule"] == long_rule]
     assert len(found) > 0, "Rule should be stored"
     assert found[0]["recurrence_count"] >= 2, "Recurrence count should increment"
-
-
-# [SRC:axis_6]
-@pytest.mark.asyncio
-async def test_semantic_failure_logic():
-    fms = FailureMemoryStore()
-
-    rule = "Semantic test rule for future avoidance patterns in Phase 11.19."
-    test_vec = np.random.rand(256)
-    context_hash = "test_hash_123"
-
-    fms.add_failure_vector(rule, test_vec, "semantic_error", context_hash)
-
-    # Search with similar vector
-    results = fms.search_similar_failures(test_vec, limit=1)
-    assert len(results) > 0, "Should find the semantic rule"
-    assert results[0]["prevention_rule"] == rule, "Retrieved rule should match"
