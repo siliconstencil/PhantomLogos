@@ -147,6 +147,19 @@ class SLMClient:
         registry = get_mcp_registry()
         session = registry.get_session("slm")
         if session is None:
+            from .mcp_session import MCPSession
+
+            registry._sessions["slm"] = MCPSession(
+                name="slm",
+                command=self.config.mcp_cmd.split()[0]
+                if " " in self.config.mcp_cmd
+                else self.config.mcp_cmd,
+                args=self.config.mcp_cmd.split()[1:] if " " in self.config.mcp_cmd else [],
+                timeout=self.config.mcp_timeout,
+                enabled=True,
+            )
+            session = registry.get_session("slm")
+        if session is None:
             raise RuntimeError("SLM MCP Server session is disabled or not initialized")
         return session
 
@@ -156,6 +169,11 @@ class SLMClient:
 
         try:
             session = self._get_session()
+            if not session.enabled:
+                session.enabled = True
+                import threading
+
+                threading.Thread(target=session._ensure_connected, daemon=True).start()
             res = session.call_tool_sync("get_status", {})
             is_ok = isinstance(res, dict) and res.get("status") == "healthy"
             _heartbeat.update(is_ok)

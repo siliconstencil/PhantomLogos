@@ -143,13 +143,12 @@ async def _write_file(_bridge, input_data: dict[str, Any]) -> str | None:
 
         await asyncio.to_thread(write_sync)
 
-        # 3. Auto-snapshot after write (prevent watchdog rollback)
+        # 3. Register snapshot after write (prevent watchdog rollback)
         try:
             from src.lachesis.snapshot_manager import SnapshotManager
 
             sm = SnapshotManager(str(get_project_root()))
-            await asyncio.to_thread(sm.scan_all)
-            logger.debug(f"Auto-snapshot updated after write to {rel_path}")
+            await asyncio.to_thread(sm.register_snapshot, rel_path)
         except Exception as snap_e:
             logger.warning(f"Auto-snapshot failed after write ({snap_e})")
 
@@ -208,8 +207,7 @@ async def _replace_content(_bridge, input_data: dict[str, Any]):
                 from src.lachesis.snapshot_manager import SnapshotManager
 
                 sm = SnapshotManager(str(get_project_root()))
-                await asyncio.to_thread(sm.scan_all)
-                logger.debug(f"Auto-snapshot updated after replace in {rel_path}")
+                await asyncio.to_thread(sm.register_snapshot, rel_path)
             except Exception as snap_e:
                 logger.warning(f"Auto-snapshot failed after replace ({snap_e})")
         return result
