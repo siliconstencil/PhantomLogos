@@ -11,7 +11,7 @@ try:
     from .base import Base
     from .temporal_store import TemporalStore
 except ImportError:
-    from temporal_store import TemporalStore
+    from .temporal_store import TemporalStore
 
 logger = setup_logger(__name__)
 
