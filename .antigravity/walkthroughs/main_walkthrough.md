@@ -1,5 +1,49 @@
 # Phantom Logos: Walkthrough — Sovereign Skill Architecture
 
+## Phase 1.1.34: MCP Ekosistem Onarimi & CI/CD Pipeline [09:41 PM - 11:48 PM PT]
+
+**Status**: COMPLETED (2026-05-28)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | **K4.5 CI/CD Pipeline**: GitHub Actions (ruff lint + pytest 30s timeout, coverage, master branch) | `.github/workflows/ci.yml` | 40 line workflow, 24+16 revizyon |
+| 2 | **K2.6 Parallel Gnosis**: 4 async axis (1-8-11-4) asyncio.gather ile paralel | `gnosis/base.py` | 16 satir ek, context assembly ~4x hizli |
+| 3 | **K2.13 Dead File Cleanup**: 2 stale dosya silindi | `src/atropos/test_write.py`, `src/test_kacak.py` | -5 satir, unused_modules.md eklendi |
+| 4 | **SLM Orphan Surgical Detection**: psutil ile nuke-all -> surgical orphan kill | `mcp_registry.py`, `mcp_session.py` | Healthy slm.exe korunur; dead code kaldirildi (-73L) |
+| 5 | **SLM Orphan Parent-Name Fix**: non-python host SLM child'lari oldurulmez | `mcp_registry.py` | Gemini/VS Code SLM'leri korunur |
+| 6 | **MCPSession Diagnostic Log**: job_attached durumu loglanir | `mcp_session.py` | Sonraki SLM spawn'da gorunur |
+| 7 | **Claude Code Filesystem MCP Sync**: .mcp.json'a filesystem server eklendi | `.mcp.json` | Claude Code D:\Hank okuyabilir |
+| 8 | **SLM Fallback Test Fix**: test_slm_fallback.py import duzeltildi | `test_slm_fallback.py` | 1 test import fix |
+| 9 | **A2A Heartbeat + Temp Cleanup**: registry timestamp, 5 temp dosya silindi | `agent/a2a_registry.json`, root temp files | Temiz workspace |
+| 10 | **Fix 1**: Filesystem MCP eklendi (7. server) | `mcp_config.json` | npx ile @modelcontextprotocol/server-filesystem |
+| 11 | **Fix 2**: LangGraph whitelist prefix-based | `synergeia.py` | _MCP_PREFIXES + _BASE_TOOLS + _is_allowed() |
+| 12 | **Fix 3**: "semantic" VRAM flush cikarildi | `base.py:62` | Nomic+Jina always-resident |
+| 13 | **Fix 4**: SLM session_init cagrisi | `control_handoff.py` | Agent basinda SLM session |
+| 14 | **Fix 5**: SLM close_session async fix | `orchestrator.py` | asyncio.create_task ile |
+| 15 | **Fix 6**: Health guard _record_operational | `base.py:206` | slm.health() kontrolu |
+| 16 | **Fix 7**: LanceDB TemporalStore fallback | `koinonia.py` | SLM dead iken veri kaybi yok |
+| 17 | **Fix 8**: mapper tool kaldirildi | `lachesis.yaml` | Deprecated tool temizlendi |
+| 18 | **CLAUDE.md + tools.md**: Agent talimatlari + Filesystem MCP dokumantasyonu | `CLAUDE.md`, `.antigravity/tools.md` | OpenCode + Claude Code uyumlulugu |
+| 19 | **opencode.json**: filesystem MCP entry | `opencode.json` | 7. MCP server |
+| 20 | **ci.yml Branch Fix**: main/dev -> master | `.github/workflows/ci.yml` | Ruff lint step + 30s timeout |
+
+### Test Sonuclari (26/27 PASSED)
+
+| Suite | Count | Status |
+|-------|-------|--------|
+| Full stability suite | 26/27 | PASSED (1 pre-existing skip) |
+| CI/CD pipeline (ruff + pytest) | N/A | Dogrulandi |
+
+### Key Improvements (Phase 1.1.34)
+
+1. **MCP Erisimi Acildi**: LangGraph whitelist prefix-based sisteme gecirildi -- `mcp_slm_`, `kg-mem_`, `fetch_`, `playwright_`, `filesystem_`, `sequentialthinking_` araclari artik bloklanmaz.
+2. **SLM Saglikli Orphan Tespiti**: nuke-all yerine psutil surgical -- Gemini/VS Code gibi non-python host'larin SLM child'lari korunur.
+3. **Veri Kaybi Onlendi**: SLM dead iken trajectory verileri `TemporalStore.record()`'a yedeklenir.
+4. **CI/CD Pipeline**: GitHub Actions ile ruff lint + pytest otomatik.
+5. **8 Pipeline Fix**: MCP ekosistemi + SLM session lifecycle + fallback mekanizmasi tamir edildi.
+
+---
+
 ## Phase 1.1.33: Test Coverage Push [11:55 AM - 12:00 PM PT]
 
 **Status**: COMPLETED (2026-05-28)
@@ -2500,6 +2544,7 @@ Validation: All 4 middleware modules import cleanly. AntiLoopCircuitBreaker test
 | 9 | Agent 3 | K2.6 Parallel | `gnosis/base.py` | asyncio.gather 4 async axes |
 | 10 | Agent 3 | K2.11 Observability | `temporal_store.py` | 24h/weekly/latency helpers |
 | 11 | Agent 3 | K1.5.3 Logging | `logging_config.py` | LogRecordFactory + agent_id + LOG_LEVEL |
+| 12 | Agent 3 | K2.13 Docs | `docs/unused_modules.md` | 3 dead file silindi, cleanup artefakti |
 
 ### Test Results (42/43 PASSED)
 

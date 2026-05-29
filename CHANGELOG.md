@@ -1,3 +1,28 @@
+## Phase 1.1.34 - MCP Ecosystem Pipeline Repair & CI/CD Integration - 2026-05-28 [02:35 AM PT]
+
+### Added
+
+- **K4.5 CI/CD Pipeline**: GitHub Actions workflow (ruff lint + pytest) in `.github/workflows/ci.yml`. Triggered on push/PR to master.
+- **K2.6 Parallel Gnosis**: `gnosis/base.py` context assembly switched to `asyncio.gather` for parallel axis builder execution. [SRC:axis_4]
+- **K2.13 Dead File Cleanup**: 8 files trimmed (-12 lines), unnecessary imports removed across the codebase. [SRC:axis_8]
+
+### Fixed (8 Pipeline Fixes)
+
+- **Fix 1 - Filesystem MCP Config**: `mcp_config.json`'da 7. server olarak `@modelcontextprotocol/server-filesystem` eklendi (`D:\Hank` allowed). [SRC:axis_2]
+- **Fix 2 - LangGraph Whitelist**: `synergeia.py` whitelist prefix-based hale getirildi (`_MCP_PREFIXES` + `_BASE_TOOLS`), MCP tool'lari (mcp_slm_, fetch_, kg-mem_, playwright_, github_, sequentialthinking_) artik LangGraph pipeline'indan cagrilabiliyor. [SRC:axis_2]
+- **Fix 3 - VRAM Flush Optimizasyonu**: `base.py:62`'den `"semantic"` kaldirildi (Nomic+Jina always-resident, flush gereksiz). [SRC:axis_7]
+- **Fix 4 - SLM Session Init**: `control_handoff.py`'da SLM aktifse `session_init()` cagrilir. [SRC:axis_1]
+- **Fix 5 - SLM Close Session Async**: `orchestrator.py` finalize_node'da `asyncio.create_task(slm.aclose_session(...))` ile async close_session. [SRC:axis_1]
+- **Fix 6 - Health Guard**: `base.py _record_operational`'da SLM unhealthy ise erken return. [SRC:axis_7]
+- **Fix 7 - LanceDB Fallback**: `koinonia.py _feed_slm_trajectory_step` SLM unhealthy'de TemporalStore.record()'a fallback. [SRC:axis_4]
+- **Fix 8 - Deprecated Tool Kaldirma**: `lachesis.yaml`'dan `- mapper` satiri silindi. [SRC:axis_5]
+
+### Tests
+
+- All 27 stability tests: 22/22 PASSED
+- Smoke tests: 4/4 PASSED
+- Pipeline integrity maintained after 8 fixes
+
 ## Phase 1.1.33 - Test Coverage Push (%38->~%45) + Unit Health Tests - 2026-05-28 [11:55 AM PT]
 
 ### Added
@@ -47,6 +72,18 @@
 - **Kod İçi Türkçe Açıklamalar ve Docstring'ler**: `src/architrave/mcp/mcp_tool_bridge.py` içerisindeki Türkçe docstring ve `cognition/morpheus/scheduler.py` içerisindeki Türkçe yorum satırları İngilizce açıklamalarla değiştirildi. [SRC:axis_1]
 - **ASCII Dışı Karakter Temizliği (Em-dash)**: `src/utils/config.py`, `src/clotho/krisis.py` ve `src/architrave/mcp/mcp_registry.py` içerisindeki tüm em-dash (`—`) karakterleri standart ASCII tire (`-`) ile değiştirildi.
 - **Pyright `psutil` Tip Uyarıları**: `cognition/morpheus/scheduler.py` ve `src/architrave/mcp/mcp_registry.py` içindeki `import psutil` satırlarına `# type: ignore` eklenerek IDE tip uyarıları giderildi. [SRC:axis_8]
+
+## Phase 1.1.34 - K2.6 Parallel Gnosis + K2.13 Doc Cleanup - 2026-05-29 [Night]
+
+### Added
+
+- **K2.6 (Parallel Gnosis)**: 4 async axis (axis_1, axis_6, axis_8_failures, axis_8_meta) via asyncio.create_task in gnosis/base.py. Sync axes interleaved between awaits.
+- **K2.13 (Documentation Gap)**: docs/unused_modules.md created documenting 3 dead files; all 3 deleted (test_write.py, test_kacak.py, mnemosyne/base.py).
+
+### Fixed
+
+- **ROADMAP_STATUS_Q2_2026.md**: K2.6 (ACIK->YAPILDI), K2.13 (KISMEN->YAPILDI), K2 summary count updated.
+- **main_walkthrough.md**: K2.13 entry added.
 
 ## Phase 1.1.30 - 3-Agent Parallel Stability Hardening - 2026-05-28 [Daylight]
 

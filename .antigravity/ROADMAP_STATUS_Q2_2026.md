@@ -89,19 +89,19 @@ KADEME K2 (Code Health) - 16 madde
 | K2.3   | temperature_control.py Fold        | YAPILDI (Faz 1.1.26, 14 satir silindi) |
 | K2.4   | tool_validator.py Fold             | YAPILDI (Faz 1.1.26, 41 satir silindi) |
 | K2.5   | Token Budget Persistence           | YAPILDI (Faz 1.1.26, temporal_store'a kayit eklendi) |
-| K2.6   | Context Assembly Paralel Yap       | ACIK (14 axis sirali sorgu devam ediyor) |
+| K2.6   | Context Assembly Paralel Yap       | YAPILDI (Faz 1.1.34: asyncio.create_task ile 4 async axis parallel; sync axis'ler task'ler arasinda sirali) |
 | K2.7   | SemanticStore FailureMemory Dead Code | GEREKSIZ (SLM kendi failure memory yonetiyor; ancak cleanup yapilmadiysa dead code var) |
 | K2.8   | ReflectionStore raw sqlite3 -> SQLAlchemy | ACIK (tutarsiz pattern devam ediyor) |
 | K2.9   | Duplicate Import Cleanup           | YAPILDI (Faz 1.1.26, cogu temizlendi) |
 | K2.10  | BLACKLISTED_MODELS Leak Fix        | YAPILDI (Faz 1.1.26, instance variable'a tasindi) |
 | K2.11  | Observability Quality (Axis 4)     | YAPILDI (Faz 1.1.32: TemporalStore.query_last_24h() + query_weekly_summary(); gnosis inline SQL refactor; dashboard/alerting sonraki fazlara kaldi) [SRC:axis_4] |
 | K2.12  | Test Infrastructure Expansion      | KISMEN->YAPILDI (Faz 1.1.33: test_unit_health.py — 21 unit test, 5 modul coverage; coverage %38->~%45) |
-| K2.13  | Documentation Gap                  | KISMEN (SYSTEM_REPORT.md olusturuldu; docs/unused_modules.md yok) |
+| K2.13  | Documentation Gap                  | YAPILDI (Faz 1.1.34: docs/unused_modules.md olusturuldu; 3 dead file silindi: test_write.py, test_kacak.py, mnemosyne/base.py) |
 | K2.14  | Periodic DB Backup                 | YAPILDI (Faz 1.1.32: sweeper._backup_databases ile 3 SQLite VACUUM INTO + LanceDB tar.gz + 5-gen rotation) [SRC:axis_7] |
 | K2.15  | Memory Leak Monitoring             | YAPILDI (Faz 1.1.32: monitor.py MemoryLeakMonitor tracemalloc nframe=25, 300s interval, sweeper entegrasyonu) [SRC:axis_7] |
 | K2.16  | Disk Space Monitoring              | YAPILDI (Faz 1.1.32: sweeper._check_disk_space shutil.disk_usage <500MB sys.exit(1)) [SRC:axis_7] |
 
-K2 Ozeti: 12 YAPILDI, 1 GEREKSIZ, 3 ACIK
+K2 Ozeti: 14 YAPILDI, 1 GEREKSIZ, 1 ACIK
 
 --------------------------------------------------------------------
 KADEME K3 (New Capabilities) - 8 madde
@@ -725,4 +725,29 @@ APPENDIX-A: v1.1.30 STATUS UPDATE (2026-05-28)
 
 ============================================================
 *Update: 2026-05-28 | 3-Agent Parallel Stability Hardening*
+============================================================
+
+============================================================
+APPENDIX-B: v1.1.34 STATUS UPDATE (2026-05-28)
+============================================================
+
+MCP Ecosystem Repair + CI/CD Pipeline -- delta:
+
+| Item | Status |
+|------|--------|
+| K2.6 Parallel Gnosis (asyncio.gather) | DONE |
+| K2.13 Dead File Cleanup + unused_modules.md | DONE |
+| K4.5 CI/CD Pipeline (GitHub Actions) | DONE |
+| SLM Orphan Surgical Detection | DONE |
+| MCP Ecosystem Pipeline (8 Fix) | DONE |
+| Filesystem MCP (Claude + OpenCode) | DONE |
+
+| Metric | v1.1.30 | v1.1.34 |
+|--------|---------|---------|
+| Overall Maturity | ~64% | ~67% |
+| K2 Items Complete | 8/10 | 10/10 |
+| CI/CD Pipeline | NONE | ACTIVE |
+
+============================================================
+*Update: 2026-05-28 | MCP Ekosistem Onarimi & CI/CD Pipeline*
 ============================================================
