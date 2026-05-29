@@ -165,7 +165,7 @@ def wait_for_l0(state: Any) -> dict[str, Any]:
     return {"l0_approved": True}
 
 
-def finalize_node(state: Any) -> dict[str, Any]:
+async def finalize_node(state: Any) -> dict[str, Any]:
     """[SRC:axis_12] Final node to perform cleanup and persistence sync."""
     session_id = state.get("session_id", "default")
     trajectory_id = state.get("trajectory_id", 0) if isinstance(state, dict) else 0
@@ -182,6 +182,14 @@ def finalize_node(state: Any) -> dict[str, Any]:
                 _get_trajectory_store().finalize_session(trajectory_id, score)
         except Exception as e:
             logger.warning(f"orchestrator: trajectory finalize failed ({e})")
+
+    try:
+        from src.architrave.mcp import get_slm_client
+
+        slm = get_slm_client()
+        await slm.aclose_session(session_id=session_id)
+    except Exception as e:
+        logger.warning(f"orchestrator: SLM close_session failed ({e})")
 
     logger.info(f"orchestrator: Finalized session {session_id}.")
     return {"memory_sync": True}

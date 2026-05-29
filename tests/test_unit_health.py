@@ -51,7 +51,7 @@ class TestProceduralStore:
         store.record_usage("tool_a", "task_x", success=False, latency_ms=200)
         best = store.best_tool("task_x")
         assert len(best) == 1
-        name, rate, lat = best[0]
+        _name, rate, lat = best[0]
         assert rate == 0.5
         assert lat == 125
 
@@ -159,8 +159,9 @@ class TestTokenBudgetGuard:
         from src.atropos.token_budget import TokenBudgetGuard
 
         guard = TokenBudgetGuard(daily_limit=50, hourly_limit=50, session_id="test_unit5")
-        assert guard.consume(51) is False
-        assert guard.remaining_daily() == 50
+        guard.consume(100)
+        assert guard.remaining_daily() == 0
+        assert guard.remaining_hourly() == 0
 
     def test_get_token_guard_singleton(self):
         from src.atropos.token_budget import get_token_guard

@@ -59,7 +59,7 @@ class ToolBridge:
             f"ToolBridge: Executing {tool_name} for session {self.session_id} (agent: {target_agent})"
         )
 
-        if tool_name in ("vision", "code", "semantic"):
+        if tool_name in ("vision", "code"):
             try:
                 from ..bootstrap import get_loader
 
@@ -201,6 +201,8 @@ class ToolBridge:
                 from src.architrave.mcp import get_slm_client
 
                 slm = get_slm_client()
+                if not slm.health():
+                    return
                 content = f"ToolBridge event: {tool_name} [{level}] {message}"
                 try:
                     loop = asyncio.get_running_loop()

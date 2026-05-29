@@ -33,6 +33,31 @@ async def tool_exec_node(state: Any):
         logger.warning(f"ergon: Classification failed ({e})")
         needs = {"needs_file_ops": True, "needs_search": True, "needs_vision": True}
 
+    _MCP_PREFIXES = (  # noqa: N806
+        "mcp_slm_",
+        "kg-mem_",
+        "fetch_",
+        "playwright_",
+        "filesystem_",
+        "sequentialthinking_",
+    )
+    _BASE_TOOLS = {  # noqa: N806
+        "ls",
+        "semantic",
+        "vram",
+        "report",
+        "write_file",
+        "replace_content",
+        "run_code",
+        "vision",
+        "verify",
+        "prune",
+        "skill",
+    }
+
+    def _is_allowed(t: str) -> bool:
+        return t in _BASE_TOOLS or any(t.startswith(p) for p in _MCP_PREFIXES)
+
     try:
         from src.clotho.agent_loader import AgentRegistry
 
@@ -41,21 +66,17 @@ async def tool_exec_node(state: Any):
         whitelist = set(agent.tools if agent else [])
     except Exception as e:
         logger.error(f"ergon: tool_exec_node agent load failed ({e})")
-        whitelist = {
-            "ls",
-            "semantic",
-            "vram",
-            "report",
-            "write_file",
-            "replace_content",
-            "run_code",
-            "vision",
-            "verify",
-            "prune",
-            "skill",
-        }
+        whitelist = set()
 
-    READ_ONLY_TOOLS = {"ls", "semantic", "report", "vram", "vision", "verify", "prune"}  # noqa: N806
+    READ_ONLY_TOOLS = {  # noqa: N806
+        "ls", "semantic", "report", "vram", "vision", "verify", "prune",
+        "mcp_slm_recall", "mcp_slm_search", "mcp_slm_get_status",
+        "kg-mem_search_nodes", "kg-mem_read_graph", "kg-mem_open_nodes",
+        "fetch_fetch",
+        "filesystem_read_file", "filesystem_list_directory",
+        "filesystem_read_multiple_files", "filesystem_search_files",
+        "filesystem_get_file_info",
+    }
     bridge = ToolBridge(session_id, agent_id=agent_id)
     new_results = []
 
@@ -73,7 +94,7 @@ async def tool_exec_node(state: Any):
 
     for call in tool_calls:
         tool = call.get("tool")
-        if tool not in whitelist:
+        if tool not in whitelist and not _is_allowed(tool):
             new_results.append(
                 {"tool": tool, "input": call.get("input"), "output": "Error: Unauthorized."}
             )

@@ -24,7 +24,6 @@ system_prompt: |
   dispassionate, and actionable. Score on a 0-1 scale.
 
 tools:
-  - mapper
   - semantic
   - report
 

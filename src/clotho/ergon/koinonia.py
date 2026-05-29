@@ -75,7 +75,21 @@ def _feed_slm_trajectory_step(
 
         slm = get_slm_client()
         if not slm.health():
-            logger.warning("_feed_slm_trajectory_step: SLM unhealthy, skipping.")
+            logger.warning("_feed_slm_trajectory_step: SLM unhealthy, falling back to LanceDB.")
+            try:
+                from cognition.mnemosyne.temporal_store import TemporalStore
+
+                store = TemporalStore()
+                store.record(
+                    session_id=_session_id,
+                    event_type=f"otl.{node_name}",
+                    event_key=f"traj_step.{step_index}",
+                    model_name=model_tier or "",
+                    latency_ms=0.0,
+                    tokens_used=0,
+                )
+            except Exception as fb_e:
+                logger.error(f"_feed_slm_trajectory_step: LanceDB fallback also failed ({fb_e})")
             return
         if score is not None:
             clamped_score = max(0.0, min(1.0, score))
