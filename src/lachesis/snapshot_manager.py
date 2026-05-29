@@ -116,6 +116,28 @@ class SnapshotManager:
                 return True
         return False
 
+    def register_snapshot(self, rel_path: str) -> bool:
+        """Accept current file hash as the new authorized baseline (no blob)."""
+        full_path = os.path.join(self.project_root, rel_path)
+        if not os.path.exists(full_path):
+            return False
+        try:
+            with open(full_path, "rb") as f:
+                content = f.read()
+            current_hash = self._get_hash(content)
+            path_key = rel_path.lower().replace("\\", "/")
+            ts = time.time()
+            with sqlite3.connect(self._db_path, timeout=10) as conn:
+                conn.execute(
+                    "INSERT INTO snapshots (path, hash, content, size, timestamp) VALUES (?, ?, ?, ?, ?)",
+                    (path_key, current_hash, content, len(content), ts),
+                )
+            logger.info(f"SnapshotManager: Registered new baseline for {rel_path}")
+            return True
+        except Exception as e:
+            logger.warning(f"SnapshotManager: register_snapshot failed for {rel_path} ({e})")
+            return False
+
     def purge_old(self, keep_per_path: int = 3) -> None:
         removed = 0
         with sqlite3.connect(self._db_path) as conn:
