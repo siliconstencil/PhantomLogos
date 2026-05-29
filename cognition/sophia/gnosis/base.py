@@ -133,18 +133,24 @@ async def get_dynamic_context(
     from .axis_14_visual import _build_axis_14
 
     try:
-        # Dynamic Axes (Session/Task specific)
-        dynamic_context.append(await _build_axis_1(session_id))
+        # [K2.6] Schedule all async axes in parallel
+        a1_task = asyncio.create_task(_build_axis_1(session_id))
+        a6_task = asyncio.create_task(_build_axis_6(task_hint, session_id, embedding_vec))
+        a8f_task = asyncio.create_task(_build_axis_8_failures(task_hint, embedding_vec))
+        a8m_task = asyncio.create_task(_build_axis_8_meta(session_id))
+
+        # Dynamic Axes (async tasks already running in background)
+        dynamic_context.append(await a1_task)
         dynamic_context.append(_build_axis_2())
         dynamic_context.append(_build_axis_3())
         dynamic_context.append(_build_axis_4(session_id))
         dynamic_context.append(_build_axis_5(task_hint))
-        dynamic_context.append(await _build_axis_6(task_hint, session_id, embedding_vec))
+        dynamic_context.append(await a6_task)
         dynamic_context.append(_build_axis_7())
 
         # [SRC:axis_8] Failure Memory & Meta-Cognition Recall (P3)
-        fail_str, block_signal = await _build_axis_8_failures(task_hint, embedding_vec)
-        dynamic_context.append(await _build_axis_8_meta(session_id))
+        fail_str, block_signal = await a8f_task
+        dynamic_context.append(await a8m_task)
         dynamic_context.append(fail_str)
         dynamic_context.append(_build_axis_14(session_id))
 
