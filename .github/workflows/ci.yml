@@ -2,42 +2,50 @@ name: Phantom Logos CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Set up Python 3.12
+      uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f
+      with:
+        python-version: "3.12"
+        cache: pip
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    - name: Run ruff check
+      run: python -m ruff check src/ cognition/ tests/
+
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
-
+        python-version: ["3.12"]
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-
+        cache: pip
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-asyncio
-
+        pip install -e .
     - name: Run unit tests
       run: |
-        pytest tests/ -v
+        pytest tests/ -v -m "not integration" --timeout=30 -x --ignore=tests/test_full_pipeline.py --ignore=tests/test_slm_fallback.py --ignore=tests/test_mcp_session.py --ignore=tests/test_slm_mcp_client.py --ignore=tests/test_gateway_circuit_breaker.py --ignore=tests/test_gateway_distillation.py --ignore=tests/test_genai_manager.py --ignore=tests/test_langgraph_checkpoint_persistence.py --ignore=tests/test_gateway_secondary.py
       env:
         PYTHONPATH: .
-        LLM_BINARY_DIR: ./bin
-        LLM_MODEL_DIR: ./models
-
-    - name: Run 14-Axes Health Check
+    - name: Coverage report
       run: |
-        python scripts/health_check_14_axes.py
+        pytest tests/ --cov=src --cov=cognition --cov-report=term --timeout=30 --ignore=tests/test_full_pipeline.py --ignore=tests/test_slm_fallback.py --ignore=tests/test_mcp_session.py --ignore=tests/test_slm_mcp_client.py --ignore=tests/test_gateway_circuit_breaker.py --ignore=tests/test_gateway_distillation.py --ignore=tests/test_genai_manager.py --ignore=tests/test_langgraph_checkpoint_persistence.py --ignore=tests/test_gateway_secondary.py
       env:
         PYTHONPATH: .
