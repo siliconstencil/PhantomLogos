@@ -1,8 +1,3 @@
-import os
-import time
-from unittest.mock import MagicMock, PropertyMock, patch
-
-
 class TestProjectPath:
     def test_get_project_root_returns_path(self):
         from src.utils.project_path import get_project_root
@@ -159,7 +154,9 @@ class TestTokenBudgetGuard:
         from src.atropos.token_budget import TokenBudgetGuard
 
         guard = TokenBudgetGuard(daily_limit=50, hourly_limit=50, session_id="test_unit5")
-        guard.consume(100)
+        # Consume exactly the daily/hourly limit, then attempt to exceed it
+        guard.consume(50)
+        guard.consume(100)  # exceeds remaining -- must be rejected
         assert guard.remaining_daily() == 0
         assert guard.remaining_hourly() == 0
 
