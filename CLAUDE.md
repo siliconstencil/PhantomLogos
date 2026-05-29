@@ -26,8 +26,8 @@ PYTHONPATH=. pytest tests/ -m smoke -v
 ruff check .
 ruff format .
 
-# Type check
-mypy src/
+# Type check (pyright only -- mypy not used)
+D:/Hank/.venv/Scripts/python -m pyright src/
 
 # Database migrations
 alembic upgrade head
@@ -123,6 +123,30 @@ Every implementation phase requires three artifacts stored in `.md` files:
 3. `scratch_book.md` — Continuous diary for context, errors, reminders
 
 The final step of every phase must be "Test & Verification" with evidence (logs, test output).
+
+## Available Skills
+
+- `/audit` — Full system integrity audit; follow with `/remember` to consolidate
+- `/think` — Sequential reasoning for complex architectural or logic decisions
+- `/recall` — Query Mnemosyne/KG memory before making assumptions about system state
+- `/investigate` — Sovereign debug protocol for persistent or cascading errors
+- `/topography` — Regenerate live codebase map in `.antigravity/topography.md`
+- `/sprint` — Sprint contract negotiation (DOD, scope, timeline)
+- `/security` — Security audit before any auth/crypto/governance change
+- `/guard` — Full sovereign guard mode for high-risk sessions
+
+## Session Management
+
+- Resume latest session: `claude --continue`
+- Choose session to resume: `claude --resume`
+- Between unrelated tasks: `/clear` (full context reset)
+- After long exploration before coding: `/compact`
+
+## Parallel Development
+
+For refactors touching 10+ files (RuFlow tier changes, Mnemosyne axis migrations):
+- Use worktrees: `claude --worktree <branch>` for isolated parallel sessions
+- Use `/batch` for automated multi-file transformations with agent decomposition
 
 ## Testing
 

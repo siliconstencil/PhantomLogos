@@ -112,9 +112,21 @@
         "-y",
         "@executeautomation/playwright-mcp-server"
       ],
-      "enabled": true
-    }
-  },
+       "enabled": true
+     },
+     "filesystem": {
+       "type": "local",
+       "command": [
+         "cmd",
+         "/c",
+         "npx",
+         "-y",
+         "@modelcontextprotocol/server-filesystem",
+         "D:\\Hank"
+       ],
+       "enabled": true
+     }
+   },
   "skills": {
     "paths": [
       "agent/skills"

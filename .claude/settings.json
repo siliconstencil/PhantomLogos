@@ -40,6 +40,18 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd /c \"cd /d D:\\Hank && D:\\Hank\\.venv\\Scripts\\python.exe -m pytest tests/ -q --tb=no -m smoke 2>NUL || exit /b 0\"",
+            "statusMessage": "Running smoke tests...",
+            "timeout": 30000
+          }
+        ]
+      }
     ]
   },
   "permissions": {

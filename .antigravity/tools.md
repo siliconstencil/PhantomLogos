@@ -472,7 +472,36 @@ MCP server for browser automation via Playwright. 33 tools across 8 categories. 
 
 ---
 
+## 16. Filesystem MCP
+
+MCP server for filesystem operations with path validation and security boundaries. 12 tools. Install: `npx @modelcontextprotocol/server-filesystem <allowed_dir>`.
+
+| Tool | Parameters | Purpose |
+|------|-----------|---------|
+| `filesystem_read_file` | path, head, tail | Read file contents (with optional head/tail truncation) |
+| `filesystem_read_multiple_files` | paths: [string] | Read multiple files simultaneously |
+| `filesystem_write_file` | path, content | Create or overwrite file |
+| `filesystem_edit_file` | path, edits: [{oldText, newText}], dryRun | Line-based find/replace edits with diff preview |
+| `filesystem_search_files` | pattern, path, excludePatterns | Recursive glob pattern search |
+| `filesystem_directory_tree` | path, excludePatterns | Recursive tree view as JSON |
+| `filesystem_move_file` | source, destination | Move or rename files/directories |
+| `filesystem_create_directory` | path | Create directory (nested ok) |
+| `filesystem_get_file_info` | path | File metadata (size, times, permissions) |
+| `filesystem_list_allowed_directories` | (none) | List accessible root directories |
+| `filesystem_list_directory` | path | Detailed file/dir listing |
+| `filesystem_list_directory_with_sizes` | path, sortBy | Listing with sizes, sorted by name/size |
+
+### Usage Rules
+- All paths must be within allowed directories (configured at server start)
+- Prefer `read`/`write`/`edit`/`glob`/`grep` built-in tools for most operations
+- Use `filesystem_*` tools for multi-file reads, directory trees, and file metadata
+- `filesystem_edit_file` supports dry-run mode for preview before applying
+- `filesystem_directory_tree` shows full recursive structure - use sparingly on large trees
+- `filesystem_search_files` uses glob patterns like `**/*.py` or `*.{ts,tsx}`
+
+---
+
 *Signature,*
 **Antigravity (Phantom Logos)**
-*Last Updated: 2026-05-25 [09:00 PM PT]*
-*Status: All 45 models catalogued. Blobs: 108. MCP: 6 servers / 103 tools. Ergon: 11 nodes. Mapper: 250 modules.*
+*Last Updated: 2026-05-28 [02:40 AM PT]*
+*Status: All 45 models catalogued. Blobs: 108. MCP: 7 servers / 115 tools. Ergon: 11 nodes. Mapper: 266 modules.*

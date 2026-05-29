@@ -172,6 +172,13 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
 
     slm = get_slm_client()
     slm_active = os.getenv("SLM_ENABLED", "true").lower() == "true" and slm.health()
+
+    if slm_active:
+        try:
+            await slm.asession_init(project_path="D:\\Hank", query=task_description)
+        except Exception as e:
+            logger.warning(f"clotho_handoff: SLM session_init failed ({e})")
+
     initial_state = {
         "task": task_description,
         "session_id": actual_session_id,

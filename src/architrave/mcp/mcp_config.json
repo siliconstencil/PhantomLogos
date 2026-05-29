@@ -33,6 +33,11 @@
       "command": "cmd",
       "args": ["/c", "npx", "-y", "@executeautomation/playwright-mcp-server"],
       "env": {}
+    },
+    "filesystem": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "D:\\Hank"],
+      "env": { "PYTHONPATH": "D:\\Hank" }
     }
   }
 }
