@@ -1,5 +1,37 @@
 # Phantom Logos: Walkthrough — Sovereign Skill Architecture
 
+## Phase 1.1.35: K2.1 Singleton Refactor & Mapper Fixes [01:17 AM PT]
+
+**Status**: COMPLETED (2026-05-29)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | **K2.1 Singleton Public API**: 16 `_get_X()` -> `get_X()` rename | `singletons.py`, `hephaestus.py`, 45 files | Public API standardize edildi; backward-compat alias'lar korundu |
+| 2 | **Fix A (Thread-Safety)**: `Lock` -> `RLock`, `index_file()` cache writes locked | `graph_manager.py` | Race condition giderildi |
+| 3 | **Fix B (Singleton Bug)**: `_SpatialStore()` -> `get_spatial()` singleton | `singletons.py` | Duplicate DB connection ondu |
+| 4 | **Fix C (Deprecated Tool)**: Dead `_mapper` kaldirildi | `retrieval.py`, `base.py` | Tool router temizlendi |
+| 5 | **Fix D (Dead Code)**: `chunk_size`/`chunk_overlap` kaldirildi | `graph_manager.py` | -2 satir dead code |
+| 6 | **Post-Commit Hook**: `register_snapshot()` per-changed-file | `.git/hooks/post-commit` | Watchdog false positive ondu |
+| 7 | **Rename Bug Fixes**: 4 dosyada gecmis `_get_X` importlari + string over-rename | `reindex_all.py`, `update_mapper.py`, `seed_14_axes.py`, `synergeia.py` | 4 bug fix |
+| 8 | **health_check_14_axes.py** ImportError cozumu | `scripts/health_check_14_axes.py` | Clean run |
+| 9 | **Migration Utility**: `rename_getters.py` committed | `scripts/rename_getters.py` | Future rename icin arac |
+
+### Test Sonuclari
+
+| Suite | Count | Status |
+|-------|-------|--------|
+| Smoke tests | 4/5 | PASSED (1 skip) |
+| health_check_14_axes.py | 1 | PASSED |
+
+### Key Improvements (Phase 1.1.35)
+
+1. **K2.1 Singleton Refactor**: 16 getter fonksiyon `_get_X()` -> `get_X()` isimlendirildi. API netligi saglandi.
+2. **Mapper Stabilitesi**: 4 bug fix (RLock, singleton, dead code, deprecated tool). 0 layer violation.
+3. **Snapshot Sync**: Post-commit hook ile watchdog false positive'leri onlendi.
+4. **Toplam degisiklik**: 45 files changed, +423/-224 satir.
+
+---
+
 ## Phase 1.1.34: MCP Ekosistem Onarimi & CI/CD Pipeline [09:41 PM - 11:48 PM PT]
 
 **Status**: COMPLETED (2026-05-28)

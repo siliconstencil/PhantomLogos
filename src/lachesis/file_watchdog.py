@@ -100,9 +100,9 @@ class PollingGuardian:
                 extra={"rel_path": rel_path, "reason": reason, "rollback": True},
             )
             try:
-                from cognition.sophia.hephaestus import get_meta
+                from src.utils.service_locator import get_meta_store
 
-                get_meta().adjust_reliability("sophia", -0.15, "watchdog_rollback")
+                get_meta_store().adjust_reliability("sophia", -0.15, "watchdog_rollback")
             except Exception as exc:
                 logger.warning("MetaCognitionStore reliability update failed: %s", exc)
         except Exception as e:

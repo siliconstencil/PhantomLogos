@@ -1,3 +1,26 @@
+## Phase 1.1.35 - K2.1 Singleton Refactor & Mapper Fixes - 2026-05-29 [01:17 AM PT]
+
+### Added
+
+- **K2.1 Singleton Public API**: 16 `_get_X()` functions renamed to `get_X()` across all call sites (~45 files). Backward-compat aliases preserved. `scripts/rename_getters.py` utility committed. [SRC:axis_10]
+- **Fix A (Mapper Thread-Safety)**: `graph_manager.py` Lock -> RLock, `index_file()` cache writes inside lock block. [SRC:axis_5]
+- **Fix B (Spatial Singleton Bug)**: `_ensure_spatial_index()` no longer opens duplicate `SpatialStore()`; uses `get_spatial()` singleton. [SRC:axis_5]
+- **Fix C (Deprecated Tool)**: Dead `_mapper` bridge tool removed from `retrieval.py` and `base.py`. [SRC:axis_2]
+- **Fix D (Dead Code)**: Unused `chunk_size`/`chunk_overlap` removed from `graph_manager.py`. [SRC:axis_5]
+- **Post-Commit Hook**: `.git/hooks/post-commit` calls `SnapshotManager.register_snapshot()` for each changed file.
+- **Bug Fixes**: 4 rename bugs fixed (`reindex_all.py`, `update_mapper.py`, `seed_14_axes.py` import lines; `synergeia.py` string over-rename). `int` 0-byte artifact deleted.
+- **health_check_14_axes.py** ImportError resolved.
+
+### Changed
+
+- **ROADMAP_STATUS_Q2_2026.md**: K2.1 (ACIK -> YAPILDI). Overall maturity to ~69%.
+- **main_walkthrough.md**: Phase 1.1.35 entry added.
+
+### Tests
+
+- Smoke tests: 4 PASSED, 1 skipped
+- `health_check_14_axes.py`: clean run
+
 ## Phase 1.1.34 - MCP Ecosystem Pipeline Repair & CI/CD Integration - 2026-05-28 [02:35 AM PT]
 
 ### Added

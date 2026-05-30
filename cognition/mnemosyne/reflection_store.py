@@ -1,198 +1,169 @@
 import hashlib
 import logging
-import sqlite3
 from typing import Any, cast
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from cognition.mnemosyne.models import (
+    EntityRecord,
+    FailureMemoryRecord,
+    MnemosyneBase,
+    ReflectionRecord,
+    SemanticRelationRecord,
+)
+from src.utils.project_path import to_absolute_path
 
 logger = logging.getLogger(__name__)
 
 
 class ReflectionStore:
-    """
-    Phase 11.16: Persistence layer for Knowledge & Reflection (Axis 5, 6, 8).
-    Phase 11.19: Failure Memory implementation.
-    """
-
-    def __init__(self, db_path: str | None = None):
-        from src.utils.project_path import to_absolute_path
-
-        self.db_path = db_path or to_absolute_path("data/mnemosyne.db")
-        self._ensure_tables()
-
-    def _ensure_tables(self):
-        """[Phase 1.0.25.2] Ensures raw SQL tables exist for entities, reflections, relations, and failure memory."""
-        sql_entities = """
-        CREATE TABLE IF NOT EXISTS entities (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            type TEXT NOT NULL,
-            session_id TEXT,
-            frequency INTEGER DEFAULT 1,
-            last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(name, type)
-        );"""
-        sql_reflections = """
-        CREATE TABLE IF NOT EXISTS reflections (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            insight TEXT NOT NULL,
-            category TEXT DEFAULT 'general',
-            session_id TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );"""
-        sql_relations = """
-        CREATE TABLE IF NOT EXISTS semantic_relations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject TEXT NOT NULL,
-            predicate TEXT,
-            object TEXT NOT NULL,
-            session_id TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );"""
-        sql_failure = """
-        CREATE TABLE IF NOT EXISTS failure_memory (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            error_type TEXT NOT NULL,
-            root_cause TEXT,
-            prevention_rule TEXT,
-            context_hash TEXT UNIQUE,
-            severity INTEGER DEFAULT 1,
-            recurrence_count INTEGER DEFAULT 1,
-            status TEXT DEFAULT 'active',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );"""
-        try:
-            self._execute(sql_entities)
-            self._execute(sql_reflections)
-            # Check and safely add importance column if missing
-            try:
-                self._execute("SELECT importance FROM reflections LIMIT 1", commit=False)
-            except Exception:
-                try:
-                    self._execute("ALTER TABLE reflections ADD COLUMN importance REAL DEFAULT 0.5")
-                    logger.info(
-                        "ReflectionStore: reflections table altered to include importance column."
-                    )
-                except Exception as alter_err:
-                    logger.warning(
-                        f"ReflectionStore: Failed to alter reflections table ({alter_err})"
-                    )
-
-            self._execute(sql_relations)
-            self._execute(sql_failure)
-            logger.info("ReflectionStore: Raw SQL tables verified/created.")
-        except Exception as e:
-            logger.error(f"ReflectionStore: Failed to ensure tables ({e})")
-
-    def _get_conn(self):
-        return sqlite3.connect(self.db_path)
-
-    def _execute(
-        self, sql: str, params: tuple = (), fetch: bool = False, commit: bool = True
-    ) -> int | list[dict[str, Any]]:
-        """Standardized execution with explicit connection closing to prevent locks."""
-        conn = self._get_conn()
-        try:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            cursor.execute(sql, params)
-            if commit:
-                conn.commit()
-            if fetch:
-                return [dict(r) for r in cursor.fetchall()]
-            return cursor.rowcount
-        except Exception as e:
-            if commit:
-                conn.rollback()
-            logger.error(f"ReflectionStore: SQL Error ({e}) | SQL: {sql[:100]}")
-            raise
-        finally:
-            conn.close()
+    def __init__(self, db_url: str | None = None):
+        url = db_url or f"sqlite:///{to_absolute_path('data/mnemosyne.db')}"
+        self.engine = create_engine(url, connect_args={"check_same_thread": False, "timeout": 30})
+        MnemosyneBase.metadata.create_all(self.engine)
+        self.Session = sessionmaker(bind=self.engine)
 
     def store_entities(self, session_id: str, entities: list[dict[str, Any]]):
         if not entities:
             return
-        conn = self._get_conn()
+        session = self.Session()
         try:
-            cursor = conn.cursor()
             for entity in entities:
                 name, etype = entity.get("text"), entity.get("type")
                 if not name or not etype:
                     continue
-                sql = """
-                INSERT INTO entities (name, type, session_id, frequency, last_seen)
-                VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-                ON CONFLICT(name, type) DO UPDATE SET
-                    frequency = frequency + 1,
-                    last_seen = CURRENT_TIMESTAMP
-                """
-                cursor.execute(sql, (name, etype, session_id))
-            conn.commit()
+                existing = session.query(EntityRecord).filter_by(name=name, type=etype).first()
+                if existing:
+                    existing.frequency = (existing.frequency or 1) + 1
+                    existing.last_seen = __import__("datetime").datetime.now(
+                        __import__("datetime").UTC
+                    )
+                else:
+                    session.add(EntityRecord(name=name, type=etype, session_id=session_id))
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
         finally:
-            conn.close()
+            session.close()
 
     def store_relations(self, session_id: str, relations: list[dict[str, Any]]):
         if not relations:
             return
-        conn = self._get_conn()
+        session = self.Session()
         try:
-            cursor = conn.cursor()
             for rel in relations:
-                sql = "INSERT INTO semantic_relations (subject, predicate, object, session_id) VALUES (?, ?, ?, ?)"
-                cursor.execute(sql, (rel.get("s"), rel.get("p"), rel.get("o"), session_id))
-            conn.commit()
+                session.add(
+                    SemanticRelationRecord(
+                        subject=rel.get("s"),
+                        predicate=rel.get("p"),
+                        object=rel.get("o"),
+                        session_id=session_id,
+                    )
+                )
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
         finally:
-            conn.close()
+            session.close()
 
     def store_reflection(
         self, session_id: str, insight: str, category: str = "general", importance: float = 0.5
     ) -> bool:
         if not insight or len(insight) < 20:
             return False
-        sql = "INSERT INTO reflections (insight, category, session_id, importance) VALUES (?, ?, ?, ?)"
+        session = self.Session()
         try:
-            self._execute(sql, (insight, category, session_id, importance))
+            session.add(
+                ReflectionRecord(
+                    insight=insight, category=category, session_id=session_id, importance=importance
+                )
+            )
+            session.commit()
             return True
         except Exception:
+            session.rollback()
             return False
+        finally:
+            session.close()
 
     def get_recent_reflections(self, limit: int = 5) -> list[dict[str, Any]]:
-        sql = (
-            "SELECT insight, category, created_at FROM reflections ORDER BY created_at DESC LIMIT ?"
-        )
+        session = self.Session()
         try:
-            res = self._execute(sql, (limit,), fetch=True, commit=False)
-            return cast(list[dict[str, Any]], res)
+            rows = (
+                session.query(ReflectionRecord)
+                .order_by(ReflectionRecord.created_at.desc())
+                .limit(limit)
+                .all()
+            )
+            return [
+                {"insight": r.insight, "category": r.category, "created_at": str(r.created_at)}
+                for r in rows
+            ]
         except Exception:
             return []
+        finally:
+            session.close()
 
     def get_relevant_reflections(self, session_id: str, limit: int = 5) -> list[dict[str, Any]]:
-        """[SRC:axis_8] Retrieves reflections specific to the current session."""
-        sql = (
-            "SELECT insight FROM reflections WHERE session_id = ? ORDER BY created_at DESC LIMIT ?"
-        )
-        res = self._execute(sql, (session_id, limit), fetch=True, commit=False)
-        return cast(list[dict[str, Any]], res)
+        session = self.Session()
+        try:
+            rows = (
+                session.query(ReflectionRecord)
+                .filter_by(session_id=session_id)
+                .order_by(ReflectionRecord.created_at.desc())
+                .limit(limit)
+                .all()
+            )
+            return [{"insight": r.insight} for r in rows]
+        except Exception:
+            return []
+        finally:
+            session.close()
 
     def get_relevant_entities(self, keywords: list[str], limit: int = 10) -> list[dict[str, Any]]:
-        """[SRC:axis_6] Retrieves entities matching keywords."""
         if not keywords:
             return []
-        likes = " OR ".join(["name LIKE ?"] * len(keywords))
-        params = (*tuple(f"%{k}%" for k in keywords), limit)
-        sql = f"SELECT name, type FROM entities WHERE {likes} ORDER BY frequency DESC LIMIT ?"
-        res = self._execute(sql, params, fetch=True, commit=False)
-        return cast(list[dict[str, Any]], res)
+        session = self.Session()
+        try:
+            clauses = [EntityRecord.name.like(f"%{k}%") for k in keywords]
+            rows = (
+                session.query(EntityRecord)
+                .filter(*clauses)
+                .order_by(EntityRecord.frequency.desc())
+                .limit(limit)
+                .all()
+            )
+            return [{"name": r.name, "type": r.type} for r in rows]
+        except Exception:
+            return []
+        finally:
+            session.close()
 
     def get_relevant_relations(self, entities: list[str], limit: int = 10) -> list[dict[str, Any]]:
-        """[SRC:axis_5] Retrieves relations involving specified entities."""
         if not entities:
             return []
-        placeholders = ",".join(["?"] * len(entities))
-        sql = f"SELECT subject, predicate, object FROM semantic_relations WHERE subject IN ({placeholders}) OR object IN ({placeholders}) ORDER BY created_at DESC LIMIT ?"
-        res = self._execute(
-            sql, tuple(entities) + tuple(entities) + (limit,), fetch=True, commit=False
-        )
-        return cast(list[dict[str, Any]], res)
+        session = self.Session()
+        try:
+            rows = (
+                session.query(SemanticRelationRecord)
+                .filter(
+                    SemanticRelationRecord.subject.in_(entities)
+                    | SemanticRelationRecord.object.in_(entities)
+                )
+                .order_by(SemanticRelationRecord.created_at.desc())
+                .limit(limit)
+                .all()
+            )
+            return [
+                {"subject": r.subject, "predicate": r.predicate, "object": r.object} for r in rows
+            ]
+        except Exception:
+            return []
+        finally:
+            session.close()
 
     def store_failure(
         self, error_type: str, root_cause: str, prevention_rule: str, severity: int = 1
@@ -203,40 +174,73 @@ class ReflectionStore:
             )
             return ""
         context_hash = hashlib.sha256(f"{error_type}:{root_cause[:100]}".encode()).hexdigest()[:16]
-        sql = """
-        INSERT INTO failure_memory (error_type, root_cause, prevention_rule, context_hash, severity, status)
-        VALUES (?, ?, ?, ?, ?, 'active')
-        ON CONFLICT(context_hash) DO UPDATE SET
-            recurrence_count = recurrence_count + 1,
-            severity = MAX(severity, excluded.severity),
-            status = 'active',
-            updated_at = CURRENT_TIMESTAMP
-        """
+        session = self.Session()
         try:
-            self._execute(sql, (error_type, root_cause, prevention_rule, context_hash, severity))
+            existing = (
+                session.query(FailureMemoryRecord).filter_by(context_hash=context_hash).first()
+            )
+            if existing:
+                existing.recurrence_count = (existing.recurrence_count or 1) + 1
+                existing.severity = max(existing.severity or 1, severity)
+                existing.status = "active"
+                existing.updated_at = __import__("datetime").datetime.now(
+                    __import__("datetime").UTC
+                )
+            else:
+                session.add(
+                    FailureMemoryRecord(
+                        error_type=error_type,
+                        root_cause=root_cause,
+                        prevention_rule=prevention_rule,
+                        context_hash=context_hash,
+                        severity=severity,
+                    )
+                )
+            session.commit()
             return context_hash
         except Exception as e:
+            session.rollback()
             logger.error(f"ReflectionStore: store_failure failed: {e}")
             raise
+        finally:
+            session.close()
 
     def get_prevention_rules(self, limit: int = 5) -> list[dict[str, Any]]:
-        sql = """
-        SELECT error_type, prevention_rule, recurrence_count, severity
-        FROM failure_memory WHERE status = 'active'
-        ORDER BY severity DESC, recurrence_count DESC LIMIT ?
-        """
+        session = self.Session()
         try:
-            res = self._execute(sql, (limit,), fetch=True, commit=False)
-            return cast(list[dict[str, Any]], res)
+            rows = (
+                session.query(FailureMemoryRecord)
+                .filter_by(status="active")
+                .order_by(
+                    FailureMemoryRecord.severity.desc(), FailureMemoryRecord.recurrence_count.desc()
+                )
+                .limit(limit)
+                .all()
+            )
+            return [
+                {
+                    "error_type": r.error_type,
+                    "prevention_rule": r.prevention_rule,
+                    "recurrence_count": r.recurrence_count,
+                    "severity": r.severity,
+                }
+                for r in rows
+            ]
         except Exception:
             return []
+        finally:
+            session.close()
 
     def resolve_failure(self, context_hash: str):
-        sql = "UPDATE failure_memory SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE context_hash = ?"
-        self._execute(sql, (context_hash,))
-
-
-if __name__ == "__main__":
-    store = ReflectionStore()
-    store.store_reflection("test_session", "Verification of schema initialization.")
-    print("ReflectionStore: Schema verified.")
+        session = self.Session()
+        try:
+            record = session.query(FailureMemoryRecord).filter_by(context_hash=context_hash).first()
+            if record:
+                record.status = "archived"
+                record.updated_at = __import__("datetime").datetime.now(__import__("datetime").UTC)
+                session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
