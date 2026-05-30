@@ -1,18 +1,20 @@
 import os
 import sqlite3
 
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 possible_db_paths = [
-    "d:/Hank/data/reliability.db",
-    "d:/Hank/data/mnemosyne.db",
-    "d:/Hank/data/snapshots/reliability.db",
-    "d:/Hank/data/snapshots/mnemosyne.db",
-    "d:/Hank/reliability.db",
-    "d:/Hank/mnemosyne.db",
+    os.path.join(project_root, "data", "reliability.db"),
+    os.path.join(project_root, "data", "mnemosyne.db"),
+    os.path.join(project_root, "data", "snapshots", "reliability.db"),
+    os.path.join(project_root, "data", "snapshots", "mnemosyne.db"),
+    os.path.join(project_root, "reliability.db"),
+    os.path.join(project_root, "mnemosyne.db"),
 ]
 
 print("SUCCESS:")
 found_dbs = []
-for root, _dirs, files in os.walk("d:/Hank"):
+for root, _dirs, files in os.walk(project_root):
     if ".venv" in root or ".git" in root:
         continue
     for f in files:

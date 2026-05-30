@@ -12,7 +12,8 @@ from scripts.genai_manager import sync_cache
 
 def test_sync_cache_unauthorized():
     # Remove L0 token or mock it to be expired
-    token_path = "d:\\Hank\\data\\snapshots\\L0_AUTH_TOKEN"
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    token_path = os.path.join(project_root, "data", "snapshots", "L0_AUTH_TOKEN")
 
     with patch("os.path.exists", return_value=False):
         with pytest.raises(SystemExit) as excinfo:

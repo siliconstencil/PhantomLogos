@@ -58,6 +58,9 @@ logs/system/watchdog/
 # Machine-specific generated configs
 mcp_config.json
 src/architrave/mcp/mcp_config.json
+.mcp.json
+opencode.json
+.claude/settings.json
 
 # Internal dev diary (not for public)
 scratch_book.md

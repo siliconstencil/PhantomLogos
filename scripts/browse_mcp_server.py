@@ -3,7 +3,7 @@ import subprocess
 
 from mcp.server.fastmcp import FastMCP
 
-BROWSE_BIN = os.getenv("BROWSE_BIN", r"D:\Downloads\gstack-main\browse\dist\browse.exe")
+BROWSE_BIN = os.getenv("BROWSE_BIN", "browse.exe" if os.name == "nt" else "browse")
 
 mcp = FastMCP("browse")
 
