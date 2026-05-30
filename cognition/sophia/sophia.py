@@ -27,7 +27,7 @@ class ToolValidator:
     def __init__(self, max_retries: int = 2):
         self.max_retries = max_retries
 
-    def validate_json(self, response: str, required_keys: list = None) -> dict[str, Any]:
+    def validate_json(self, response: str, required_keys: list | None = None) -> dict[str, Any]:
         attempt = 0
         last_error = None
         while attempt <= self.max_retries:

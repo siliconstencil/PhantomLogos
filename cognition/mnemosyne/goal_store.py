@@ -30,7 +30,7 @@ class GoalStore:
         title: str,
         description: str = "",
         priority: int = 3,
-        parent_id: int = None,
+        parent_id: int | None = None,
         session_id: str = "default",
     ):
         session = self.Session()

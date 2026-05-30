@@ -359,11 +359,11 @@ class VRAMSweeper:
         name = os.path.splitext(os.path.basename(db_rel))[0]
         dst = to_absolute_path(f"{self._BACKUP_DIR}/{name}_{ts}.db")
         try:
-            conn = sqlite3.connect(str(src))
-            conn.execute("VACUUM INTO ?", (str(dst),))
+            conn = sqlite3.connect(src)
+            conn.execute("VACUUM INTO ?", (dst,))
             conn.close()
             logger.info(f"DBBackup: {db_rel} -> {dst}")
-            return str(dst)
+            return dst
         except Exception as e:
             logger.warning(f"DBBackup: VACUUM INTO failed for {db_rel} ({e})")
             return None
@@ -374,11 +374,11 @@ class VRAMSweeper:
         from src.utils.project_path import to_absolute_path
 
         src = to_absolute_path("data/lancedb")
-        if not os.path.isdir(str(src)):
+        if not os.path.isdir(src):
             return None
         dst = to_absolute_path(f"{self._BACKUP_DIR}/lancedb_{ts}")
         try:
-            path = shutil.make_archive(str(dst), "gztar", str(src))
+            path = shutil.make_archive(dst, "gztar", src)
             logger.info(f"DBBackup: lancedb/ -> {path}")
             return path
         except Exception as e:
@@ -390,7 +390,7 @@ class VRAMSweeper:
 
         from src.utils.project_path import to_absolute_path
 
-        pattern = str(to_absolute_path(f"{self._BACKUP_DIR}/{prefix}_*"))
+        pattern = to_absolute_path(f"{self._BACKUP_DIR}/{prefix}_*")
         files = sorted(glob.glob(pattern))
         while len(files) > self._BACKUP_MAX_GEN:
             old = files.pop(0)
@@ -446,12 +446,12 @@ class VRAMSweeper:
 
     def _prune_lancedb(self, gov: dict, stats: dict) -> None:
         try:
-            from ..mnemosyne.semantic_store import FailureMemoryStore, SemanticStore
+            from ..mnemosyne.semantic_store import SemanticStore
             from ..mnemosyne.temporal_store import TemporalStore
 
             lancedb_max = gov.get("lancedb_max_items", 500)
             short_days = gov.get("short_retention_days", 15)
-            short_cutoff = float(time.time()) - (short_days * 24 * 3600)
+            short_cutoff = time.time() - (short_days * 24 * 3600)
 
             # General Semantic Store
             ss = SemanticStore()
@@ -462,16 +462,7 @@ class VRAMSweeper:
                 stats["pruned_lancedb"] += count - table.count_rows()
             ss.optimize()
 
-            # Failure Memory Store (Axis 6 extension)
-            try:
-                fms = FailureMemoryStore()
-                fmt = fms.db.open_table(fms.table_name)
-                fm_count = fmt.count_rows()
-                if fm_count > lancedb_max // 2:
-                    fmt.delete(f"timestamp < {short_cutoff}")
-                    stats["pruned_lancedb"] += fm_count - fmt.count_rows()
-            except Exception as fe:
-                logger.debug(f"VRAMSweeper: FailureMemoryStore pruning skipped ({fe})")
+
 
             TemporalStore().optimize()
         except Exception as le:
@@ -555,7 +546,7 @@ class VRAMSweeper:
         """Prunes historical data from SQLite, LanceDB, and OpenCode storage."""
         # Phase 11.18.15: Ensure maintenance runs on E-cores
         try:
-            import psutil
+            import psutil  # type: ignore
 
             total = psutil.cpu_count(logical=True) or 1
             e_cores = list(range(max(0, total - 4), total))

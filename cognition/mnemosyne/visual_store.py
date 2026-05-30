@@ -46,7 +46,7 @@ class VisualStore:
         image_path: str,
         description: str,
         variant: str = "primary",
-        metadata: dict = None,
+        metadata: dict | None = None,
         session_id: str = "default",
     ):
         """Stores a visual memory with its Nomic text embedding."""
