@@ -5,14 +5,14 @@ from pathlib import Path
 root = Path(__file__).resolve().parent.parent
 sys.path.append(str(root))
 
-from cognition.sophia.hephaestus import _get_mapper, _get_spatial
+from cognition.sophia.hephaestus import get_mapper, get_spatial
 
 
 def reindex():
     print("=== Phase 10.4: Full Codebase Re-indexing ===")
 
-    mapper = _get_mapper()
-    spatial = _get_spatial()
+    mapper = get_mapper()
+    spatial = get_spatial()
 
     print(f"Project Path: {mapper.project_path}")
     print("Starting deep mapping (including scripts, tests, agent)...")

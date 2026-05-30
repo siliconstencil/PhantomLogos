@@ -151,9 +151,9 @@ async def negotiate_node(state: Any) -> dict[str, Any]:
 
         trajectory_id = 0
         try:
-            from .koinonia import _get_trajectory_store
+            from .koinonia import get_trajectory_store
 
-            trajectory_id = _get_trajectory_store().create_session(
+            trajectory_id = get_trajectory_store().create_session(
                 state["session_id"], state["task"]
             )
         except Exception as te:

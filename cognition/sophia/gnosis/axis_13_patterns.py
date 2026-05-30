@@ -1,4 +1,4 @@
-from cognition.sophia.hephaestus import _get_episodic, _get_temporal
+from cognition.sophia.hephaestus import get_episodic, get_temporal
 from src.architrave.opencode_store import OpenCodeStore
 
 
@@ -23,7 +23,7 @@ def _build_axis_13(session_id: str = "default") -> str:
                     f"Most used model: {models[0]['model']} ({models[0]['count']} sessions)"
                 )
 
-        recent_events = _get_episodic().recent(session_id, limit=10)
+        recent_events = get_episodic().recent(session_id, limit=10)
         errors = [
             e
             for e in recent_events
@@ -34,7 +34,7 @@ def _build_axis_13(session_id: str = "default") -> str:
             for e in errors[:3]:
                 lines.append(f"  - {e.get('action')}: {e.get('outcome')[:60]}")
 
-        temps = _get_temporal().query(session_id, limit=5)
+        temps = get_temporal().query(session_id, limit=5)
         if temps:
             total_latency = sum(t.get("latency_ms", 0) or 0 for t in temps)
             avg_lat = total_latency / len(temps)

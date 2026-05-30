@@ -1,10 +1,10 @@
-from ..hephaestus import _get_visual
+from ..hephaestus import get_visual
 
 
 def _build_axis_14(session_id: str) -> str:
     lines = []
     try:
-        visual = _get_visual()
+        visual = get_visual()
         recent = visual.get_recent(session_id, limit=3)
         if recent:
             lines.append("### MNEMOSYNE AXIS 14 (VISUAL PIPELINE)")

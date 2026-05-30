@@ -1,6 +1,6 @@
 # Phantom Logos: System Topography & Micro-Level Data Flow
 
-*Status: v1.1.26 - SLM MCP Repair & K2 Debt Cleanup (6 K2 items cleared, 3 dead files eliminated, SLM MCP fully operational), 0 Layer Violations, System STABLE*
+*Status: v1.1.34 - MCP Ecosystem Pipeline Repair & CI/CD Integration, 0 Layer Violations, System STABLE*
 
 This document provides a high-fidelity mapping of the Phantom Logos Agentic OS, detailing module interactions, data persistence across the 14-axis Mnemosyne memory, and the Sovereign Gateway architecture.
 
@@ -833,6 +833,7 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 
 | Version | Date | Summary |
 |---------|------|---------|
+| **1.1.34** | **2026-05-28** | **MCP Ecosystem Pipeline Repair & CI/CD Integration.** 8 pipeline fix: filesystem MCP config, LangGraph whitelist prefix-based, VRAM flush semantic removed, SLM session_init, close_session async, health guard, LanceDB fallback, mapper deprecated. K4.5 CI/CD GitHub Actions (ruff + pytest). K2.6 parallel gnosis (asyncio.gather). K2.13 dead file cleanup. Tests: 22/22 PASSED, 4/4 smoke PASSED. Mapper: 266 modules, 0 layer violations. |
 | **1.1.26** | **2026-05-26** | **SLM MCP Repair & K2 Debt Cleanup (6 K2 items cleared, 3 dead files eliminated, SLM MCP fully operational).** 5 SLM ROOT CAUSES fixed (MCP never connected, 3-strike permanent disable, _is_our_slm bug, orphan retry_disabled_sessions, embedding worker race). 104 MCP tools re-registered. K2.2/2.3/2.4: 3 dead files (-90L) folded into existing modules. K2.5: TokenBudgetGuard Axis 4 persistence. K2.9: 8 files duplicate import cleanup. K2.10: BLACKLISTED_MODELS public API. bootstrap.py _is_our_slm restored to function ref. Tests: 16/16 critical PASSED. Mapper: 266 modules, 0 layer violations. |
 | **1.1.25** | **2026-05-26** | **Gateway & Bootstrap Refactoring (7 Greek Packages).** gateway_client.py 919L->276L (kratos/nomos/ariadne). bootstrap.py 580L->112L (ananke/hermes_mcp). sophia.py 639L->13L (telos/). hephaestus.py 330L->47L (hestia/). 7 new packages (kratos/nomos/ariadne/ananke/hermes_mcp/telos/hestia). 27/28 tests PASSED. Mapper: 266 modules, 0 layer violations. |
 | **1.1.24** | **2026-05-25** | **MCP Ecosystem Expansion (Wave 1+2) + Skill Consolidation.** 6 MCP servers active (sequential-thinking, fetch, kg-mem, github, playwright, slm) = 69 tools. 51 skills total. audit skill created (6-phase pipeline, merged autonomous-qa-evals). 5 new MCP skill files. All 5 config files synced. MCP governance rules: tools.md sections 11-15, rules.json RULE-039, AGENTS.md FUNCTIONAL_TOOL_PRIORITY updated. 250 modules, 0 layer violations. |
@@ -898,5 +899,5 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 ---
 
 *Created by Antigravity (Phantom Logos)*
-*Last Updated: 2026-05-26 [06:00 PM PT]*
-*Status: v1.1.27 - SLM Daemon Stability (formatter crash fixed, embedding OSError bypassed, run_morpheus.bat rewritten), 0 Layer Violations, System STABLE*
+*Last Updated: 2026-05-28 [02:40 AM PT]*
+*Status: v1.1.34 - MCP Ecosystem Pipeline Repair & CI/CD Integration, 0 Layer Violations, System STABLE*

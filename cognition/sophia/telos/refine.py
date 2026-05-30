@@ -6,8 +6,8 @@ from src.utils.logging_config import setup_logger
 
 from ..eidos import CritiqueResult
 from ..gnosis import get_dynamic_context
-from ..hephaestus import _get_meta, get_sophia_instructions
-from ._gateway import _get_gateway
+from ..hephaestus import get_meta, get_sophia_instructions
+from ._gateway import get_gateway
 
 logger = setup_logger(__name__)
 
@@ -21,7 +21,7 @@ async def run_refine(
     stable, dynamic, block_signal = await get_dynamic_context(
         "sophia", task_hint=task, session_id=session_id
     )
-    architrave = _get_gateway()
+    architrave = get_gateway()
     fallback_model = block_signal.get("fallback_model")
 
     critique_str = (
@@ -71,7 +71,7 @@ async def run_refine(
         context={"function": "run_refine", "require_timestamp": True, "session_id": session_id},
     )
     _delta = check["score_delta"] if check["violations"] else 1.0
-    _get_meta().adjust_reliability(
+    get_meta().adjust_reliability(
         agent_id="sophia",
         delta=_delta,
         violation_type=check["violations"][0] if check["violations"] else "",

@@ -100,15 +100,15 @@ class PollingGuardian:
                 extra={"rel_path": rel_path, "reason": reason, "rollback": True},
             )
             try:
-                from cognition.sophia.hephaestus import _get_meta
+                from cognition.sophia.hephaestus import get_meta
 
-                _get_meta().adjust_reliability("sophia", -0.15, "watchdog_rollback")
+                get_meta().adjust_reliability("sophia", -0.15, "watchdog_rollback")
             except Exception as exc:
                 logger.warning("MetaCognitionStore reliability update failed: %s", exc)
         except Exception as e:
             logger.error(f"Sovereign Shield: Mnemosyne sync failed ({e})")
 
-    def _get_file_hash(self, full_path: str) -> str:
+    def get_file_hash(self, full_path: str) -> str:
         sha256_hash = hashlib.sha256()
         try:
             with open(full_path, "rb") as f:
@@ -137,7 +137,7 @@ class PollingGuardian:
                 return False
 
             self._last_mtimes[rel_path] = new_mtime
-            current_hash = self._get_file_hash(full_path)
+            current_hash = self.get_file_hash(full_path)
             if not current_hash:
                 return False
 

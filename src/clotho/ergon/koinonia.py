@@ -9,7 +9,7 @@ logger = setup_logger(__name__)
 _TRAJECTORY_STORE = None
 
 
-def _get_trajectory_store():
+def get_trajectory_store():
     global _TRAJECTORY_STORE
     if _TRAJECTORY_STORE is None:
         from cognition.mnemosyne.trajectory_store import TrajectoryStore
@@ -47,7 +47,7 @@ def record_step(state: dict | Any, node_name: str) -> None:
     except Exception as e:
         logger.debug(f"record_step: TemporalStore record skipped ({e})")
 
-    store = _get_trajectory_store()
+    store = get_trajectory_store()
     store.record_step(
         session_id=session_id,
         trajectory_id=trajectory_id,

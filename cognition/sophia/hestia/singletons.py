@@ -31,16 +31,16 @@ _model_loader = None
 _visual = None
 
 
-def _get_store():
+def get_store():
     global _store
     with _init_lock:
         if _store is None:
             _store = MnemosyneRationalStore()
-            _ensure_governance_sync(_store)
+            ensure_governance_sync(_store)
     return _store
 
 
-def _ensure_governance_sync(store: MnemosyneRationalStore):
+def ensure_governance_sync(store: MnemosyneRationalStore):
     try:
         if len(store.get_secure_rules("system")) < 5:
             logger.info("Hephaestus: Axis 10 rules missing or incomplete. Triggering sync...")
@@ -52,7 +52,7 @@ def _ensure_governance_sync(store: MnemosyneRationalStore):
         logger.warning(f"Hephaestus: Governance sync failed ({e})")
 
 
-def _get_episodic():
+def get_episodic():
     global _episodic
     with _init_lock:
         if _episodic is None:
@@ -60,7 +60,7 @@ def _get_episodic():
     return _episodic
 
 
-def _get_goals():
+def get_goals():
     global _goals
     with _init_lock:
         if _goals is None:
@@ -68,7 +68,7 @@ def _get_goals():
     return _goals
 
 
-def _get_procedural():
+def get_procedural():
     global _procedural
     with _init_lock:
         if _procedural is None:
@@ -76,7 +76,7 @@ def _get_procedural():
     return _procedural
 
 
-def _get_meta():
+def get_meta():
     global _meta
     with _init_lock:
         if _meta is None:
@@ -84,7 +84,7 @@ def _get_meta():
     return _meta
 
 
-def _get_pruner():
+def get_pruner():
     global _pruner
     with _init_lock:
         if _pruner is None:
@@ -94,7 +94,7 @@ def _get_pruner():
     return _pruner
 
 
-def _get_spatial():
+def get_spatial():
     global _spatial
     with _init_lock:
         if _spatial is None:
@@ -102,7 +102,7 @@ def _get_spatial():
     return _spatial
 
 
-def _get_mapper():
+def get_mapper():
     global _mapper
     with _init_lock:
         if _mapper is None:
@@ -110,16 +110,14 @@ def _get_mapper():
             from src.utils.project_path import get_project_root
 
             _mapper = CodebaseMapper(
-                project_path=str(get_project_root()), spatial_store=_get_spatial()
+                project_path=str(get_project_root()), spatial_store=get_spatial()
             )
     return _mapper
 
 
-def _ensure_spatial_index():
-    mapper = _get_mapper()
-    from cognition.mnemosyne.spatial_store import SpatialStore as _SpatialStore
-
-    sp = _SpatialStore()
+def ensure_spatial_index():
+    mapper = get_mapper()
+    sp = get_spatial()
     if sp.get_module_count() > 0:
         return
 
@@ -127,7 +125,7 @@ def _ensure_spatial_index():
     mapper.map_codebase(deep=True)
 
 
-def _get_semantic():
+def get_semantic():
     global _semantic
     with _init_lock:
         if _semantic is None:
@@ -137,7 +135,7 @@ def _get_semantic():
     return _semantic
 
 
-def _get_temporal():
+def get_temporal():
     global _temporal
     with _init_lock:
         if _temporal is None:
@@ -147,7 +145,7 @@ def _get_temporal():
     return _temporal
 
 
-def _get_reflection():
+def get_reflection():
     global _reflection
     with _init_lock:
         if _reflection is None:
@@ -157,7 +155,7 @@ def _get_reflection():
     return _reflection
 
 
-def _get_failure_memory():
+def get_failure_memory():
     global _failure_memory
     with _init_lock:
         if _failure_memory is None:
@@ -167,7 +165,7 @@ def _get_failure_memory():
     return _failure_memory
 
 
-def _get_monitor():
+def get_monitor():
     global _monitor
     with _init_lock:
         if _monitor is None:
@@ -177,7 +175,7 @@ def _get_monitor():
     return _monitor
 
 
-def _get_sweeper():
+def get_sweeper():
     global _vram_sweeper
     with _init_lock:
         if _vram_sweeper is None:
@@ -187,7 +185,7 @@ def _get_sweeper():
     return _vram_sweeper
 
 
-def _get_loader():
+def get_loader():
     global _model_loader
     with _init_lock:
         if _model_loader is None:
@@ -197,7 +195,7 @@ def _get_loader():
     return _model_loader
 
 
-def _get_visual():
+def get_visual():
     global _visual
     with _init_lock:
         if _visual is None:

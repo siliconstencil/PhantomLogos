@@ -69,12 +69,24 @@ async def tool_exec_node(state: Any):
         whitelist = set()
 
     READ_ONLY_TOOLS = {  # noqa: N806
-        "ls", "semantic", "report", "vram", "vision", "verify", "prune",
-        "mcp_slm_recall", "mcp_slm_search", "mcp_slm_get_status",
-        "kg-mem_search_nodes", "kg-mem_read_graph", "kg-mem_open_nodes",
+        "ls",
+        "semantic",
+        "report",
+        "vram",
+        "vision",
+        "verify",
+        "prune",
+        "mcp_slm_recall",
+        "mcp_slm_search",
+        "mcp_slm_get_status",
+        "kg-mem_search_nodes",
+        "kg-mem_read_graph",
+        "kg-mem_open_nodes",
         "fetch_fetch",
-        "filesystem_read_file", "filesystem_list_directory",
-        "filesystem_read_multiple_files", "filesystem_search_files",
+        "filesystem_read_file",
+        "filesystem_list_directory",
+        "filesystem_read_multiple_files",
+        "filesystem_search_files",
         "filesystem_get_file_info",
     }
     bridge = ToolBridge(session_id, agent_id=agent_id)
@@ -166,9 +178,9 @@ async def tool_exec_node(state: Any):
 
     # Phase 2.3: Log tool execution to episodic store
     try:
-        from cognition.sophia.hephaestus import _get_episodic
+        from cognition.sophia.hephaestus import get_episodic
 
-        _get_episodic().log(
+        get_episodic().log(
             session_id=session_id,
             agent_id=agent_id,
             action="tool_execution",

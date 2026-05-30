@@ -13,7 +13,7 @@ logger = setup_logger(__name__)
 _gateway_instance = None
 
 
-def _get_gateway():
+def get_gateway():
     global _gateway_instance
     if _gateway_instance is None:
         _gateway_instance = GatewayArchitrave()
@@ -125,7 +125,7 @@ async def verify_node(state: Any):
     # Layer 4: Constraint Guardian - Pydantic structured output via response_schema with fallback
     violation_result = None
     try:
-        gw = _get_gateway()
+        gw = get_gateway()
         if gw.client is not None:
             resp = await asyncio.wait_for(
                 gw.generate_async(

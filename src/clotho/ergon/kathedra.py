@@ -12,13 +12,13 @@ async def anchor_inject_node(state: Any) -> dict[str, Any]:
     """Managed Agents Node: Injects atomic anchors (codebase + skills) into context."""
     try:
         from cognition.mnemosyne.session_log import SessionLog
-        from cognition.sophia.hephaestus import _get_mapper
+        from cognition.sophia.hephaestus import get_mapper
         from src.architrave.context_cache import AnchorContextBuilder, ContextCacheStore
 
         from ..krisis import get_hermes_bridge_context
 
         builder = AnchorContextBuilder()
-        mapper = _get_mapper()
+        mapper = get_mapper()
 
         # Pillar 1: Injection-based context (Duzeltme 1) - Enhanced Keyword Extraction
         import re

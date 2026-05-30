@@ -280,14 +280,13 @@ class ToolBridge:
 
     async def _dispatch(self, tool_name: str, input_data: Any) -> Any:
         from .fs import _ls, _replace_content, _run_code, _write_file
-        from .retrieval import _mapper, _prune, _semantic, _skill
+        from .retrieval import _prune, _semantic, _skill
         from .verify import _verify
         from .vision import _vision
 
         handlers = {
             "ls": _ls,
             "vision": _vision,
-            "mapper": _mapper,
             "semantic": _semantic,
             "prune": _prune,
             "vram": self._vram,

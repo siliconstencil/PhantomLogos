@@ -2,7 +2,7 @@ from typing import Any
 
 from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
 from cognition.mnemosyne.hypergraph_store import HypergraphStore
-from cognition.sophia.hephaestus import _get_reflection, _get_semantic
+from cognition.sophia.hephaestus import get_reflection, get_semantic
 
 
 async def _build_axis_6(task_hint: str, session_id: str, vec: Any | None = None) -> str:
@@ -12,7 +12,7 @@ async def _build_axis_6(task_hint: str, session_id: str, vec: Any | None = None)
     try:
         # [SRC:axis_6] Semantic Memory Search
         mode = "hybrid" if vec is not None else "fts"
-        semantic = _get_semantic().search(
+        semantic = get_semantic().search(
             vec, session_id=session_id, limit=2, mode=mode, query_text=task_hint
         )
         if semantic:
@@ -23,7 +23,7 @@ async def _build_axis_6(task_hint: str, session_id: str, vec: Any | None = None)
 
         # [SRC:axis_6] Entity Recall (B4)
         keywords = task_hint.lower().split()[:5]
-        store = _get_reflection()
+        store = get_reflection()
         entities = store.get_relevant_entities(keywords, limit=5)
         if entities:
             if "### MNEMOSYNE AXIS 6 (SEMANTIC MEMORY)" not in lines:

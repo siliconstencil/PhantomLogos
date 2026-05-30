@@ -2,7 +2,7 @@ import asyncio
 
 import numpy as np
 
-from cognition.sophia.hephaestus import _get_failure_memory, _get_reflection, _get_semantic
+from cognition.sophia.hephaestus import get_failure_memory, get_reflection, get_semantic
 from src.architrave.model_registry import resolve_local_model
 from src.architrave.otl_engine import get_otl_engine
 from src.clotho.bootstrap import get_cpu_executor
@@ -46,7 +46,7 @@ Insight:"""
 async def reflection_node(state: dict) -> dict:
     """Axis 8: Reflective Insight Generation & Knowledge Extraction."""
     try:
-        store = _get_reflection()  # Singleton Alignment (B5)
+        store = get_reflection()  # Singleton Alignment (B5)
         session_id = state.get("session_id", "default")
         context = state.get("draft", "")
         for tr in (state.get("tool_results", []) or [])[-3:]:
@@ -151,7 +151,7 @@ async def reflection_node(state: dict) -> dict:
                         # B14: Matryoshka 256 slicing
                         vec = np.array(resp_embedding)[:256]
 
-                        fm_store = _get_failure_memory()
+                        fm_store = get_failure_memory()
                         fm_store.add_failure_vector(
                             prevention_rule=prevention_rule,
                             vector=vec,
@@ -219,7 +219,7 @@ async def reflection_node(state: dict) -> dict:
                     logger.warning("theoria: Matryoshka embedding failed (%s), using fallback.", ee)
                     vec = np.zeros(256)
 
-                _get_semantic().add_memories(
+                get_semantic().add_memories(
                     texts=[insight],
                     vectors=[vec],
                     metadata=[{"axis": "reflection", "category": "automatic"}],
@@ -240,9 +240,9 @@ async def reflection_node(state: dict) -> dict:
 
         # Phase 2.4: Episodic Write Path Activation
         try:
-            from cognition.sophia.hephaestus import _get_episodic
+            from cognition.sophia.hephaestus import get_episodic
 
-            _get_episodic().log(
+            get_episodic().log(
                 session_id=session_id,
                 agent_id="clotho",
                 action="session_reflection",

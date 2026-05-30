@@ -63,9 +63,9 @@ async def _vision(bridge, input_data):
             )
 
             if res and not str(res).startswith("Error"):
-                from cognition.sophia.hephaestus import _get_visual
+                from cognition.sophia.hephaestus import get_visual
 
-                visual = _get_visual()
+                visual = get_visual()
                 asyncio.create_task(  # noqa: RUF006
                     visual.store_vision(
                         image_path=image_path,
@@ -96,9 +96,9 @@ async def _vision(bridge, input_data):
             output = response.get("response", "")
 
             if output:
-                from cognition.sophia.hephaestus import _get_visual
+                from cognition.sophia.hephaestus import get_visual
 
-                visual = _get_visual()
+                visual = get_visual()
                 asyncio.create_task(  # noqa: RUF006
                     visual.store_vision(
                         image_path=image_path,

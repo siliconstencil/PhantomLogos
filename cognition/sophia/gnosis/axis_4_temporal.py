@@ -1,9 +1,9 @@
-from ..hephaestus import _get_temporal
+from ..hephaestus import get_temporal
 
 
 def _build_axis_4(session_id: str) -> str:
     lines = []
-    store = _get_temporal()
+    store = get_temporal()
     temporal = store.query(session_id, limit=3)
     if not temporal:
         temporal = store.query("system", limit=3)

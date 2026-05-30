@@ -11,15 +11,15 @@ from cognition.mnemosyne.operational_store import OperationalStore
 from cognition.mnemosyne.tone_store import ToneStore
 from cognition.mnemosyne.visual_store import VisualStore
 from cognition.sophia.hephaestus import (
-    _get_episodic,
-    _get_goals,
-    _get_meta,
-    _get_procedural,
-    _get_reflection,
-    _get_semantic,
-    _get_spatial,
-    _get_store,
-    _get_temporal,
+    get_episodic,
+    get_goals,
+    get_meta,
+    get_procedural,
+    get_reflection,
+    get_semantic,
+    get_spatial,
+    get_store,
+    get_temporal,
 )
 
 
@@ -28,28 +28,28 @@ def seed_all():
     print("Seeding 14 Mnemosyne axes...")
 
     # Axis 1: Episodic
-    _get_episodic().log(session_id=session_id, action="seed_14_axes")
+    get_episodic().log(session_id=session_id, action="seed_14_axes")
     print("  Axis 1 (Episodic): seeded")
 
     # Axis 2: Procedural
-    _get_procedural().record_usage(tool_name="seed", task_type="seed", success=True)
+    get_procedural().record_usage(tool_name="seed", task_type="seed", success=True)
     print("  Axis 2 (Procedural): seeded")
 
     # Axis 3: Goals
-    _get_goals().add(title="Seed Goal", description="Baseline seed", session_id=session_id)
+    get_goals().add(title="Seed Goal", description="Baseline seed", session_id=session_id)
     print("  Axis 3 (Goals): seeded")
 
     # Axis 4: Temporal
-    _get_temporal().record(session_id=session_id, event_type="seed")
+    get_temporal().record(session_id=session_id, event_type="seed")
     print("  Axis 4 (Temporal): seeded")
 
     # Axis 5: Spatial
-    _get_spatial().record_dependency(source="seed_module", target="seed_module")
+    get_spatial().record_dependency(source="seed_module", target="seed_module")
     print("  Axis 5 (Spatial): seeded")
 
     # Axis 6: Semantic
     vec = np.zeros(256, dtype=np.float32)
-    _get_semantic().add_memories(
+    get_semantic().add_memories(
         texts=["System seed baseline integrity check data for health check audit."],
         vectors=[vec],
         metadata=[{"seed": True}],
@@ -64,7 +64,7 @@ def seed_all():
     print("  Axis 7 (Operational): seeded")
 
     # Axis 8: Meta
-    _get_meta().adjust_reliability(agent_id="seed", delta=0.5, session_id=session_id)
+    get_meta().adjust_reliability(agent_id="seed", delta=0.5, session_id=session_id)
     print("  Axis 8 (Meta): seeded")
 
     # Axis 9: Tone
@@ -72,11 +72,11 @@ def seed_all():
     print("  Axis 9 (Tone): seeded")
 
     # Axis 10: Rational
-    _get_store().add_fact(subject="seed_fact", obj="baseline", agent_id=session_id)
+    get_store().add_fact(subject="seed_fact", obj="baseline", agent_id=session_id)
     print("  Axis 10 (Rational): seeded")
 
     # Axis 11: Verify
-    _get_reflection().store_reflection(session_id=session_id, insight="Seed verification baseline.")
+    get_reflection().store_reflection(session_id=session_id, insight="Seed verification baseline.")
     print("  Axis 11 (Verify): seeded")
 
     # Axis 12: Cache - populated at runtime

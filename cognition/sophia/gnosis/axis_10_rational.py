@@ -2,14 +2,14 @@ import json
 
 from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
 
-from ..hephaestus import _get_store
+from ..hephaestus import get_store
 
 
 def _build_axis_10(agent_id: str) -> str:
     lines = []
     try:
-        rules = _get_store().get_secure_rules(agent_id)
-        facts = _get_store().get_secure_facts(agent_id)
+        rules = get_store().get_secure_rules(agent_id)
+        facts = get_store().get_secure_facts(agent_id)
         if rules or facts:
             lines.append("### MNEMOSYNE AXIS 10 (RATIONAL/GOVERNANCE)")
             if rules:

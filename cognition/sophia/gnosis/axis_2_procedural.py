@@ -1,13 +1,13 @@
 from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
 from cognition.mnemosyne.models import ToolPath
 
-from ..hephaestus import _get_procedural
+from ..hephaestus import get_procedural
 
 
 def _build_axis_2() -> str:
     lines = []
     try:
-        proc = _get_procedural()
+        proc = get_procedural()
         session = proc.Session()
         try:
             rows = session.query(ToolPath).order_by(ToolPath.success_count.desc()).limit(10).all()

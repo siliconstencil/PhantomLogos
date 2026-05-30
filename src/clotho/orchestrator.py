@@ -177,9 +177,9 @@ async def finalize_node(state: Any) -> dict[str, Any]:
             critique = state.get("critique", {}) if isinstance(state, dict) else {}
             score = critique.get("overall_score") if isinstance(critique, dict) else None
             if score is not None:
-                from .ergon.koinonia import _get_trajectory_store
+                from .ergon.koinonia import get_trajectory_store
 
-                _get_trajectory_store().finalize_session(trajectory_id, score)
+                get_trajectory_store().finalize_session(trajectory_id, score)
         except Exception as e:
             logger.warning(f"orchestrator: trajectory finalize failed ({e})")
 
