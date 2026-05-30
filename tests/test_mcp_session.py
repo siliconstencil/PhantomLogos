@@ -23,11 +23,13 @@ def test_mcp_session_shutdown_cleanup():
     import psutil
 
     # 1. Start session
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    slm_path = os.path.join(project_root, ".venv", "Scripts", "slm.exe") if os.name == "nt" else os.path.join(project_root, ".venv", "bin", "slm")
     session = MCPSession(
         name="test_srv",
-        command=r"<project-root>\.venv\Scripts\slm.exe",
+        command=slm_path,
         args=["mcp"],
-        env={"PYTHONPATH": "<project-root>"},
+        env={"PYTHONPATH": project_root},
         timeout=30.0,
     )
 

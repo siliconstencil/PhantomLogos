@@ -1,17 +1,19 @@
-# Comprehensive Workspace Cleanup for <project-root>
+# Comprehensive Workspace Cleanup
 # Removes: __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, dist, build
 # SAFE: Excludes .venv, node_modules, .git, data, logs, .antigravity
 
-Write-Host "Starting Safe Workspace Cleanup in <project-root>..." -ForegroundColor Cyan
+$Root = (Get-Item $PSScriptRoot).Parent.FullName
+
+Write-Host "Starting Safe Workspace Cleanup in $Root..." -ForegroundColor Cyan
 
 $exclude = @(
-    [regex]::Escape("<project-root>\.venv"),
-    [regex]::Escape("<project-root>\node_modules"),
-    [regex]::Escape("<project-root>\.git"),
-    [regex]::Escape("<project-root>\data"),
-    [regex]::Escape("<project-root>\logs"),
-    [regex]::Escape("<project-root>\.antigravity"),
-    [regex]::Escape("<project-root>\opencode")
+    [regex]::Escape("$Root\.venv"),
+    [regex]::Escape("$Root\node_modules"),
+    [regex]::Escape("$Root\.git"),
+    [regex]::Escape("$Root\data"),
+    [regex]::Escape("$Root\logs"),
+    [regex]::Escape("$Root\.antigravity"),
+    [regex]::Escape("$Root\opencode")
 )
 
 $targets = @("__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "dist", "build")
@@ -30,7 +32,7 @@ $removed = 0
 
 foreach ($target in $targets) {
     Write-Host "Searching for: $target" -ForegroundColor Gray
-    $items = Get-ChildItem -Path "<project-root>" -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+    $items = Get-ChildItem -Path $Root -Directory -Recurse -Force -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -eq $target -or $_.Name -like $target }
 
     if ($items) {
