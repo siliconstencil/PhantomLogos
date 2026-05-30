@@ -3,12 +3,12 @@ import os
 from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
 from src.architrave.mcp import get_slm_client
 
-from ..hephaestus import _get_episodic
+from ..hephaestus import get_episodic
 
 
 async def _build_axis_1(session_id: str) -> str:
     lines = []
-    episodes = _get_episodic().recent(session_id, limit=3)
+    episodes = get_episodic().recent(session_id, limit=3)
     if episodes:
         lines.append("### MNEMOSYNE AXIS 1 (EPISODIC HISTORY)")
         for ep in episodes:

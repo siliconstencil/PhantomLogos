@@ -10,7 +10,7 @@ from src.utils.ollama_utils import get_ollama_client
 
 from ..eidos import CritiqueResult
 from ..gnosis import get_dynamic_context
-from ..hephaestus import _get_procedural, extract_first_json_block
+from ..hephaestus import get_procedural, extract_first_json_block
 
 logger = setup_logger(__name__)
 
@@ -62,7 +62,7 @@ async def run_critique(
         timeout=30.0,
     )
 
-    _get_procedural().record_usage(
+    get_procedural().record_usage(
         tool_name="phi-4-mini-ud",
         task_type="critique",
         success=True,

@@ -147,14 +147,6 @@ async def _skill(_bridge: Any, input_data: Any) -> Any:
         return f"Skill loader error: {e!s}"
 
 
-async def _mapper(_bridge: Any, _input_data: Any) -> dict[str, str]:
-    return {
-        "status": "deprecated",
-        "message": "Spatial context is now auto-injected via anchor_inject_node.",
-        "hint": "Use state['spatial_context'] instead of calling mapper tool. This saves tokens and is more accurate.",
-    }
-
-
 async def _prune(_bridge: Any, input_data: Any) -> Any:
     try:
         from src.atropos.context_pruner import ContextPruner

@@ -2,7 +2,7 @@ import json
 import re
 from typing import Any
 
-from .telos._gateway import _get_gateway
+from .telos._gateway import get_gateway
 from .telos.critique import run_critique
 from .telos.draft import _consecutive_draft_timeouts, run_draft
 from .telos.refine import _session_cache_map, run_refine
@@ -61,7 +61,7 @@ __all__ = [
     "TEMPERATURE_PROFILES",
     "ToolValidator",
     "_consecutive_draft_timeouts",
-    "_get_gateway",
+    "get_gateway",
     "_session_cache_map",
     "get_temperature",
     "run_critique",

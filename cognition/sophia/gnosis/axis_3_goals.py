@@ -1,9 +1,9 @@
-from ..hephaestus import _get_goals
+from ..hephaestus import get_goals
 
 
 def _build_axis_3() -> str:
     lines = []
-    goals = _get_goals().list_active(limit=3)
+    goals = get_goals().list_active(limit=3)
     if goals:
         lines.append("### MNEMOSYNE AXIS 3 (ACTIVE GOALS)")
         for g in goals:

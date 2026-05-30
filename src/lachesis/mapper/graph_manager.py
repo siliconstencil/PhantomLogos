@@ -34,7 +34,7 @@ _mtime_cache: dict[str, float] = {}
 
 
 class CodebaseMapper:
-    _lock = threading.Lock()
+    _lock = threading.RLock()
     _full_cache: ClassVar[dict[str, dict]] = {}
 
     def __init__(self, project_path: str | None = None, spatial_store: Any = None) -> None:
@@ -42,8 +42,6 @@ class CodebaseMapper:
 
         self.project_path = project_path or str(get_project_root())
         self._store = spatial_store
-        self.chunk_size = int(os.getenv("MAPPER_CHUNK_SIZE", "1024"))
-        self.chunk_overlap = int(os.getenv("MAPPER_CHUNK_OVERLAP", "128"))
 
     def _to_module_name(self, file_path: str) -> str:
         rel = os.path.relpath(file_path, self.project_path)
@@ -77,8 +75,9 @@ class CodebaseMapper:
                 self._store.record_dependency(module_name, target, relationship)
 
         parsed["module_name"] = module_name
-        CodebaseMapper._full_cache[file_path] = parsed
-        _mtime_cache[file_path] = current_mtime
+        with self._lock:
+            CodebaseMapper._full_cache[file_path] = parsed
+            _mtime_cache[file_path] = current_mtime
 
     def remap_file(self, file_path: str) -> None:
         if not self._store:

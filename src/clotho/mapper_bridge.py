@@ -29,9 +29,9 @@ async def _debounce_remap(changed_file: str) -> None:
 
         async with _debounce_lock:
             # Pillar 2/4: Thread-safe incremental mapping via Hephaestus Singleton
-            from cognition.sophia.hephaestus import _get_mapper
+            from cognition.sophia.hephaestus import get_mapper
 
-            mapper = _get_mapper()
+            mapper = get_mapper()
             await asyncio.to_thread(mapper.remap_file, changed_file)
             logger.info(f"Debounce: Completed incremental remap for {changed_file}")
     except asyncio.CancelledError:

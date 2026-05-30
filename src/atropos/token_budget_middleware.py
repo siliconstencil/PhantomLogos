@@ -54,9 +54,9 @@ class TokenBudgetMiddleware(MiddlewareHook):
             )
             if self.guard._hourly_used + prompt_tokens + sys_tokens > self._hourly_limit * 2:
                 try:
-                    from cognition.sophia.hephaestus import _get_meta
+                    from cognition.sophia.hephaestus import get_meta
 
-                    _get_meta().adjust_reliability("sophia", -0.1, "token_budget_exceeded")
+                    get_meta().adjust_reliability("sophia", -0.1, "token_budget_exceeded")
                 except Exception as exc:
                     logger.warning("Reliability update failed: %s", exc)
             return None

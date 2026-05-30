@@ -1,5 +1,5 @@
 from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
-from cognition.sophia.hephaestus import _get_mapper, _get_reflection
+from cognition.sophia.hephaestus import get_mapper, get_reflection
 
 
 def _build_axis_5(task_hint: str) -> str:
@@ -9,7 +9,7 @@ def _build_axis_5(task_hint: str) -> str:
     try:
         # Codebase Mapping
         keywords = task_hint.lower().split()[:5]
-        relevant = _get_mapper().suggest_context(keywords)
+        relevant = get_mapper().suggest_context(keywords)
         if relevant:
             lines.append("### MNEMOSYNE AXIS 5 (SPATIAL/CODEBASE)")
             lines.extend([f"- {m}" for m in relevant])
@@ -23,7 +23,7 @@ def _build_axis_5(task_hint: str) -> str:
             )
 
         # [SRC:axis_5] Semantic Relations Injection (B4)
-        store = _get_reflection()
+        store = get_reflection()
         matched_entities = store.get_relevant_entities(keywords, limit=5)
         entity_names = [e["name"] for e in matched_entities] if matched_entities else []
         if entity_names:

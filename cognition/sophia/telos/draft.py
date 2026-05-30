@@ -10,21 +10,21 @@ from src.utils.logging_config import setup_logger
 from ..eidos import ReasoningState, SophiaOutput
 from ..gnosis import get_dynamic_context
 from ..hephaestus import (
-    _get_episodic,
-    _get_goals,
-    _get_meta,
-    _get_monitor,
+    get_episodic,
+    get_goals,
+    get_meta,
+    get_monitor,
     get_sophia_instructions,
     strip_thinking_block,
 )
-from ._gateway import _get_gateway
+from ._gateway import get_gateway
 
 logger = setup_logger(__name__)
 
 _consecutive_draft_timeouts = 0
 
 
-@_get_monitor().trace("sophia")
+@get_monitor().trace("sophia")
 async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple:
     global _consecutive_draft_timeouts
     if isinstance(state, dict):
@@ -131,7 +131,7 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
         logger.warning(f"Sophia: Governing rules injection failed ({e})")
 
     inst = get_sophia_instructions(tools)
-    architrave = _get_gateway()
+    architrave = get_gateway()
 
     session_id = getattr(state, "session_id", None) or "default"
 
@@ -368,7 +368,7 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
         )
 
         _delta = check["score_delta"] if check["violations"] else 1.0
-        _get_meta().adjust_reliability(
+        get_meta().adjust_reliability(
             agent_id="sophia",
             delta=_delta,
             violation_type=check["violations"][0] if check["violations"] else "",
@@ -380,7 +380,7 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
             return "", []
 
         if parsed:
-            _get_episodic().log(
+            get_episodic().log(
                 session_id=state.session_id,
                 agent_id="sophia",
                 action="run_draft",
@@ -390,9 +390,9 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
 
             if parsed.final_response:
                 try:
-                    active_goals = _get_goals().list_active(limit=1)
+                    active_goals = get_goals().list_active(limit=1)
                     if active_goals:
-                        _get_goals().complete(active_goals[0]["id"])
+                        get_goals().complete(active_goals[0]["id"])
                         logger.info(
                             f"Sophia: Goal '{active_goals[0]['title']}' marked as COMPLETED."
                         )

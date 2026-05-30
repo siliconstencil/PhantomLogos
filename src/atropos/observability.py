@@ -26,7 +26,7 @@ class AtroposMonitor:
         self.budget_guard = get_token_guard()
         self._temporal = None
 
-    def _get_temporal(self) -> Any:
+    def get_temporal(self) -> Any:
         if self._temporal is None:
             try:
                 from cognition.mnemosyne.temporal_store import TemporalStore
@@ -128,7 +128,7 @@ class AtroposMonitor:
         logger.info(event_msg)
 
         # Axis 4: Temporal - Record trace as time-series metric
-        temporal = self._get_temporal()
+        temporal = self.get_temporal()
         if temporal:
             duration = kwargs.get("duration", 0.0)
             temporal.record(

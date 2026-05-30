@@ -3,7 +3,7 @@ import json
 import os
 from collections import OrderedDict
 
-from cognition.sophia.hephaestus import _get_loader, _get_pruner, _get_sweeper
+from cognition.sophia.hephaestus import get_loader, get_pruner, get_sweeper
 from src.utils.logging_config import setup_logger
 from src.utils.ollama_utils import get_ollama_client
 
@@ -93,7 +93,7 @@ async def get_dynamic_context(
 
     if task_hint:
         try:
-            _get_sweeper().check_and_sweep(_get_loader())
+            get_sweeper().check_and_sweep(get_loader())
             import numpy as np
 
             from src.clotho.activity import ActivityMonitor
@@ -167,7 +167,7 @@ async def get_dynamic_context(
     dynamic_str = "\n\n".join(dynamic_context)
 
     # Pruning (Optional, but apply to combined if needed. Here we keep them separate)
-    pruner = _get_pruner()
+    pruner = get_pruner()
     sliced_stable = pruner.slice_context_window(stable_str, "task")  # Static part should be small
     sliced_dynamic = pruner.slice_context_window(dynamic_str, "reasoning")
 

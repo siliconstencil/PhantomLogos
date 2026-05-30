@@ -52,9 +52,9 @@ class EntityExtractor:
         results = extractor.extract_unified(text)
 
         if results.get("entities") or results.get("relations"):
-            from cognition.sophia.hephaestus import _get_reflection
+            from cognition.sophia.hephaestus import get_reflection
 
-            store = _get_reflection()
+            store = get_reflection()
 
             # Persistence (Sync calls wrapped in thread safety if needed)
             if results.get("entities"):
