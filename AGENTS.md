@@ -1,9 +1,9 @@
 # Phantom Logos Agent Collaboration Guidelines (AGENTS.md)
 
 ## Reference Configurations
-- [GEMINI.md](file:///d:/Hank/GEMINI.md) - Agent Identity and Cognitive Architecture
-- [CONSTITUTION.md](file:///d:/Hank/.antigravity/CONSTITUTION.md) - Sovereign Core Constitution
-- [rules.json](file:///d:/Hank/.antigravity/rules.json) - Governance and Verification Rules
+- [GEMINI.md](GEMINI.md) - Agent Identity and Cognitive Architecture
+- [CONSTITUTION.md](.antigravity/CONSTITUTION.md) - Sovereign Core Constitution
+- [rules.json](.antigravity/rules.json) - Governance and Verification Rules
 
 This system operates through a 3-Tier hierarchical structure (RuFlow v1.1.0) designed for maximum accuracy, hardware-safe execution (7 GB VRAM Limit), and specialized expertise routing. External CLI agents (Claude Code, Gemini, OpenCode) connect through the **Hermes Bridge** and are mapped to RuFlow tiers based on complexity and capability.
 
