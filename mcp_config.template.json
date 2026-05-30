@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "slm": {
-      "command": "${PHANTOM_ROOT}\\\.venv\\Scripts\\slm.exe",
+      "command": "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\slm.exe",
       "args": [
         "mcp"
       ],
@@ -25,7 +25,7 @@
       "enabled": true
     },
     "fetch": {
-      "command": "${PHANTOM_ROOT}\\\.venv\\Scripts\\python.exe",
+      "command": "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\python.exe",
       "args": [
         "-m",
         "mcp_server_fetch"

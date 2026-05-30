@@ -116,8 +116,9 @@ class LocalRuntime:
         Executes Vision models using architecture-specific binaries.
         """
         binary_path = self._get_binary(architecture)
-        model_path = os.path.join(self.base_model_dir, model_rel_path)
-        mmproj_path = os.path.join(self.base_model_dir, mmproj_rel_path)
+        base_dir = self.base_model_dir or ""
+        model_path = os.path.join(base_dir, model_rel_path)
+        mmproj_path = os.path.join(base_dir, mmproj_rel_path)
 
         if not os.path.exists(binary_path):
             raise FileNotFoundError(f"Binary not found at {binary_path}")
