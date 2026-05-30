@@ -2,7 +2,7 @@ import asyncio
 
 import numpy as np
 
-from cognition.sophia.hephaestus import get_failure_memory, get_reflection, get_semantic
+from cognition.sophia.hephaestus import get_reflection, get_semantic
 from src.architrave.model_registry import resolve_local_model
 from src.architrave.otl_engine import get_otl_engine
 from src.clotho.bootstrap import get_cpu_executor
@@ -149,15 +149,9 @@ async def reflection_node(state: dict) -> dict:
 
                     if resp_embedding:
                         # B14: Matryoshka 256 slicing
-                        vec = np.array(resp_embedding)[:256]
-
-                        fm_store = get_failure_memory()
-                        fm_store.add_failure_vector(
-                            prevention_rule=prevention_rule,
-                            vector=vec,
-                            error_type=error_type,
-                            context_hash=context_hash,
-                        )
+                        # Failure lesson indexing is handled by SLM automatically via active observing (Axis 6).
+                        # lanceDB-based local FailureMemoryStore is retired as SLM covers it.
+                        pass
 
         # P2: LLM Reflection Loop (Sophia'ya sor)
         if score >= 0.7 or state.get("tool_results"):

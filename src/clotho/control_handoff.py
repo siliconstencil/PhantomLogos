@@ -112,6 +112,7 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
         _SIGNALS_REGISTERED, \
         _MCP_DISCOVERY_DONE, \
         _MCP_DISCOVERY_FAILURES, \
+        _MCP_DISCOVERY_LAST_ATTEMPT, \
         _shutdown_requested
 
     # 1) Shutdown check: Reject new ingestion if termination is in progress
@@ -126,7 +127,6 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
 
     # 3) MCP Tool Discovery (exponential backoff, no permanent disable)
     if not _MCP_DISCOVERY_DONE:
-        global _MCP_DISCOVERY_FAILURES, _MCP_DISCOVERY_LAST_ATTEMPT
         now = time_module.time()
         backoff_index = min(_MCP_DISCOVERY_FAILURES, len(_MCP_DISCOVERY_BACKOFF) - 1)
         if now - _MCP_DISCOVERY_LAST_ATTEMPT >= _MCP_DISCOVERY_BACKOFF[backoff_index]:
@@ -175,7 +175,8 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
 
     if slm_active:
         try:
-            await slm.asession_init(project_path="D:\\Hank", query=task_description)
+            _proj = str(__import__("pathlib").Path(__file__).resolve().parents[2])
+            await slm.asession_init(project_path=_proj, query=task_description)
         except Exception as e:
             logger.warning(f"clotho_handoff: SLM session_init failed ({e})")
 

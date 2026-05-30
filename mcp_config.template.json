@@ -1,12 +1,12 @@
 {
   "mcpServers": {
     "slm": {
-      "command": "D:\\Hank\\.venv\\Scripts\\slm.exe",
+      "command": "${PHANTOM_ROOT}\\\.venv\\Scripts\\slm.exe",
       "args": [
         "mcp"
       ],
       "env": {
-        "PYTHONPATH": "D:\\Hank",
+        "PYTHONPATH": "${PHANTOM_ROOT}",
         "SLM_DISABLE_WARMUP_SIDE_EFFECTS": "1"
       },
       "timeout": 30,
@@ -25,7 +25,7 @@
       "enabled": true
     },
     "fetch": {
-      "command": "D:\\Hank\\.venv\\Scripts\\python.exe",
+      "command": "${PHANTOM_ROOT}\\\.venv\\Scripts\\python.exe",
       "args": [
         "-m",
         "mcp_server_fetch"
@@ -43,7 +43,7 @@
         "@modelcontextprotocol/server-memory"
       ],
       "env": {
-        "MEMORY_FILE_PATH": "D:\\Hank\\mcp-servers\\kg-mem\\memory.json"
+        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}\\mcp-servers\\kg-mem\\memory.json"
       },
       "timeout": 30,
       "enabled": true
@@ -52,7 +52,7 @@
       "command": "cmd",
       "args": [
         "/c",
-        "D:\\Hank\\scripts\\run_github_mcp.bat"
+        "${PHANTOM_ROOT}\\scripts\\run_github_mcp.bat"
       ],
       "env": {},
       "timeout": 30,
@@ -77,10 +77,10 @@
         "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "D:\\Hank"
+        "${PHANTOM_ROOT}"
       ],
       "env": {
-        "PYTHONPATH": "D:\\Hank"
+        "PYTHONPATH": "${PHANTOM_ROOT}"
       }
     }
   }

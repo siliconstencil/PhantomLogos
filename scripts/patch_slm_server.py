@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def main():
-    venv_path = Path("D:/Hank/.venv")
+    venv_path = Path(__file__).resolve().parents[1] / ".venv"
     server_path = venv_path / "Lib/site-packages/superlocalmemory/mcp/server.py"
 
     if not server_path.exists():

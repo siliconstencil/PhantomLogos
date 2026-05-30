@@ -54,3 +54,9 @@ node_modules/
 
 # Watchdog runtime logs
 logs/system/watchdog/
+
+# Machine-specific generated configs
+mcp_config.json
+
+# Internal dev diary (not for public)
+scratch_book.md

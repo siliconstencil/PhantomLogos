@@ -103,7 +103,8 @@ def start_slm() -> None:
                         logger.info("Bootstrap: SLM MCP session connected successfully.")
                         try:
                             slm = get_slm_client()
-                            slm.session_init(project_path="D:\\Hank")
+                            _proj = str(__import__("pathlib").Path(__file__).resolve().parents[2])
+                            slm.session_init(project_path=_proj)
                             logger.info("Bootstrap: SLM MCP session_init completed.")
                         except Exception as e:
                             logger.warning(f"Bootstrap: SLM session_init failed ({e})")

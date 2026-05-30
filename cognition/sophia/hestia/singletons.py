@@ -25,7 +25,6 @@ _mapper = None
 _semantic = None
 _temporal = None
 _reflection = None
-_failure_memory = None
 _vram_sweeper = None
 _model_loader = None
 _visual = None
@@ -153,16 +152,6 @@ def get_reflection():
 
             _reflection = ReflectionStore()
     return _reflection
-
-
-def get_failure_memory():
-    global _failure_memory
-    with _init_lock:
-        if _failure_memory is None:
-            from cognition.mnemosyne.semantic_store import FailureMemoryStore
-
-            _failure_memory = FailureMemoryStore()
-    return _failure_memory
 
 
 def get_monitor():

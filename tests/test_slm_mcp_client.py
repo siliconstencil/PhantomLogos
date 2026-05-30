@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from cognition.mnemosyne.semantic_store import FailureMemoryStore, SemanticStore
+from cognition.mnemosyne.semantic_store import SemanticStore
 from src.architrave.mcp import SLMClient, get_slm_client
 from src.atropos.matryoshka_service import MatryoshkaService
 
@@ -16,21 +16,6 @@ def test_slm_config_and_singleton():
 def test_slm_active_flag_decoupled(monkeypatch):
     monkeypatch.setenv("SLM_ENABLED", "false")
     store = SemanticStore()
-    assert not store._is_slm_active()
-
-    # Mock SLM client to return True for health check
-    mock_slm = MagicMock()
-    mock_slm.health.return_value = True
-
-    with monkeypatch.context() as m:
-        m.setenv("SLM_ENABLED", "true")
-        with patch("src.architrave.mcp.get_slm_client", return_value=mock_slm):
-            assert store._is_slm_active()
-
-
-def test_failure_memory_active_flag_decoupled(monkeypatch):
-    monkeypatch.setenv("SLM_ENABLED", "false")
-    store = FailureMemoryStore()
     assert not store._is_slm_active()
 
     # Mock SLM client to return True for health check

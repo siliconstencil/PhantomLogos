@@ -23,9 +23,10 @@ from src.clotho.control_handoff import clotho_handoff
 from src.utils.ollama_utils import get_ollama_client
 
 # Constants
-SCRATCH_DIR = "D:\\Hank\\scratch"
-DATA_DIR = "D:\\Hank\\data"
-TEST_IMAGE_PATH = "D:\\Hank\\scratch\\test.png"
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SCRATCH_DIR = os.path.join(_ROOT, "scratch")
+DATA_DIR = os.path.join(_ROOT, "data")
+TEST_IMAGE_PATH = os.path.join(_ROOT, "scratch", "test.png")
 BASELINE_VERSION = "1.0.0"
 
 

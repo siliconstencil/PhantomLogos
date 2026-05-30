@@ -1,7 +1,8 @@
 from .instructions import get_sophia_instructions
 from .singletons import (
+    ensure_governance_sync,
+    ensure_spatial_index,
     get_episodic,
-    get_failure_memory,
     get_goals,
     get_loader,
     get_mapper,
@@ -20,8 +21,11 @@ from .singletons import (
 from .text_utils import extract_first_json_block, extract_tool_calls, strip_thinking_block
 
 __all__ = [
+    "ensure_governance_sync",
+    "ensure_spatial_index",
+    "extract_first_json_block",
+    "extract_tool_calls",
     "get_episodic",
-    "get_failure_memory",
     "get_goals",
     "get_loader",
     "get_mapper",
@@ -31,13 +35,11 @@ __all__ = [
     "get_pruner",
     "get_reflection",
     "get_semantic",
+    "get_sophia_instructions",
     "get_spatial",
     "get_store",
     "get_sweeper",
     "get_temporal",
     "get_visual",
-    "extract_first_json_block",
-    "extract_tool_calls",
-    "get_sophia_instructions",
     "strip_thinking_block",
 ]

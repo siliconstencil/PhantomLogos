@@ -23,7 +23,12 @@ def count_tokens(file_path, encoding_name="cl100k_base"):
 def sync_cache(files):
     """Creates a cache using the google-genai SDK via Sovereign Gateway."""
     # Enforce L0 Auth Token check
-    token_path = "d:\\Hank\\data\\snapshots\\L0_AUTH_TOKEN"
+    token_path = str(
+        __import__("pathlib").Path(__file__).resolve().parents[1]
+        / "data"
+        / "snapshots"
+        / "L0_AUTH_TOKEN"
+    )
     import time
 
     if not os.path.exists(token_path) or (time.time() - os.stat(token_path).st_mtime >= 60):
@@ -72,14 +77,15 @@ def sync_cache(files):
 
 
 def main():
-    # Determine absolute paths (based on D:\Hank)
-    base_path = "d:\\Hank"
+    from pathlib import Path
+
+    base_path = Path(__file__).resolve().parent.parent
     files = [
-        os.path.join(base_path, "AGENTS.md"),
-        os.path.join(base_path, "GEMINI.md"),
-        os.path.join(base_path, "CONSTITUTION.md"),
-        os.path.join(base_path, ".antigravity", "rules.json"),
-        os.path.join(base_path, ".cursorrules"),
+        str(base_path / "AGENTS.md"),
+        str(base_path / "GEMINI.md"),
+        str(base_path / "CONSTITUTION.md"),
+        str(base_path / ".antigravity" / "rules.json"),
+        str(base_path / ".cursorrules"),
     ]
 
     print("-" * 50)
