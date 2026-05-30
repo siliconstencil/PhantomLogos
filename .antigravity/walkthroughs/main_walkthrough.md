@@ -89,7 +89,7 @@
 | 4 | **SLM Orphan Surgical Detection**: psutil ile nuke-all -> surgical orphan kill | `mcp_registry.py`, `mcp_session.py` | Healthy slm.exe korunur; dead code kaldirildi (-73L) |
 | 5 | **SLM Orphan Parent-Name Fix**: non-python host SLM child'lari oldurulmez | `mcp_registry.py` | Gemini/VS Code SLM'leri korunur |
 | 6 | **MCPSession Diagnostic Log**: job_attached durumu loglanir | `mcp_session.py` | Sonraki SLM spawn'da gorunur |
-| 7 | **Claude Code Filesystem MCP Sync**: .mcp.json'a filesystem server eklendi | `.mcp.json` | Claude Code D:\Hank okuyabilir |
+| 7 | **Claude Code Filesystem MCP Sync**: .mcp.json'a filesystem server eklendi | `.mcp.json` | Claude Code <PROJECT_ROOT> okuyabilir |
 | 8 | **SLM Fallback Test Fix**: test_slm_fallback.py import duzeltildi | `test_slm_fallback.py` | 1 test import fix |
 | 9 | **A2A Heartbeat + Temp Cleanup**: registry timestamp, 5 temp dosya silindi | `agent/a2a_registry.json`, root temp files | Temiz workspace |
 | 10 | **Fix 1**: Filesystem MCP eklendi (7. server) | `mcp_config.json` | npx ile @modelcontextprotocol/server-filesystem |
@@ -170,7 +170,7 @@
 | 2 | Kod İçi Türkçe Yorum/Docstring Temizliği | `mcp_tool_bridge.py`, `scheduler.py` | Türkçe docstring ve Predictive Pre-load yorum satırları İngilizce ASCII açıklamalarla değiştirildi. |
 | 3 | ASCII Dışı Karakter (Em-dash) Temizliği | `config.py`, `krisis.py`, `mcp_registry.py` | Tüm em-dash (`—`) karakterleri standart tire (`-`) ile değiştirilerek kod tabanının ASCII-only olması sağlandı. |
 | 4 | Pyright `psutil` Tip Uyarılarının Giderilmesi | `scheduler.py`, `mcp_registry.py` | `import psutil` satırlarına `# type: ignore` eklenerek Pyright/IDE tip uyarıları tamamen giderildi. [SRC:axis_8] |
-| 5 | Filesystem MCP Server Entegrasyonu | `mcp_config.json` | `@modelcontextprotocol/server-filesystem` sunucusu D:\Hank yetkisiyle eklenerek platformun 800 satır dayatması olmaksızın token tasarruflu okuma/yazma sağlandı. [SRC:axis_8] |
+| 5 | Filesystem MCP Server Entegrasyonu | `mcp_config.json` | `@modelcontextprotocol/server-filesystem` sunucusu <PROJECT_ROOT> yetkisiyle eklenerek platformun 800 satır dayatması olmaksızın token tasarruflu okuma/yazma sağlandı. [SRC:axis_8] |
 | 6 | Sovereign Kurallarının İngilizceye Çevrilmesi | `rules.json` | Kurallardaki tüm Türkçe açıklamalar (RULE-030 ile RULE-039 arası) tamamen İngilizce ASCII-only standardına çevrildi. [SRC:axis_8] |
 | 7 | view_file Aracının Kural Düzeyinde Yasaklanması | `rules.json`, `AGENTS.md` | `RULE-038` güncellenerek native `view_file` aracı yasaklandı; yerine MCP Filesystem araçlarının kullanımı zorunlu kılındı. |
 
@@ -358,7 +358,7 @@
 | 4 | Axis 14: Visual builder queries VisualStore | `cognition/sophia/gnosis/axis_14_visual.py` | `_get_visual().get_recent()` replaces hardcoded placeholder |
 | 5 | Axis 8: Meta cycle_count incremented | `cognition/mnemosyne/meta_cognition.py` | `entry.cycle_count` now increments on `adjust_reliability()` |
 | 6 | Axis 4: Temporal builder fallback + weekly_summary | `cognition/sophia/gnosis/axis_4_temporal.py` | Fallback queries (system/24h); weekly_summary table reader |
-| 7 | DCP plugin reinstall | `D:\hank\opencode\node_modules` | 4 missing plugins reinstalled: opencode-wakatime, @tarquinen/opencode-dcp@3.1.12, envsitter-guard, opencode-notify |
+| 7 | DCP plugin reinstall | `<PROJECT_ROOT>\opencode\node_modules` | 4 missing plugins reinstalled: opencode-wakatime, @tarquinen/opencode-dcp@3.1.12, envsitter-guard, opencode-notify |
 
 ### Key Improvements (Phase 1.1.22)
 
@@ -992,7 +992,7 @@
 
 ### Key Improvements (Phase 1.0.14)
 
-1. **Zero-Config Imports**: Eliminated "Import Fog" in non-IDE environments by anchoring to `D:\Hank`.
+1. **Zero-Config Imports**: Eliminated "Import Fog" in non-IDE environments by anchoring to `<PROJECT_ROOT>`.
 2. **Deterministic Paths**: Standardized root resolution across all terminal types and background processes.
 
 ---
@@ -1085,7 +1085,7 @@
 | Item | Change | File(s) | Result |
 | ------- | ------- | --------- | -------- |
 | 1 | ASCII/Emoji Cleanup | All `.py` files | 100% BA-01 compliance across key directories. |
-| 2 | Editable Package Link | `D:\Hank` | `pip install -e .` executed; `.pth` link established. |
+| 2 | Editable Package Link | `<PROJECT_ROOT>` | `pip install -e .` executed; `.pth` link established. |
 | 3 | Pyright Portability | `pyrightconfig.json` | Reverted to relative paths with `autoSearchPaths: true`. |
 | 4 | Surgical Cycle Break | `self_tuner.py` | Eliminated `model_registry` import; broken Chain 2. |
 
@@ -1356,7 +1356,7 @@
 
 ### Critical Fixes & Improvements (Phase 11.19.13)
 
-1. **Absolute Root Resolution:** All core services now anchor to `D:\Hank` via `get_project_root()`, preventing path instability during background execution.
+1. **Absolute Root Resolution:** All core services now anchor to `<PROJECT_ROOT>` via `get_project_root()`, preventing path instability during background execution.
 2. **Health Verification:** `scripts/health_check.py` confirms 8/8 primary memory axes are active and synchronized.
 
 ## Phase 11.19.12: Sovereign Memory Hardening [11:15 PM PT]
@@ -1370,7 +1370,7 @@
 | 3 | Gnosis Axis Injection | `axis_5`, `axis_6`, `axis_8`, `base.py` | Semantic/Entity/Reflection live injection |
 | 4 | DB Performance Indexing | `mnemosyne.db` | idx_rel_subject, idx_refl_session created |
 | 5 | Orchestrator Finalize | `orchestrator.py`, `krisis.py` | finalize_node & session blacklist purge (B9 fix) |
-| 6 | Infrastructure Sync | `pyproject.toml`, `.vscode/settings.json` | gliner2 added, IDE root fixed to D:\Hank |
+| 6 | Infrastructure Sync | `pyproject.toml`, `.vscode/settings.json` | gliner2 added, IDE root fixed to <PROJECT_ROOT> |
 
 ### Critical Fixes & Improvements (Phase 11.19.12)
 
@@ -2440,7 +2440,7 @@ negotiate                       SprintContract + SessionLog verification
 | anchor_inject_node TypeError (sug is string, not dict) | `orchestrator.py` | sug['module'] -> sug |
 | context_cache.py build_anchor() -> build_anchors_xml() | `context_cache.py` | Method name fix |
 | Duplicate imports lines 15-18 | `context_cache.py` | Removed duplicates |
-| test_ankyra_v2.py hardcoded D:/Hank path | `test_ankyra_v2.py` | Relative path |
+| test_ankyra_v2.py hardcoded <PROJECT_ROOT> path | `test_ankyra_v2.py` | Relative path |
 | test_tool_bridge dict return type mismatch | `test_tool_bridge.py` | 5 tests updated |
 
 ---
