@@ -3,7 +3,7 @@ import asyncio
 import os
 from typing import Any
 
-from src.architrave.a2a.auth import get_secret_for_agent
+from src.architrave.a2a.auth import get_a2a_secret
 from src.architrave.a2a.client import send_a2a_message
 from src.architrave.a2a.discovery import A2ADiscovery
 from src.architrave.a2a.protocol import BusMessage
@@ -37,7 +37,6 @@ class FederationBridge:
         payload: dict[str, Any],
         timeout_s: float = 10.0,
     ) -> dict[str, Any]:
-        """Send a message to a specific federated agent by agent_id."""
         agent = self.discovery.resolve(recipient)
         if not agent:
             logger.warning(
@@ -48,7 +47,7 @@ class FederationBridge:
             if not agent:
                 return {"status": "error", "error": f"Unknown agent: {recipient}"}
 
-        secret = get_secret_for_agent(recipient)
+        secret = get_a2a_secret(recipient)
         msg = BusMessage(
             sender=self.agent_id,
             recipient=recipient,
@@ -70,7 +69,6 @@ class FederationBridge:
         payload: dict[str, Any],
         timeout_s: float = 10.0,
     ) -> list[dict[str, Any]]:
-        """Broadcast a message to all online federated agents."""
         async with self._lock:
             agents = self.discovery.list_online_agents()
             if not agents:
@@ -109,7 +107,6 @@ class FederationBridge:
         state: dict[str, Any],
         topic: str = "graph_state",
     ) -> dict[str, Any]:
-        """Send a serialized GraphState snapshot to a federated agent for remote processing."""
         safe_state = {
             k: v
             for k, v in state.items()
@@ -124,7 +121,6 @@ class FederationBridge:
         context: dict[str, Any] | None = None,
         timeout_s: float = 30.0,
     ) -> dict[str, Any]:
-        """Request remote agent to perform reasoning on a task and return a result."""
         payload: dict[str, Any] = {"task": task}
         if context:
             payload["context"] = context
@@ -133,4 +129,4 @@ class FederationBridge:
         )
 
     def _get_local_secret(self) -> str:
-        return get_secret_for_agent(self.agent_id)
+        return get_a2a_secret(self.agent_id)
