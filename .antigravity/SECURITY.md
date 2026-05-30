@@ -1,38 +1,59 @@
-# Phantom Logos: Security & Secret Management (SECURITY.md)
-
-Phantom Logos implements a **Zero-Trust Secret Architecture** to ensure that sensitive credentials (API keys, DB passwords) are never exposed in logs or version control.
+# Phantom Logos: Security Policy
 
 ---
 
-## 1. Secret Storage Hierarchy
+## Reporting Vulnerabilities
 
-1.  **Primary: Windows Credential Manager (Keyring)**
-    - Secrets are stored in the OS-level secure vault.
-    - Accessed via the `keyring` Python library.
-    - **Service Name:** `PhantomLogos`
+If you discover a security vulnerability, please report it responsibly:
 
-2.  **Secondary: Environment Variables (.env)**
-    - Read-only fallback for environments where Keyring is unavailable (CI/CD, Fresh Install).
-    - `.env` files are strictly gitignored.
+**GitHub Private Advisory (preferred):**
+https://github.com/siliconstencil/phantom-logos/security/advisories/new
+
+**Email:**
+admin@siliconstencil.com
+
+Please include:
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact
+- Suggested fix (if any)
+
+We aim to respond within 72 hours and will coordinate a fix before public disclosure.
+
+---
+
+## Security Architecture
+
+### Secret Storage Hierarchy
+
+1. **Primary: Windows Credential Manager (Keyring)**
+   - Secrets stored in OS-level secure vault via `keyring` Python library
+   - Service name: `PhantomLogos`
+
+2. **Secondary: Environment Variables (.env)**
+   - Read-only fallback for CI/CD and fresh installs
+   - `.env` files are strictly gitignored - never committed
+
+### Security Utilities (`src/utils/security_utils.py`)
+
+- `load_secrets_to_env()`: Pulls keys from Keyring first, falls back to `.env`
+- Path traversal guard: `ls` tool uses `os.path.commonpath` to prevent directory escape
+- SQL injection protection: SQLAlchemy ORM parameter binding for all DB interactions
+
+### Command Security
+
+- Shell tool removed from ToolBridge to prevent command injection
+- All agent tool calls go through formal dispatch map (whitelist-only)
 
 ---
 
-## 2. Security Utilities (`src/utils/security_utils.py`)
+## Supported Versions
 
-- `load_secrets_to_env()`: This function attempts to pull keys from Keyring first. If not found, it falls back to the `.env` file and populates `os.environ`.
-- `validate_gemini_key(key)`: Regex-based validation to ensure API keys start with `AIza` and follow Google's format.
-
----
-
-## 3. Command Security
-
-- **Shell Removal:** The `shell` tool has been removed from the `ToolBridge` to prevent command injection.
-- **Path Traversal Guard:** The `ls` tool uses `os.path.commonpath` to ensure agents cannot view files outside of the project root.
-- **SQL Injection Sanitization:** Manual alphanumeric filtering for session IDs and SQLAlchemy ORM parameter binding for all database interactions (Axis 1-14).
+| Version | Supported |
+|---------|-----------|
+| 1.1.x   | Yes       |
+| < 1.0   | No        |
 
 ---
-## 4. Reporting Vulnerabilities
-If you identify a logic flaw or a security loophole, please record it in the **Verification Axis (Axis 11)** and notify the Sovereign (L0) immediately.
 
----
-*Last Hardened: 2026-05-10*
+*Last Updated: 2026-05-30*

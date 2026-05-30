@@ -10,7 +10,7 @@ from src.utils.ollama_utils import get_ollama_client
 
 from ..eidos import CritiqueResult
 from ..gnosis import get_dynamic_context
-from ..hephaestus import get_procedural, extract_first_json_block
+from ..hephaestus import extract_first_json_block, get_procedural
 
 logger = setup_logger(__name__)
 

@@ -350,6 +350,7 @@ class VRAMSweeper:
 
     def _backup_sqlite(self, db_rel: str, ts: str) -> str | None:
         import sqlite3
+
         from src.utils.project_path import to_absolute_path
 
         src = to_absolute_path(db_rel)
@@ -359,7 +360,7 @@ class VRAMSweeper:
         dst = to_absolute_path(f"{self._BACKUP_DIR}/{name}_{ts}.db")
         try:
             conn = sqlite3.connect(str(src))
-            conn.execute(f"VACUUM INTO ?", (str(dst),))
+            conn.execute("VACUUM INTO ?", (str(dst),))
             conn.close()
             logger.info(f"DBBackup: {db_rel} -> {dst}")
             return str(dst)
@@ -369,6 +370,7 @@ class VRAMSweeper:
 
     def _backup_lancedb(self, ts: str) -> str | None:
         import shutil
+
         from src.utils.project_path import to_absolute_path
 
         src = to_absolute_path("data/lancedb")
@@ -385,6 +387,7 @@ class VRAMSweeper:
 
     def _rotate_backups(self, prefix: str):
         import glob
+
         from src.utils.project_path import to_absolute_path
 
         pattern = str(to_absolute_path(f"{self._BACKUP_DIR}/{prefix}_*"))
@@ -419,6 +422,7 @@ class VRAMSweeper:
 
     def _check_disk_space(self) -> bool:
         import shutil
+
         from src.utils.project_path import to_absolute_path
 
         root = to_absolute_path(".")

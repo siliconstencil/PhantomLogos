@@ -182,7 +182,7 @@ class MemoryLeakMonitor:
             return []
 
     def should_warn(self, leaks: list[dict], threshold_b: int = 1_048_576) -> bool:
-        return any(l["size_diff_b"] > threshold_b for l in leaks)
+        return any(leak["size_diff_b"] > threshold_b for leak in leaks)
 
 
 if __name__ == "__main__":

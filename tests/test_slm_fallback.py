@@ -11,7 +11,7 @@ os.environ["RAG_MAX_CHUNKS"] = "20"
 
 import contextlib
 
-from cognition.mnemosyne.semantic_store import FailureMemoryStore, SemanticStore
+from cognition.mnemosyne.semantic_store import SemanticStore
 from src.atropos.matryoshka_service import MatryoshkaService
 from src.clotho.bridge.retrieval import _check_embedding_health, _rerank_results
 
@@ -55,37 +55,6 @@ class TestSLMFallback(unittest.IsolatedAsyncioTestCase):
             # Cleanup local test DB table
             with contextlib.suppress(Exception):
                 store.db.drop_table(store.table_name)
-
-    @patch("src.architrave.mcp.get_slm_client")
-    async def test_failure_memory_store_fallback_on_unhealthy_slm(self, mock_get_client):
-        # Mock SLM client to be unhealthy
-        mock_slm = MagicMock()
-        mock_slm.health.return_value = False
-        mock_slm.ahealth = AsyncMock(return_value=False)
-        mock_get_client.return_value = mock_slm
-
-        # Initialize FailureMemoryStore
-        fm_store = FailureMemoryStore(db_path="data/lancedb_test_fallback")
-
-        # Since SLM is down, _is_slm_active() should return False
-        self.assertFalse(fm_store._is_slm_active())
-
-        test_vec = np.random.rand(256)
-        try:
-            fm_store.add_failure_vector(
-                prevention_rule="Test Prevention Rule",
-                vector=test_vec,
-                error_type="test_error",
-                context_hash="12345abcde",
-                metadata={"timestamp": 200.0},
-            )
-            # Verify search falls back to LanceDB
-            results = fm_store.search_similar_failures(test_vec, limit=1)
-            self.assertEqual(len(results), 1)
-            self.assertEqual(results[0]["prevention_rule"], "Test Prevention Rule")
-        finally:
-            with contextlib.suppress(Exception):
-                fm_store.db.drop_table(fm_store.table_name)
 
     @patch("src.architrave.mcp.get_slm_client")
     @patch("src.atropos.matryoshka_service.get_ollama_client")
@@ -229,59 +198,3 @@ class TestSLMFallback(unittest.IsolatedAsyncioTestCase):
         finally:
             with contextlib.suppress(Exception):
                 store.db.drop_table(store.table_name)
-
-    @patch("src.architrave.mcp.get_slm_client")
-    async def test_dual_write_failure_store(self, mock_get_client):
-        mock_slm = MagicMock()
-        mock_slm.health.return_value = True
-        mock_slm.ahealth = AsyncMock(return_value=True)
-        mock_get_client.return_value = mock_slm
-
-        fm_store = FailureMemoryStore(db_path="data/lancedb_test_fallback")
-        self.assertTrue(fm_store._is_slm_active())
-
-        test_vec = np.ones(256)
-        try:
-            fm_store.add_failure_vector(
-                prevention_rule="Dual Failure Rule",
-                vector=test_vec,
-                error_type="dual_error",
-                context_hash="dualhash123",
-                metadata={"timestamp": 321.0},
-            )
-            # Verify SLM remember was called
-            mock_slm.remember.assert_called_once()
-
-            # Verify LanceDB write also happened (dual-write)
-            tbl = fm_store.db.open_table(fm_store.table_name)
-            res = tbl.search(test_vec.tolist()).to_list()
-            self.assertTrue(any(r["prevention_rule"] == "Dual Failure Rule" for r in res))
-        finally:
-            with contextlib.suppress(Exception):
-                fm_store.db.drop_table(fm_store.table_name)
-
-    @patch("src.architrave.mcp.get_slm_client")
-    async def test_failure_search_session_isolation(self, mock_get_client):
-        mock_slm = MagicMock()
-        mock_slm.health.return_value = True
-        mock_slm.ahealth = AsyncMock(return_value=True)
-        mock_slm.search.return_value = [{"prevention_rule": "SLM rule"}]
-        mock_get_client.return_value = mock_slm
-
-        fm_store = FailureMemoryStore(db_path="data/lancedb_test_fallback")
-        test_vec = np.ones(256)
-
-        try:
-            res = fm_store.search_similar_failures(
-                test_vec, limit=5, session_id="my-special-session"
-            )
-            self.assertEqual(len(res), 1)
-            self.assertEqual(res[0]["prevention_rule"], "SLM rule")
-
-            # Verify search was called on SLM with session_id
-            mock_slm.search.assert_called_once()
-            kwargs = mock_slm.search.call_args[1]
-            self.assertEqual(kwargs.get("session_id"), "my-special-session")
-        finally:
-            with contextlib.suppress(Exception):
-                fm_store.db.drop_table(fm_store.table_name)

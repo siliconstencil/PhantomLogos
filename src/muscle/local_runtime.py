@@ -30,8 +30,9 @@ class LocalRuntime:
             )
             # Safe fallback using root if env vars are missing
             alt_root = os.getenv("ANTIGRAVITY_ROOT") or str(root)
-            self.base_model_dir = os.path.join(
-                alt_root, "..", "Google", "AntiGravity", "General Tools"
+            self.base_model_dir = os.path.join(alt_root, "models")
+            logger.warning(
+                "LocalRuntime: LLM_MODEL_DIR not set. Set LLM_MODEL_DIR env var to your GGUF model directory."
             )
 
         self._validate_path(self.binary_dir, "Binary Dir")
@@ -47,7 +48,7 @@ class LocalRuntime:
 
         # Hardened Whitelist check for safe directories (Axis 13)
         project_root = str(get_project_root())
-        if not norm_path.startswith(project_root) and not norm_path.startswith("D:\\"):
+        if not norm_path.startswith(project_root):
             raise ValueError(f"LocalRuntime: Unsafe path detected for {label}: {norm_path}")
 
         if not os.path.exists(norm_path):
@@ -66,7 +67,7 @@ class LocalRuntime:
             "generic": f"llama-cli{ext}",
         }
         bin_name = binaries.get(architecture, f"llama-cli{ext}")
-        return os.path.join(str(self.binary_dir), str(bin_name))
+        return os.path.join(self.binary_dir, bin_name)
 
     def _calculate_ngl(self, registry_name: str, num_ctx: int, actual_layers: int) -> int:
         """
@@ -74,7 +75,7 @@ class LocalRuntime:
         [SRC:axis_12] VRAM-aware layer offloading logic.
         """
         try:
-            from src.architrave.model_registry import GPU_USABLE_VRAM_GB, VRAM_CATALOG_GB
+            from src.architrave.base_models import GPU_USABLE_VRAM_GB, VRAM_CATALOG_GB
 
             model_size = VRAM_CATALOG_GB.get(registry_name, 4.0)
 
@@ -115,8 +116,8 @@ class LocalRuntime:
         Executes Vision models using architecture-specific binaries.
         """
         binary_path = self._get_binary(architecture)
-        model_path = os.path.join(str(self.base_model_dir), str(model_rel_path))
-        mmproj_path = os.path.join(str(self.base_model_dir), str(mmproj_rel_path))
+        model_path = os.path.join(self.base_model_dir, model_rel_path)
+        mmproj_path = os.path.join(self.base_model_dir, mmproj_rel_path)
 
         if not os.path.exists(binary_path):
             raise FileNotFoundError(f"Binary not found at {binary_path}")
