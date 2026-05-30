@@ -7,11 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from src.utils.logging_config import setup_logger
 
-try:
-    from .base import Base
-    from .temporal_store import TemporalStore
-except ImportError:
-    from .temporal_store import TemporalStore
+from .temporal_store import TemporalStore
 
 logger = setup_logger(__name__)
 
@@ -56,8 +52,8 @@ class MetaCognitionStore:
         iterations: int = 1,
         agent_id: str = "system",
         session_id: str = "",
-        score: float = None,
-        flaws: list = None,
+        score: float | None = None,
+        flaws: list | None = None,
     ):
         session = self.Session()
         try:

@@ -22,6 +22,8 @@ class StateBus:
         self._history: list = []
 
     async def publish(self, msg: BusMessage):
+        discovery = None
+        remote_agent = None
         try:
             from src.architrave.a2a.discovery import A2ADiscovery
 
@@ -47,7 +49,8 @@ class StateBus:
         if is_broadcast:
             # Parallel remote publish to all online remote agents
             try:
-                online_agents = discovery.list_online_agents()
+                if discovery is not None:
+                    online_agents = discovery.list_online_agents()
                 for agent in online_agents:
                     if agent.agent_id != msg.sender:  # avoid sending back to sender
                         asyncio.create_task(self._send_remote_safe(agent, msg, discovery))

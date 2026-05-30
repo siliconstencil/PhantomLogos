@@ -176,7 +176,7 @@ class SemanticStore:
                     query_vector = run_async(self.matryoshka.embed_query(query_text))
                 query_str = query_text or (
                     str(query_vector.tolist())
-                    if hasattr(query_vector, "tolist")
+                    if (query_vector is not None and hasattr(query_vector, "tolist"))
                     else str(query_vector)
                 )
                 results_slm = slm.search(
@@ -214,9 +214,9 @@ class SemanticStore:
 
                         vec_list = (
                             query_vector.tolist()
-                            if hasattr(query_vector, "tolist")
+                            if (query_vector is not None and hasattr(query_vector, "tolist"))
                             else list(query_vector)
-                        )
+                        )  # type: ignore
                         results_vec = (
                             table.search(vec_list)
                             .where(

@@ -3,7 +3,7 @@ import threading
 import time
 from typing import Optional
 
-import networkx as nx
+import networkx as nx  # type: ignore
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, create_engine
 from sqlalchemy.orm import sessionmaker
 

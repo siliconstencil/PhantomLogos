@@ -32,7 +32,7 @@ class OperationalStore:
         level: str,
         message: str,
         agent_id: str = "system",
-        tool_name: str = None,
+        tool_name: str | None = None,
         session_id: str = "default",
     ):
         session = self.Session()

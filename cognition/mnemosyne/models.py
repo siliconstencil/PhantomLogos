@@ -20,9 +20,9 @@ SpatialBase = declarative_base()
 
 class Episode(MnemosyneBase):
     __tablename__ = "episodes"
-    id = Column(Integer, primary_key=True)
-    session_id = Column(String(64), nullable=False)
-    agent_id = Column(String(50), default="system")
+    id: int = Column(Integer, primary_key=True)
+    session_id: str = Column(String(64), nullable=False)
+    agent_id: str = Column(String(50), default="system")
     action = Column(String(255), nullable=False)
     detail = Column(Text)
     outcome = Column(String(50), default="pending")
@@ -66,28 +66,28 @@ class ToolPath(MnemosyneBase):
 
 class Goal(MnemosyneBase):
     __tablename__ = "goals"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), default="system")
-    session_id = Column(String(64), default="")
-    title = Column(String(255), nullable=False)
-    description = Column(Text)
-    status = Column(String(50), default="pending")
-    priority = Column(Integer, default=3)
-    parent_goal_id = Column(Integer, nullable=True)
-    progress_pct = Column(Float, default=0)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-    completed_at = Column(DateTime, nullable=True)
+    id: int = Column(Integer, primary_key=True)
+    agent_id: str = Column(String(50), default="system")
+    session_id: str = Column(String(64), default="")
+    title: str = Column(String(255), nullable=False)
+    description: str | None = Column(Text)
+    status: str = Column(String(50), default="pending")
+    priority: int = Column(Integer, default=3)
+    parent_goal_id: int | None = Column(Integer, nullable=True)
+    progress_pct: float = Column(Float, default=0)
+    created_at: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    completed_at: datetime.datetime | None = Column(DateTime, nullable=True)
 
     __table_args__ = (Index("idx_goals_active", "status", "priority"),)
 
 
 class OperationalLog(MnemosyneBase):
     __tablename__ = "operational_logs_v2"
-    id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-    session_id = Column(String(100), default="default")
-    agent_id = Column(String(50), default="system")
-    tool_name = Column(String(50))
+    id: int = Column(Integer, primary_key=True)
+    timestamp: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    session_id: str = Column(String(100), default="default")
+    agent_id: str = Column(String(50), default="system")
+    tool_name: str | None = Column(String(50))
     name = Column(String(100))
     level = Column(String(20))
     message = Column(Text)
@@ -111,31 +111,31 @@ class MetaRecord(MnemosyneBase):
 
 class AgentExperience(MnemosyneBase):
     __tablename__ = "agent_experience"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), nullable=False)
-    session_id = Column(String(64), default="")
-    task_pattern = Column(String(100), default="general")
-    total_tasks = Column(Integer, default=0)
-    success_count = Column(Integer, default=0)
-    failure_count = Column(Integer, default=0)
-    avg_quality = Column(Float, default=0.5)
-    best_model = Column(String(100), default="")
-    best_temperature = Column(Float, default=0.3)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    id: int = Column(Integer, primary_key=True)
+    agent_id: str = Column(String(50), nullable=False)
+    session_id: str = Column(String(64), default="")
+    task_pattern: str = Column(String(100), default="general")
+    total_tasks: int = Column(Integer, default=0)
+    success_count: int = Column(Integer, default=0)
+    failure_count: int = Column(Integer, default=0)
+    avg_quality: float = Column(Float, default=0.5)
+    best_model: str = Column(String(100), default="")
+    best_temperature: float = Column(Float, default=0.3)
+    created_at: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    updated_at: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
     __table_args__ = (Index("idx_exp_agent", "agent_id", "task_pattern"),)
 
 
 class GovernanceRule(MnemosyneBase):
     __tablename__ = "governance_rules"
-    id = Column(Integer, primary_key=True)
-    rule_id = Column(String(50), unique=True, nullable=False)
-    agent_id = Column(String(50), default="system")
-    description = Column(Text, nullable=False)
-    severity = Column(Integer, default=1)
-    active = Column(Integer, default=1)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    id: int = Column(Integer, primary_key=True)
+    rule_id: str = Column(String(50), unique=True, nullable=False)
+    agent_id: str = Column(String(50), default="system")
+    description: str = Column(Text, nullable=False)
+    severity: int = Column(Integer, default=1)
+    active: int = Column(Integer, default=1)
+    created_at: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class Fact(MnemosyneBase):
@@ -197,16 +197,16 @@ class SemanticRelationRecord(MnemosyneBase):
 
 class FailureMemoryRecord(MnemosyneBase):
     __tablename__ = "failure_memory"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    error_type = Column(String, nullable=False)
-    root_cause = Column(Text, nullable=True)
-    prevention_rule = Column(Text, nullable=True)
-    context_hash = Column(String, unique=True, nullable=False)
-    severity = Column(Integer, default=1)
-    recurrence_count = Column(Integer, default=1)
-    status = Column(String, default="active")
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    error_type: str = Column(String, nullable=False)
+    root_cause: str | None = Column(Text, nullable=True)
+    prevention_rule: str | None = Column(Text, nullable=True)
+    context_hash: str = Column(String, unique=True, nullable=False)
+    severity: int = Column(Integer, default=1)
+    recurrence_count: int = Column(Integer, default=1)
+    status: str = Column(String, default="active")
+    created_at: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    updated_at: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class VisualMemory(MnemosyneBase):
@@ -224,26 +224,26 @@ class VisualMemory(MnemosyneBase):
 
 class AgentReliability(ReliabilityBase):
     __tablename__ = "agent_reliability"
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String(50), nullable=False, unique=True)
-    reliability_score = Column(Float, default=1.0)
-    total_violations = Column(Integer, default=0)
-    total_successes = Column(Integer, default=0)
-    cycle_count = Column(Integer, default=0)
-    last_violation_type = Column(String(50))
-    last_violation_at = Column(DateTime)
-    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    id: int = Column(Integer, primary_key=True)
+    agent_id: str = Column(String(50), nullable=False, unique=True)
+    reliability_score: float = Column(Float, default=1.0)
+    total_violations: int = Column(Integer, default=0)
+    total_successes: int = Column(Integer, default=0)
+    cycle_count: int = Column(Integer, default=0)
+    last_violation_type: str | None = Column(String(50))
+    last_violation_at: datetime.datetime | None = Column(DateTime)
+    updated_at: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class ModuleNode(SpatialBase):
     __tablename__ = "spatial_modules"
-    id = Column(Integer, primary_key=True)
-    module_name = Column(String(255), nullable=False, unique=True)
-    file_path = Column(String(512))
-    line_count = Column(Integer, default=0)
-    num_functions = Column(Integer, default=0)
-    content_hash = Column(String(64))
-    last_indexed = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    id: int = Column(Integer, primary_key=True)
+    module_name: str = Column(String(255), nullable=False, unique=True)
+    file_path: str = Column(String(512))
+    line_count: int = Column(Integer, default=0)
+    num_functions: int = Column(Integer, default=0)
+    content_hash: str = Column(String(64))
+    last_indexed: datetime.datetime = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class DependencyEdge(SpatialBase):

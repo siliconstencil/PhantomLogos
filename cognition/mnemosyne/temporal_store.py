@@ -159,7 +159,7 @@ class TemporalStore:
             )
             new_id = cursor.lastrowid
             conn.commit()
-            return int(new_id) if new_id is not None else -1
+            return new_id if new_id is not None else -1
         except Exception as e:
             logger.error(
                 f"TemporalStore (Axis {self.AXIS_ID}): record failed for session {session_id} ({e})"
@@ -225,7 +225,7 @@ class TemporalStore:
                 )
 
             conn.commit()
-            return int(new_id) if new_id is not None else -1
+            return new_id if new_id is not None else -1
         except Exception as e:
             conn.execute("ROLLBACK")
             logger.error(f"TemporalStore: supersede failed for {event_key} ({e})")
