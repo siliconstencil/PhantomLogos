@@ -2,7 +2,7 @@
 PHANTOM LOGOS - ROADMAP DURUM & KIYASLAMA RAPORU
 Q2 2026 | v1.0.0 -> v1.1.28 Gecis Analizi
 ====================================================================
-[Olusturma: 2026-05-27 | Guncelleme: 2026-05-28 | Kaynak: ROADMAP.md + walkthroughs + TASKS.md]
+[Olusturma: 2026-05-27 | Guncelleme: 2026-05-30 | Kaynak: ROADMAP.md + walkthroughs + TASKS.md]
 [Kapsam: 53 madde analizi, teknik borc envanteri, gidis yolu]
 [v1.1.28 Dogrulama: bagimsiz denetim bulgulari codebase karsilastirmasi ile teyit edildi]
 ====================================================================
@@ -114,11 +114,11 @@ KADEME K3 (New Capabilities) - 8 madde
 | K3.3   | Graphiti Temporal Knowledge Graph  | RAFTA (SLM temporal channel yuzunden %70-80 gereksiz hale geldi; graphiti-core kurulmadi) |
 | K3.4   | MCP Runtime (Native MCP Client)    | KISMEN (SLM MCP calisiyor; tam MCP Runtime src/architrave/mcp/ altinda 6 modul ile mevcut; src/clotho/mcp/ hic planlanmamisti, yol dokumantasyonda hataliydi) |
 | K3.5   | Cross-Axis Memory Hypergraph       | ACIK (networkx + SQLite adjacency table henuz eklenmedi) |
-| K3.6   | LangGraph Transition Verification  | ACIK (Z3 invariant sadece 2 gecis icin yazilmadi, K5.3'e ertelendi) |
+| K3.6   | LangGraph Transition Verification  | YAPILDI (Faz 1.1.38: graph_verify_node ergon node, Z3 formal invariant verification, orchestrator entegrasyonu) |
 | K3.7   | Model Switching Optimization       | KISMEN (OTL motoru model optimizasyon sagliyor; VRAMBudgetGuard callback ollama_utils.py'de uygulanmis; keep-alive pool (KeepAlivePool sinifi) eksik) |
 | K3.8   | Gateway Secondary Fallback         | ACIK (tek endpoint; ANTIGRAVITY_GATEWAY_URL_SECONDARY env var yok) |
 
-K3 Ozeti: 1 YAPILDI, 2 KISMEN, 2 GEREKSIZ/RAFTA, 3 ACIK
+K3 Ozeti: 2 YAPILDI, 2 KISMEN, 2 GEREKSIZ/RAFTA, 2 ACIK
 
 --------------------------------------------------------------------
 KADEME K4 (Competitive) - 7 madde
@@ -126,15 +126,15 @@ KADEME K4 (Competitive) - 7 madde
 
 | Madde  | Baslik                             | Durum              |
 |--------|------------------------------------|--------------------|
-| K4.1   | A2A Federation                     | ACIK (sadece in-process StateBus var) |
+| K4.1   | A2A Federation                     | YAPILDI (Faz 1.1.38: FederationBridge send_to_agent/broadcast/send_graph_state/request_reasoning src/architrave/a2a/bridge.py) |
 | K4.2   | QLoRA / Continuous Learning        | RAFTA/IPTAL (7 GB VRAM sinirina ragmen QLoRA adapter + modeli birlestirmek gerealistically imkansiz; DONANIM KISITI) |
 | K4.3   | Distributed Memory / Remote Sync   | ACIK (tamamen local; remote sync yok) |
-| K4.4   | OpenTelemetry Integration          | ACIK (endustri standardi OTLP yok) |
-| K4.5   | CI/CD Pipeline (GitHub Actions)    | KISMEN (ci.yml degistirilmis; pytest + Python 3.11/3.12 CI var; coverage/release automation yok) |
+| K4.4   | OpenTelemetry Integration          | YAPILDI (Faz 1.1.38: init_opentelemetry() + get_otel_tracer() + OTLP HTTP BatchSpanProcessor) |
+| K4.5   | CI/CD Pipeline (GitHub Actions)    | YAPILDI (Faz 1.1.39: pytest-cov --cov-fail-under=30 --cov-report=xml, artifact upload; release automation yok) |
 | K4.6   | Memory Consolidation & Summarization | ACIK (consolidator.py yok; hot/warm/cold tier yok) |
 | K4.7   | TEE / SGX Investigation            | RAFTA (Windows TEE destegi yetersiz; arastirma dahi yapilmadi; onceligini kaybetti) |
 
-K4 Ozeti: 1 KISMEN, 6 ACIK/RAFTA (K4.2 ve K4.7 kalici olarak rafta)
+K4 Ozeti: 3 YAPILDI, 4 ACIK/RAFTA (K4.2 ve K4.7 kalici olarak rafta)
 
 --------------------------------------------------------------------
 KADEME K5 (R&D) - 3 madde
@@ -687,7 +687,7 @@ Sprint 1-2 bu koruyucuyu takıyor. Ondan sonra güvenle hızlanılabilir.
 
 ====================================================================
 *Rapor: Phantom Logos Sovereign Audit - L0 Yetki Altinda*
-*Olusturma: 2026-05-27 | Son Guncelleme: 2026-05-28*
+*Olusturma: 2026-05-27 | Son Guncelleme: 2026-05-30*
 *Kapsam: v1.0.0 -> v1.1.28 | 53 ROADMAP Maddesi + Ek Gelistirmeler*
 *Hedef Cerce: Stabilite, Saglamlik, Surdurulebilirlik*
 *v1.1.28 Notlari: 6 madde YAPILDI olarak guncellendi (K0.2, K0.4, K1.3,*
@@ -831,5 +831,33 @@ K3.6/K4.4/K4.1 Build Phase -- delta:
 | Guardian rollback | NONE | NONE |
 
 ============================================================
-*Update: 2026-05-30 | K3.6 GraphVerifier + K4.4 OpenTelemetry + K4.1 FederationBridge*
+*Update: 2026-05-30 | K3.6 GraphVerifier + K4.4 OpenTelemetry + K4.1 FederationBridge (v1.1.39: CI/CD Coverage + Smoke Tests eklenmistir)*
+============================================================
+
+
+============================================================
+APPENDIX-F: v1.1.39 STATUS UPDATE (2026-05-30)
+============================================================
+
+CI/CD Coverage & Topography Sync -- delta:
+
+| Item | Status |
+|------|--------|
+| pyproject.toml pytest-cov | DONE |
+| ci.yml --cov-fail-under=30 + artifact upload | DONE |
+| observability.py _init_otel() | DONE |
+| test_smoke_graph_verify.py (3 tests) | DONE |
+| test_smoke_observability_otel.py (3 tests) | DONE |
+| test_smoke_federation_bridge.py (4 tests) | DONE |
+| topography.md sync (v1.1.39) | DONE |
+
+| Metric | v1.1.38 | v1.1.39 |
+|--------|---------|---------|
+| Overall Maturity | ~74% | ~74% (infrastructure) |
+| K4 Items Complete | 3/7 | 3/7 |
+| Smoke tests | 0 | 10 |
+| Guardian rollback | NONE | NONE |
+
+============================================================
+*Update: 2026-05-30 | CI/CD Coverage, Smoke Tests & Topography Sync*
 ============================================================

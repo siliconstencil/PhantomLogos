@@ -1,3 +1,24 @@
+## Phase 1.1.39 - CI/CD Coverage & Smoke Tests - 2026-05-30 [05:50 PM PT]
+
+### Added
+
+- **pytest-cov**: pyproject.toml -> pytest-cov>=5.0.0 for coverage measurement infrastructure.
+- **CI/CD Coverage Gate**: ci.yml --cov-fail-under=30, --cov-report=xml, artifact upload step. Coverage minimum %30 enforced.
+- **OpenTelemetry _init_otel()**: AtroposMonitor.__init__ self._tracer/self._otel_ready fields. _init_otel() method with OTLP HTTP BatchSpanProcessor. Graceful fallback to TemporalStore when otel SDK absent.
+- **3 Smoke Test Files**: test_smoke_graph_verify.py (3 tests), test_smoke_observability_otel.py (3 tests), test_smoke_federation_bridge.py (4 tests). All 10/10 pass.
+
+### Changed
+
+- **topography.md**: Status v1.1.34 -> v1.1.39. ergon/ 11 -> 12 nodes (+graph_verify). verifiers + GraphVerifier. A2A bridge.py package. OTel integration. 46 test files. Appendix-F added.
+- **ROADMAP_STATUS_Q2_2026.md**: K3.6 YAPILDI, K4.1 YAPILDI, K4.4 YAPILDI, K4.5 YAPILDI. K3 Ozeti: 2 YAPILDI, K4 Ozeti: 3 YAPILDI. Appendix-F (v1.1.39) added.
+- **main_walkthrough.md**: Phase 1.1.39 entry added.
+
+### Tests
+
+- Smoke Tests: 10/10 PASSED (3 graph_verify + 3 observability_otel + 4 federation_bridge)
+- Core Tests (graph_verifier + sophia_routing): 21/21 PASSED
+- Guardian rollback: 0 (L0 token ile basarili)
+
 ## Phase 1.1.38 - K3.6/K4.4/K4.1 Build - 2026-05-30 [11:00 AM PT]
 
 ### Added
