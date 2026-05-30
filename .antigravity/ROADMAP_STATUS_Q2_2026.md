@@ -564,9 +564,9 @@ SPRINT 5 (Yeni Özellikler - ancak K2 tamamlandıktan sonra) - ~3 hafta
 UZUN VADELI (Q3-Q4 2026)
 --------------------------------------------------------------------
 
-- K3.6 LangGraph Transition Verification (daraltılmış scope)
-- K4.1 A2A Federation (HMAC güvenlik)
-- K4.4 OpenTelemetry
+- ~~K3.6 LangGraph Transition Verification (daraltılmış scope)~~ **YAPILDI**
+- ~~K4.1 A2A Federation (HMAC güvenlik)~~ **YAPILDI**
+- ~~K4.4 OpenTelemetry~~ **YAPILDI**
 - K4.6 Memory Consolidation (bütçe kontrollü)
 - K5.2 Async Batch Write araştırması
 - K5.3 Full LangGraph Formal Verification araştırması
@@ -778,4 +778,58 @@ K2.1 Singleton Refactor + Mapper Fixes -- delta:
 
 ============================================================
 *Update: 2026-05-29 | K2.1 Singleton Refactor & Mapper Fixes*
+============================================================
+
+
+============================================================
+APPENDIX-D: v1.1.36 + v1.1.37 STATUS UPDATE (2026-05-29)
+============================================================
+
+K2.8 ReflectionStore SQLAlchemy + Layer Violation Fix + SLM Session Init:
+
+| Item | Status |
+|------|--------|
+| K2.8 ReflectionStore SQLAlchemy migration | DONE |
+| 4 ORM models (EntityRecord, ReflectionRecord, SemanticRelationRecord, FailureMemoryRecord) | DONE |
+| Layer violation file_watchdog L3->L1 via service_locator | DONE |
+| Alembic NO-OP migration | DONE |
+| SLMClient session_init()/asession_init() | DONE |
+| Hermes MCP startup session_init wiring | DONE |
+| register_snapshot() public API | DONE |
+| ToolBridge auto-snapshot on write/replace | DONE |
+
+| Metric | v1.1.35 | v1.1.36+37 |
+|--------|---------|------------|
+| Overall Maturity | ~69% | ~71% |
+| K2 Items Complete | 15/16 | 16/16 |
+| Remaining K2 OPEN | 1 (K2.8) | 0 (ALL DONE) |
+| Layer violations | 0 | 0 |
+
+============================================================
+*Update: 2026-05-29 | K2.8 ReflectionStore SQLAlchemy + Layer Violation + SLM Session Init*
+============================================================
+
+
+============================================================
+APPENDIX-E: v1.1.38 STATUS UPDATE (2026-05-30)
+============================================================
+
+K3.6/K4.4/K4.1 Build Phase -- delta:
+
+| Item | Status |
+|------|--------|
+| K3.6 GraphVerifier LangGraph node | DONE |
+| K4.4 OpenTelemetry observability.py | DONE |
+| K4.1 A2A FederationBridge | DONE |
+
+| Metric | v1.1.36+37 | v1.1.38 |
+|--------|------------|---------|
+| Overall Maturity | ~71% | ~74% |
+| K3 Items Complete | 1/8 | 2/8 |
+| K4 Items Complete | 0/7 | 3/7 |
+| Remaining OPEN (K3+K4) | 9 | 5 |
+| Guardian rollback | NONE | NONE |
+
+============================================================
+*Update: 2026-05-30 | K3.6 GraphVerifier + K4.4 OpenTelemetry + K4.1 FederationBridge*
 ============================================================

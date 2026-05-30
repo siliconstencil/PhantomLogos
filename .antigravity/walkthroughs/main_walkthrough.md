@@ -30,6 +30,51 @@
 3. **Snapshot Sync**: Post-commit hook ile watchdog false positive'leri onlendi.
 4. **Toplam degisiklik**: 45 files changed, +423/-224 satir.
 
+## Phase 1.1.36: K2.8 ReflectionStore SQLAlchemy & Layer Violation [01:45 AM PT]
+
+**Status**: COMPLETED (2026-05-29)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | **4 ORM Models**: EntityRecord, ReflectionRecord, SemanticRelationRecord, FailureMemoryRecord on MnemosyneBase | `models.py` | 4 models added with UniqueConstraint |
+| 2 | **ReflectionStore SQLAlchemy**: 14 methods refactored from raw sqlite3 to sessionmaker pattern | `reflection_store.py` | Same API, ORM internally |
+| 3 | **Layer Violation Fix**: `get_meta()` -> `get_meta_store()` via service_locator | `file_watchdog.py` | L3->L1 import removed |
+| 4 | **Alembic Migration**: NO-OP marker applied | `alembic/versions/mnemosyne/594e9f875cb2_...` | Schema unchanged |
+
+### Test Sonuclari
+
+| Suite | Count | Status |
+|-------|-------|--------|
+| Pyright | 0 errors | PASSED |
+
+### Key Improvements (Phase 1.1.36)
+
+1. **K2.8 ReflectionStore SQLAlchemy**: 242-line raw sqlite3 store migrated to SQLAlchemy ORM. 12 raw SQL queries eliminated.
+2. **Layer Hygiene**: L3->L1 backward dependency resolved via service_locator indirection.
+
+---
+
+## Phase 1.1.37: SLM Session Init & Watchdog Snapshot Sync [02:15 AM PT]
+
+**Status**: COMPLETED (2026-05-29)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | **SLMClient session_init()/asession_init()**: Sync+async MCP tool wrappers | `slm_client.py` | SLM session init at startup |
+| 2 | **Hermes MCP Startup**: `get_slm_client().session_init()` after `_ensure_connected()` | `hermes_mcp.py` | Automatic init on daemon start |
+| 3 | **register_snapshot() public API**: Exposed for ToolBridge auto-snapshot | `snapshot_manager.py` | Watchdog false positive prevention |
+
+### Test Sonuclari
+
+| Suite | Count | Status |
+|-------|-------|--------|
+| MCP tests | 6/6 | PASSED |
+
+### Key Improvements (Phase 1.1.37)
+
+1. **SLM Session Init**: SLM MCP server now receives session initialisation context on daemon startup.
+2. **Watchdog False Positive Prevention**: ToolBridge auto-snapshots after writes, eliminating watchdog revert race.
+
 ---
 
 ## Phase 1.1.34: MCP Ekosistem Onarimi & CI/CD Pipeline [09:41 PM - 11:48 PM PT]
@@ -2592,3 +2637,32 @@ Validation: All 4 middleware modules import cleanly. AntiLoopCircuitBreaker test
 ### Maturity Impact: 57% -> 64% (94% of target)
 
 ### Seal: 2026-05-28 | Phase 1.1.30 3-Agent Stability SEALED
+
+---
+
+## Phase 1.1.38: K3.6 GraphVerifier + K4.4 OpenTelemetry + K4.1 FederationBridge [~11:00 AM PT]
+
+**Status**: COMPLETED (2026-05-30)
+
+| Step | Change | File(s) | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | **K3.6 GraphVerifier LangGraph Node**: `graph_verify_node` async function. Z3 formal verification of red zone/deadlock invariants via GraphVerifier.run_all(). | `src/clotho/ergon/graph_verify.py` | ergon/__init__.py'ye export, orchestrator.py'ye import + add_node + verify_node -> graph_verify -> should_call_tools edge |
+| 2 | **K4.4 OpenTelemetry**: `init_opentelemetry()` (OTLP HTTP BatchSpanProcessor), `get_otel_tracer()`. AtroposMonitor.trace async_wrapper/sync_wrapper opsiyonel OTel span destegi. | `src/atropos/observability.py` | OTel paketi yoksa TemporalStore legacy path korunuyor |
+| 3 | **K4.1 FederationBridge**: `FederationBridge` class (send_to_agent, broadcast, send_graph_state, request_reasoning). A2ADiscovery + send_a2a_message + BusMessage kullanimi. | `src/architrave/a2a/bridge.py` | 4 method, import dogrulamasi: client/protocol/discovery/auth |
+
+### Key Improvements (Phase 1.1.38)
+
+1. **K3.6**: LangGraph transition invariants now formally verified via Z3 SMT solver after verify_node. Red zone score <0.4 or retry >=3 triggers invariant checks. 4 SMT builders (red zone, deadlock resolver pre/post, error path).
+2. **K4.4**: Standard OTLP endpoint export with graceful degradation. No breaking change to existing Database-First telemetry.
+3. **K4.1**: Clotho-level A2A messaging bridge. Broadcast to all online agents, GraphState snapshot sharing, remote reasoning requests with configurable timeout.
+
+### Test Sonuclari
+
+| Suite | Count | Status |
+|-------|-------|--------|
+| AST Syntax | 5/5 | PASSED |
+| Guardian rollback | 0 | NONE |
+
+### Maturity Impact: ~71% -> ~74% (K3: 2/8, K4: 3/7)
+
+### Seal: 2026-05-30 | Phase 1.1.38 Build SEALED

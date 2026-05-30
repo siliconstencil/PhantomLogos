@@ -51,3 +51,6 @@ opencode/
 node_modules/
 .antigravity/backup/
 .gstack/
+
+# Watchdog runtime logs
+logs/system/watchdog/

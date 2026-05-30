@@ -15,6 +15,41 @@ try:
 except ImportError:
     from src.atropos.token_budget import get_token_guard
 
+# --- K4.4: OpenTelemetry Integration ---
+_otel_tracer = None
+_otel_initialized = False
+
+
+def init_opentelemetry(service_name: str = "phantom-logos") -> Any:
+    global _otel_tracer, _otel_initialized
+    if _otel_initialized:
+        return _otel_tracer
+    _otel_initialized = True
+    try:
+        from opentelemetry import trace
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        resource = Resource.create({"service.name": service_name})
+        provider = TracerProvider(resource=resource)
+        otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318/v1/traces")
+        processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=otlp_endpoint))
+        provider.add_span_processor(processor)
+        trace.set_tracer_provider(provider)
+        _otel_tracer = trace.get_tracer(service_name)
+        logger.info(f"OpenTelemetry: Initialized with OTLP endpoint {otlp_endpoint}")
+    except ImportError:
+        logger.info("OpenTelemetry: Packages not installed, skipping OTLP export.")
+    except Exception as e:
+        logger.warning(f"OpenTelemetry: Init failed ({e})")
+    return _otel_tracer
+
+
+def get_otel_tracer() -> Any:
+    return _otel_tracer
+
 
 class AtroposMonitor:
     """
@@ -44,36 +79,81 @@ class AtroposMonitor:
                 async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                     start_time = time.perf_counter()
                     trace_id = f"tr_{int(time.time() * 1000)}"
-                    self._log_event(trace_id, component, func.__name__, "START")
-                    try:
-                        result = await func(*args, **kwargs)
-                        duration = time.perf_counter() - start_time
-                        self._log_event(
-                            trace_id,
-                            component,
-                            func.__name__,
-                            "SUCCESS",
-                            duration=duration,
-                            result=result,
-                        )
-                        return result
-                    except asyncio.CancelledError:
-                        duration = time.perf_counter() - start_time
-                        self._log_event(
-                            trace_id, component, func.__name__, "CANCELLED", duration=duration
-                        )
-                        raise
-                    except Exception as e:
-                        duration = time.perf_counter() - start_time
-                        self._log_event(
-                            trace_id,
-                            component,
-                            func.__name__,
-                            "FAILURE",
-                            duration=duration,
-                            error=str(e),
-                        )
-                        raise
+                    otel = get_otel_tracer()
+                    if otel:
+                        with otel.start_as_current_span(f"{component}.{func.__name__}") as span:
+                            span.set_attribute("trace_id", trace_id)
+                            span.set_attribute("component", component)
+                            self._log_event(trace_id, component, func.__name__, "START")
+                            try:
+                                result = await func(*args, **kwargs)
+                                duration = time.perf_counter() - start_time
+                                span.set_attribute("duration_ms", duration * 1000)
+                                span.set_status(status="OK")
+                                self._log_event(
+                                    trace_id,
+                                    component,
+                                    func.__name__,
+                                    "SUCCESS",
+                                    duration=duration,
+                                    result=result,
+                                )
+                                return result
+                            except asyncio.CancelledError:
+                                duration = time.perf_counter() - start_time
+                                span.set_status(status="UNSET")
+                                self._log_event(
+                                    trace_id,
+                                    component,
+                                    func.__name__,
+                                    "CANCELLED",
+                                    duration=duration,
+                                )
+                                raise
+                            except Exception as e:
+                                duration = time.perf_counter() - start_time
+                                span.record_exception(e)
+                                span.set_status(status="ERROR", description=str(e))
+                                self._log_event(
+                                    trace_id,
+                                    component,
+                                    func.__name__,
+                                    "FAILURE",
+                                    duration=duration,
+                                    error=str(e),
+                                )
+                                raise
+                    else:
+                        self._log_event(trace_id, component, func.__name__, "START")
+                        try:
+                            result = await func(*args, **kwargs)
+                            duration = time.perf_counter() - start_time
+                            self._log_event(
+                                trace_id,
+                                component,
+                                func.__name__,
+                                "SUCCESS",
+                                duration=duration,
+                                result=result,
+                            )
+                            return result
+                        except asyncio.CancelledError:
+                            duration = time.perf_counter() - start_time
+                            self._log_event(
+                                trace_id, component, func.__name__, "CANCELLED", duration=duration
+                            )
+                            raise
+                        except Exception as e:
+                            duration = time.perf_counter() - start_time
+                            self._log_event(
+                                trace_id,
+                                component,
+                                func.__name__,
+                                "FAILURE",
+                                duration=duration,
+                                error=str(e),
+                            )
+                            raise
 
                 return async_wrapper
             else:
@@ -82,30 +162,64 @@ class AtroposMonitor:
                 def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
                     start_time = time.perf_counter()
                     trace_id = f"tr_{int(time.time() * 1000)}"
-                    self._log_event(trace_id, component, func.__name__, "START")
-                    try:
-                        result = func(*args, **kwargs)
-                        duration = time.perf_counter() - start_time
-                        self._log_event(
-                            trace_id,
-                            component,
-                            func.__name__,
-                            "SUCCESS",
-                            duration=duration,
-                            result=result,
-                        )
-                        return result
-                    except Exception as e:
-                        duration = time.perf_counter() - start_time
-                        self._log_event(
-                            trace_id,
-                            component,
-                            func.__name__,
-                            "FAILURE",
-                            duration=duration,
-                            error=str(e),
-                        )
-                        raise
+                    otel = get_otel_tracer()
+                    if otel:
+                        with otel.start_as_current_span(f"{component}.{func.__name__}") as span:
+                            span.set_attribute("trace_id", trace_id)
+                            span.set_attribute("component", component)
+                            self._log_event(trace_id, component, func.__name__, "START")
+                            try:
+                                result = func(*args, **kwargs)
+                                duration = time.perf_counter() - start_time
+                                span.set_attribute("duration_ms", duration * 1000)
+                                span.set_status(status="OK")
+                                self._log_event(
+                                    trace_id,
+                                    component,
+                                    func.__name__,
+                                    "SUCCESS",
+                                    duration=duration,
+                                    result=result,
+                                )
+                                return result
+                            except Exception as e:
+                                duration = time.perf_counter() - start_time
+                                span.record_exception(e)
+                                span.set_status(status="ERROR", description=str(e))
+                                self._log_event(
+                                    trace_id,
+                                    component,
+                                    func.__name__,
+                                    "FAILURE",
+                                    duration=duration,
+                                    error=str(e),
+                                )
+                                raise
+                    else:
+                        self._log_event(trace_id, component, func.__name__, "START")
+                        try:
+                            result = func(*args, **kwargs)
+                            duration = time.perf_counter() - start_time
+                            self._log_event(
+                                trace_id,
+                                component,
+                                func.__name__,
+                                "SUCCESS",
+                                duration=duration,
+                                result=result,
+                            )
+                            return result
+                        except Exception as e:
+                            duration = time.perf_counter() - start_time
+                            self._log_event(
+                                trace_id,
+                                component,
+                                func.__name__,
+                                "FAILURE",
+                                duration=duration,
+                                error=str(e),
+                            )
+                            raise
 
                 return sync_wrapper
 
