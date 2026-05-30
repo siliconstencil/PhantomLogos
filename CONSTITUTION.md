@@ -3,10 +3,10 @@
 This document is the **Primary Governance Index** and **Single Source of Truth (SSOT)** for the Phantom Logos Sovereign OS (v1.4.1+). It defines the core pillars that all agents must adhere to.
 
 ## 1. Core Governance Documents
-- **Identity & Cognitive Anchor**: [[GEMINI.md]](file:///D:/Hank/GEMINI.md)
-- **Agent Guidelines & VRAM Hygiene**: [[AGENTS.md]](file:///D:/Hank/AGENTS.md)
-- **IDE & Operational Protocol**: [[.cursorrules]](file:///D:/Hank/.cursorrules)
-- **System Rule Enforcement**: [[rules.json]](file:///D:/Hank/.antigravity/rules.json)
+- **Identity & Cognitive Anchor**: [[GEMINI.md]](GEMINI.md)
+- **Agent Guidelines & VRAM Hygiene**: [[AGENTS.md]](AGENTS.md)
+- **IDE & Operational Protocol**: [[.cursorrules]](.cursorrules)
+- **System Rule Enforcement**: [[rules.json]](.antigravity/rules.json)
 
 ## 2. The Golden Mandates (Non-Negotiable)
 

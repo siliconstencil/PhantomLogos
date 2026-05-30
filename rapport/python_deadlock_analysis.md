@@ -3,7 +3,7 @@
 Denetim Zamani: [02:11 PM PT]
 
 ## 1. Giris ve Python Ortami Analizi
-Windows Pro sistemi üzerinde yürütülen `D:\Hank\.venv` sanal ortamındaki Python yapısı incelenmiştir. Kurulu olan kritik kütüphaneler (ör. `superlocalmemory`, `mcp`, `sqlite-vec`, `z3-solver`, `sympy`, `pywin32`, `psutil`) analiz edilmiş ve Python süreçlerinin Windows altında deadlock tetikleme mekanizmaları çıkarılmıştır.
+Windows Pro sistemi üzerinde yürütülen `<PROJECT_ROOT>\.venv` sanal ortamındaki Python yapısı incelenmiştir. Kurulu olan kritik kütüphaneler (ör. `superlocalmemory`, `mcp`, `sqlite-vec`, `z3-solver`, `sympy`, `pywin32`, `psutil`) analiz edilmiş ve Python süreçlerinin Windows altında deadlock tetikleme mekanizmaları çıkarılmıştır.
 
 ---
 

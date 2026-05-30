@@ -50,7 +50,7 @@ Dokuz temel aracin erisilebilirligi ve kontrol akisi basariyla test edilmistir. 
 ---
 
 ## 4. Veritabani Durumu (mnemosyne.db)
-Sistem veritabani dosya yolu (D:/Hank/data/mnemosyne.db) uzerinde 24 tablo tespit edilmis ve tablo doluluk oranlari analiz edilmistir:
+Sistem veritabani dosya yolu (<PROJECT_ROOT>/data/mnemosyne.db) uzerinde 24 tablo tespit edilmis ve tablo doluluk oranlari analiz edilmistir:
 
 * operational_logs_v2: 1322 satir
 * events: 1272 satir
@@ -76,5 +76,5 @@ Sistem veritabani dosya yolu (D:/Hank/data/mnemosyne.db) uzerinde 24 tablo tespi
 ---
 
 ## 5. Dizin ve Calisma Alani Sertlestirme (Path Hardening)
-* Proje Kok Dizini: D:\Hank (SUCCESS)
-* LocalRuntime Calisabilir Dizin: D:\Hank\bin\llama_bin (SUCCESS - yollar guvenli sekilde sabitlenmistir)
+* Proje Kok Dizini: <PROJECT_ROOT> (SUCCESS)
+* LocalRuntime Calisabilir Dizin: <PROJECT_ROOT>\bin\llama_bin (SUCCESS - yollar guvenli sekilde sabitlenmistir)
