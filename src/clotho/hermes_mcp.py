@@ -2,6 +2,7 @@ import os
 import threading
 import time as time_module
 
+from src.architrave.mcp import get_slm_client
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -100,6 +101,12 @@ def start_slm() -> None:
                     connected = session._ensure_connected()
                     if connected:
                         logger.info("Bootstrap: SLM MCP session connected successfully.")
+                        try:
+                            slm = get_slm_client()
+                            slm.session_init(project_path="D:\\Hank")
+                            logger.info("Bootstrap: SLM MCP session_init completed.")
+                        except Exception as e:
+                            logger.warning(f"Bootstrap: SLM session_init failed ({e})")
                         break
                     logger.warning(f"Bootstrap: SLM MCP connection attempt {attempt + 1}/3 failed.")
                     time_module.sleep(2.0)

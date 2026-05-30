@@ -175,12 +175,38 @@ class SLMClient:
 
                 threading.Thread(target=session._ensure_connected, daemon=True).start()
             res = session.call_tool_sync("get_status", {})
-            is_ok = isinstance(res, dict) and res.get("status") == "healthy"
+            is_ok = isinstance(res, dict) and res.get("success", False)
             _heartbeat.update(is_ok)
             return is_ok
         except Exception:
             _heartbeat.update(False)
             return False
+
+    def session_init(self, project_path: str = "", query: str = "", max_results: int = 10) -> dict:
+        try:
+            session = self._get_session()
+            res = session.call_tool_sync(
+                "session_init",
+                {"project_path": project_path, "query": query, "max_results": max_results},
+            )
+            return res if isinstance(res, dict) else {}
+        except Exception as e:
+            logger.error(f"SLMClient.session_init failed: {e}")
+            return {}
+
+    async def asession_init(
+        self, project_path: str = "", query: str = "", max_results: int = 10
+    ) -> dict:
+        try:
+            session = self._get_session()
+            res = await session.call_tool_async(
+                "session_init",
+                {"project_path": project_path, "query": query, "max_results": max_results},
+            )
+            return res if isinstance(res, dict) else {}
+        except Exception as e:
+            logger.error(f"SLMClient.asession_init failed: {e}")
+            return {}
 
     def search(
         self,
@@ -267,7 +293,7 @@ class SLMClient:
         try:
             session = self._get_session()
             res = await session.call_tool_async("get_status", {})
-            is_ok = isinstance(res, dict) and res.get("status") == "healthy"
+            is_ok = isinstance(res, dict) and res.get("success", False)
             _heartbeat.update(is_ok)
             return is_ok
         except Exception:
