@@ -17,7 +17,7 @@ $filePath = $json.tool_input.file_path
 if (-not $filePath) { Write-Output '{}'; exit 0 }
 
 # Check freeze state file
-$freezeFile = "D:\Hank\.claude\freeze-dir.txt"
+$freezeFile = Join-Path (Get-Item $PSScriptRoot).Parent.FullName "freeze-dir.txt"
 if (-not (Test-Path $freezeFile)) { Write-Output '{}'; exit 0 }
 
 $freezeDir = (Get-Content $freezeFile -Raw -ErrorAction SilentlyContinue).Trim()

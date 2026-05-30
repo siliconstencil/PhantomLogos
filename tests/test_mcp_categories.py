@@ -6,6 +6,8 @@ import pytest
 
 from src.architrave.mcp.mcp_session import MCPSession
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 @pytest.fixture(scope="module")
 def mcp_session() -> Generator[MCPSession, None, None]:
@@ -107,7 +109,7 @@ def test_category_2_session_management(mcp_session: MCPSession):
 
     # 2. session_init
     init_res = mcp_session.call_tool_sync(
-        "session_init", {"project_path": "D:\\Hank", "query": "initialization"}
+        "session_init", {"project_path": PROJECT_ROOT, "query": "initialization"}
     )
     print(f"Session Init response: {init_res}")
 
@@ -227,7 +229,7 @@ def test_category_6_mesh_networking(mcp_session: MCPSession):
 
     # 6. mesh_lock
     lock_res = mcp_session.call_tool_sync(
-        "mesh_lock", {"file_path": "D:\\Hank\\scratch_book.md", "action": "query"}
+        "mesh_lock", {"file_path": os.path.join(PROJECT_ROOT, "scratch_book.md"), "action": "query"}
     )
     print(f"Mesh Lock response: {lock_res}")
 

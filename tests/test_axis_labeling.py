@@ -17,7 +17,10 @@ def test_axis_mapping_logic():
 def test_mapper_report_axis():
     mapper = CodebaseMapper()
     # Fake index some core files if not already cached
-    mapper.index_file("D:\\Hank\\src\\clotho\\orchestrator.py", force=True)
+    import os
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    target_file = os.path.join(project_root, "src", "clotho", "orchestrator.py")
+    mapper.index_file(target_file, force=True)
     report = mapper.generate_report()
 
     found_axis = False

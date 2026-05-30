@@ -108,7 +108,7 @@
 
 ### Fixed (8 Pipeline Fixes)
 
-- **Fix 1 - Filesystem MCP Config**: `mcp_config.json`'da 7. server olarak `@modelcontextprotocol/server-filesystem` eklendi (`D:\Hank` allowed). [SRC:axis_2]
+- **Fix 1 - Filesystem MCP Config**: `mcp_config.json`'da 7. server olarak `@modelcontextprotocol/server-filesystem` eklendi (`<PROJECT_ROOT>` allowed). [SRC:axis_2]
 - **Fix 2 - LangGraph Whitelist**: `synergeia.py` whitelist prefix-based hale getirildi (`_MCP_PREFIXES` + `_BASE_TOOLS`), MCP tool'lari (mcp_slm_, fetch_, kg-mem_, playwright_, github_, sequentialthinking_) artik LangGraph pipeline'indan cagrilabiliyor. [SRC:axis_2]
 - **Fix 3 - VRAM Flush Optimizasyonu**: `base.py:62`'den `"semantic"` kaldirildi (Nomic+Jina always-resident, flush gereksiz). [SRC:axis_7]
 - **Fix 4 - SLM Session Init**: `control_handoff.py`'da SLM aktifse `session_init()` cagrilir. [SRC:axis_1]
@@ -162,11 +162,11 @@
 
 ### Added
 
-- **Filesystem MCP Server Entegrasyonu**: `@modelcontextprotocol/server-filesystem` sunucusu hem IDE yapılandırmasına (`C:\Users\Hakan\.gemini\config\mcp_config.json`) hem de çalışma alanı konfigürasyonuna (`D:\Hank\mcp_config.json`) `D:\Hank` okuma yetkisiyle eklendi. Bu entegrasyon, platformun yerleşik `view_file` aracındaki 800 satır dayatmasını baypas ederek %90'ın üzerinde token tasarrufu sağlar. [SRC:axis_8]
+- **Filesystem MCP Server Entegrasyonu**: `@modelcontextprotocol/server-filesystem` sunucusu hem IDE yapılandırmasına (`<USER_PROFILE>\.gemini\config\mcp_config.json`) hem de çalışma alanı konfigürasyonuna (`<PROJECT_ROOT>\mcp_config.json`) `<PROJECT_ROOT>` okuma yetkisiyle eklendi. Bu entegrasyon, platformun yerleşik `view_file` aracındaki 800 satır dayatmasını baypas ederek %90'ın üzerinde token tasarrufu sağlar. [SRC:axis_8]
 
 ### Fixed
 
-- **Sovereign Rules & Guidelines English Standardization**: `D:\Hank\.antigravity\rules.json` içerisindeki tüm Türkçe açıklamalar ve kural detayları (RULE-030 ile RULE-039 arası) tamamen İngilizce ASCII-only standardına çevrildi. [SRC:axis_8]
+- **Sovereign Rules & Guidelines English Standardization**: `<PROJECT_ROOT>\.antigravity\rules.json` içerisindeki tüm Türkçe açıklamalar ve kural detayları (RULE-030 ile RULE-039 arası) tamamen İngilizce ASCII-only standardına çevrildi. [SRC:axis_8]
 - **view_file Kural Düzeyinde Yasaklanması**: `rules.json` (`RULE-038`) ve `AGENTS.md` dosyaları güncellenerek native `view_file` aracı kural düzeyinde tamamen yasaklandı; yerine MCP Filesystem araçlarının (`read_file` / `read_text_file`) kullanımı zorunlu kılındı.
 - **Morpheus Launcher Türkçe Kelime ve Karakter İhlali**: `run_morpheus.bat` dosyasındaki tüm Türkçe kelimeler ve loglama formatları (Yeni oturum basliyo -> New session starting, HATA -> ERROR vb.) tamamen ASCII-only İngilizce olarak temizlendi. [SRC:axis_1]
 - **Kod İçi Türkçe Açıklamalar ve Docstring'ler**: `src/architrave/mcp/mcp_tool_bridge.py` içerisindeki Türkçe docstring ve `cognition/morpheus/scheduler.py` içerisindeki Türkçe yorum satırları İngilizce açıklamalarla değiştirildi. [SRC:axis_1]
@@ -308,7 +308,7 @@
 
 ### Changed
 
-- **All 5 MCP config files** synced with Wave 1+2 servers: mcp_config.json, .mcp.json, opencode.json, src/architrave/mcp/mcp_config.json, C:\Users\Hakan\.gemini\config\mcp_config.json
+- **All 5 MCP config files** synced with Wave 1+2 servers: mcp_config.json, .mcp.json, opencode.json, src/architrave/mcp/mcp_config.json, <USER_PROFILE>\.gemini\config\mcp_config.json
 - **autonomous-qa-evals** → merged into audit skill (thin redirect wrapper remains)
 - **topography.md**: Updated from 44→45 skills, added audit + 5 new MCP skills to listing
 
@@ -342,7 +342,7 @@
 ### Infrastructure
 
 - **npm clean install**: 22 packages installed in D:\hank\opencode (4 direct + 18 deps). Context compression restored.
-- **DCP config verified**: dcp.jsonc at C:\Users\Hakan\.config\opencode\ valid, schema referenced.
+- **DCP config verified**: dcp.jsonc at <USER_PROFILE>\.config\opencode\ valid, schema referenced.
 
 ## Phase 1.1.21 - Gemini Implicit Cache + Metadata Architecture Overhaul - 2026-05-25 [03:13 AM PT]
 
@@ -983,7 +983,7 @@
 
 ### Added
 
-- **Sovereign Path Stabilization**: Integrated `.pth` based permanent `sys.path` registration for `D:\Hank`.
+- **Sovereign Path Stabilization**: Integrated `.pth` based permanent `sys.path` registration for `<PROJECT_ROOT>`.
 - **Editable Install**: Converted project to an editable package (`pip install -e .`) to resolve IDE/Pyright import conflicts.
 - **Vision Standardization**: Migrated default vision routing to **Qwen2.5-VL** (3B/7B) for superior stability.
 - **Diagnostic Tooling**: Created `scripts/test_relation_extraction.py` (E2E) and `scripts/db_diag.py` for Axis 5/6 verification.
@@ -1091,7 +1091,7 @@
 - **Codebase Mapper (Phase 10)**: Expanded scan filter to include `scripts/`, `tests/`, and `agent/` directories, re-indexing 205 modules.
 - **Reliability Lock (Bulgu C)**: Hardened `block_signal` to enforce hard stops based on `reliability.db` scores (< 0.3).
 - **Axis Schema Alignment (Phase 7)**: Fixed missing `description` field in Axis 3 (Goals) and corrected LanceDB/Episodic schema mismatches.
-- **IDE Root Conflict**: Synchronized `.vscode/settings.json` and `pyrightconfig.json` with absolute paths to enforce `D:\Hank` as the project root.
+- **IDE Root Conflict**: Synchronized `.vscode/settings.json` and `pyrightconfig.json` with absolute paths to enforce `<PROJECT_ROOT>` as the project root.
 - **Environment Correction**: Patched `.env` to fix `OPENCODE_CONFIG_DIR` typo (`opencode` -> `.opencode`).
 
 ## Phase 11.19.12 - 2026-05-11
@@ -1106,7 +1106,7 @@
 
 - **theoria.py Silent Failures**: Resolved NameErrors, missing `numpy` imports, and masked indexing failures.
 - **Gnosis Import Paths**: Fixed absolute/relative import conflicts and IDE root resolution in `base.py` and axis builders.
-- **IDE Root Conflict**: Synchronized `.vscode/settings.json` and `pyrightconfig.json` to enforce `D:\Hank` as the project root.
+- **IDE Root Conflict**: Synchronized `.vscode/settings.json` and `pyrightconfig.json` to enforce `<PROJECT_ROOT>` as the project root.
 - **Database Performance**: Created indexes `idx_rel_subject` and `idx_refl_session` in `mnemosyne.db` for high-performance retrieval.
 
 ## Phase 11.19.11 - 2026-05-10

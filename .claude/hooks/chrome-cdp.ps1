@@ -1,5 +1,5 @@
 # chrome-cdp.ps1 — Launch headless Chromium via CDP for gstack browse (Windows)
-# Usage: & 'D:\Hank\.claude\hooks\chrome-cdp.ps1' [--port PORT]
+# Usage: & '.\.claude\hooks\chrome-cdp.ps1' [--port PORT]
 # Outputs the CDP port number on stdout when ready.
 
 param(

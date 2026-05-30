@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "& 'D:\\Hank\\.claude\\hooks\\check-careful.ps1'",
+            "command": "& '${PHANTOM_ROOT}\\\\.claude\\\\hooks\\\\check-careful.ps1'",
             "shell": "powershell",
             "statusMessage": "Checking for destructive commands..."
           }
@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "& 'D:\\Hank\\.claude\\hooks\\check-freeze.ps1'",
+            "command": "& '${PHANTOM_ROOT}\\\\.claude\\\\hooks\\\\check-freeze.ps1'",
             "shell": "powershell",
             "statusMessage": "Checking freeze boundary..."
           }
@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "& 'D:\\Hank\\.claude\\hooks\\check-freeze.ps1'",
+            "command": "& '${PHANTOM_ROOT}\\\\.claude\\\\hooks\\\\check-freeze.ps1'",
             "shell": "powershell",
             "statusMessage": "Checking freeze boundary..."
           }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"cd /d D:\\Hank && D:\\Hank\\.venv\\Scripts\\python.exe -m pytest tests/ -q --tb=no -m smoke 2>NUL || exit /b 0\"",
+            "command": "cmd /c \"cd /d ${PHANTOM_ROOT} && ${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\python.exe -m pytest tests/ -q --tb=no -m smoke 2>NUL || exit /b 0\"",
             "statusMessage": "Running smoke tests...",
             "timeout": 30000
           }

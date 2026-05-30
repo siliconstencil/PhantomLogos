@@ -10,18 +10,18 @@ npm install playwright
 npx playwright install chromium
 
 # Build browse binary (one-time)
-cd D:\Downloads\gstack-main
-& "C:\Users\Hakan\.bun\bin\bun.exe" build --compile browse/src/cli.ts --outfile browse/dist/browse
+cd <GSTACK_ROOT>
+& "$env:USERPROFILE\.bunin\bun.exe" build --compile browse/src/cli.ts --outfile browse/dist/browse
 ```
 
 ## Start CDP daemon
 
 ```powershell
 # Launch headless Chromium on default port 9222
-& 'D:\Hank\.claude\hooks\chrome-cdp.ps1'
+& '.\.claude\hooks\chrome-cdp.ps1'
 
 # Or specify a port
-& 'D:\Hank\.claude\hooks\chrome-cdp.ps1' -Port 9223
+& '.\.claude\hooks\chrome-cdp.ps1' -Port 9223
 ```
 
 The script outputs the port number and exits. Chromium continues running in the background.
@@ -36,7 +36,7 @@ $env:GSTACK_SKILL_TOKEN = "..."    # Auth token (set by browse daemon at startup
 ## Browse binary
 
 ```
-D:\Downloads\gstack-main\browse\dist\browse.exe
+<GSTACK_ROOT>\browse\dist\browse.exe
 ```
 
 ## Core patterns

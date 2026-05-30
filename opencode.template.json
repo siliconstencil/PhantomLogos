@@ -55,7 +55,7 @@
     "slm": {
       "type": "local",
       "command": [
-        "D:\\Hank\\.venv\\Scripts\\slm.exe",
+        "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\slm.exe",
         "mcp"
       ],
       "enabled": true
@@ -74,7 +74,7 @@
     "fetch": {
       "type": "local",
       "command": [
-        "D:\\Hank\\.venv\\Scripts\\python.exe",
+        "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\python.exe",
         "-m",
         "mcp_server_fetch"
       ],
@@ -90,7 +90,7 @@
         "@modelcontextprotocol/server-memory"
       ],
       "env": {
-        "MEMORY_FILE_PATH": "D:\\Hank\\mcp-servers\\kg-mem\\memory.json"
+        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}\\\\mcp-servers\\\\kg-mem\\\\memory.json"
       },
       "enabled": true
     },
@@ -99,7 +99,7 @@
       "command": [
         "cmd",
         "/c",
-        "D:\\Hank\\scripts\\run_github_mcp.bat"
+        "${PHANTOM_ROOT}\\\\scripts\\\\run_github_mcp.bat"
       ],
       "enabled": true
     },
@@ -122,7 +122,7 @@
          "npx",
          "-y",
          "@modelcontextprotocol/server-filesystem",
-         "D:\\Hank"
+         "${PHANTOM_ROOT}"
        ],
        "enabled": true
      }

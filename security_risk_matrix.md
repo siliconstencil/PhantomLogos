@@ -1,7 +1,7 @@
 ﻿# Security Risk Matrix: Phantom Logos Workspace
 **Generated:** 2026-05-11 [18:00 PT]
 **Type:** READ-ONLY Static Analysis
-**Scope:** D:\Hank (all .py, .js, config, and log files)
+**Scope:** <PROJECT_ROOT> (all .py, .js, config, and log files)
 
 ---
 
@@ -14,15 +14,15 @@ The migration from the deprecated `google.generativeai` package to the new `goog
 
 | File | Line | Reference | Verdict |
 |------|------|-----------|---------|
-| `D:\Hank\tests\test_phase_11_9_integrity.py` | 60 | `import google.generativeai` | **BENIGN** -- This is a test that verifies the old package is NOT installed (wraps in try/except ImportError and calls `pytest.fail()` if found). |
-| `D:\Hank\src\architrave\gateway_client.py` | 7-8 | `from google import genai` / `from google.genai import types` | Clean migration |
-| `D:\Hank\scripts\verify_models.py` | 2 | `from google import genai` | Clean |
-| `D:\Hank\scripts\sovereign_audit.py` | 2 | `from google import genai` | Clean |
-| `D:\Hank\scripts\list_models.py` | 2 | `from google import genai` | Clean |
-| `D:\Hank\scripts\genai_manager.py` | 4 | `from google import genai` | Clean |
-| `D:\Hank\scripts\discover_id.py` | 2 | `from google import genai` | Clean |
-| `D:\Hank\scripts\audit_capabilities.py` | 2 | `from google import genai` | Clean |
-| `D:\Hank\tests\test_gemini_context_cache.py` | 3 | `from google import genai` | Clean |
+| `<PROJECT_ROOT>/tests\test_phase_11_9_integrity.py` | 60 | `import google.generativeai` | **BENIGN** -- This is a test that verifies the old package is NOT installed (wraps in try/except ImportError and calls `pytest.fail()` if found). |
+| `<PROJECT_ROOT>/src\architrave\gateway_client.py` | 7-8 | `from google import genai` / `from google.genai import types` | Clean migration |
+| `<PROJECT_ROOT>/scripts\verify_models.py` | 2 | `from google import genai` | Clean |
+| `<PROJECT_ROOT>/scripts\sovereign_audit.py` | 2 | `from google import genai` | Clean |
+| `<PROJECT_ROOT>/scripts\list_models.py` | 2 | `from google import genai` | Clean |
+| `<PROJECT_ROOT>/scripts\genai_manager.py` | 4 | `from google import genai` | Clean |
+| `<PROJECT_ROOT>/scripts\discover_id.py` | 2 | `from google import genai` | Clean |
+| `<PROJECT_ROOT>/scripts\audit_capabilities.py` | 2 | `from google import genai` | Clean |
+| `<PROJECT_ROOT>/tests\test_gemini_context_cache.py` | 3 | `from google import genai` | Clean |
 
 ### Recommendation
 None required. The single remaining reference is a deprecation-detection test -- it is correct and should stay.
@@ -37,24 +37,24 @@ None required. The single remaining reference is a deprecation-detection test --
 
 | File | Line | Code Snippet | Risk |
 |------|------|-------------|------|
-| `D:\Hank\cognition\morpheus\sweeper.py` | 129 | `subprocess.run(["taskkill", "/F", "/IM", "ollama*", "/T"], capture_output=True)` | **LOW** -- Hardcoded args, no user input |
-| `D:\Hank\cognition\morpheus\sweeper.py` | 133 | `subprocess.Popen(["cmd", "/c", "start", "ollama", "app"], shell=True)` | **MEDIUM** -- `shell=True` is a code smell. Args are hardcoded (no injection vector), but spawns a cmd.exe subshell unnecessarily. |
-| `D:\Hank\cognition\morpheus\sweeper.py` | 231 | `subprocess.run(["git", "-C", snapshot_path, "gc", "--prune=now", "--quiet"], check=True)` | **LOW** -- `snapshot_path` is derived from `opencode_home` (env). If env is poisoned, this could inject. Mitigated by `check=True`. |
-| `D:\Hank\cognition\morpheus\monitor.py` | 33 | `subprocess.run(["nvidia-smi", "--query-gpu=...", ...], creationflags=...)` | **LOW** -- Hardcoded args |
-| `D:\Hank\src\muscle\local_runtime.py` | 106 | `subprocess.Popen(cmd, ...)` where `cmd` contains `model_rel_path`, `mmproj_rel_path` | **MEDIUM** -- Model paths constructed from config/registry values. If registry is tampered, arbitrary binary execution is possible. |
-| `D:\Hank\src\muscle\local_runtime.py` | 130 | `subprocess.run(["taskkill", "/F", "/IM", "llama*", "/T"], ...)` | **LOW** -- Hardcoded args |
-| `D:\Hank\src\muscle\local_runtime.py` | 132 | `subprocess.run(["pkill", "-f", "llama"], ...)` (unreachable on win32) | **LOW** |
-| `D:\Hank\src\muscle\reranker.py` | 83 | `subprocess.run([binary, "-m", self.model_path, "--temp", "0.0", "-p", payload], ...)` | **MEDIUM** -- `binary` is a config-driven path. `payload` is JSON from user query. If binary is swapped or payload contains malformed control chars, risk exists. |
-| `D:\Hank\src\utils\sandbox.py` | 79 | `subprocess.run([sys.executable, script_path], capture_output=True, ...)` | **LOW** -- Calls same Python interp with a temp file. Environment is stripped to a safe minimal set. Forbidden path patterns are regex-blocked. |
-| `D:\Hank\tests\test_hermes_bridge.py` | 14 | `subprocess.run(full_cmd, ...)` where `full_cmd = [sys.executable, cli_path] + cmd_args` | **LOW** -- Test context; `cmd_args` comes from test inputs, not external user data. |
-| `D:\Hank\_tmp_outdated.py` | 3 | `subprocess.run([sys.executable, "-m", "pip", "list", ...])` | **LOW** -- Orphaned scratch file, hardcoded args. |
-| `D:\Hank\src\lachesis\verifiers\evaluator.py` | 30 | `(r"os\.system", "unsafe os.system call")` -- regex pattern in flaw list | **INFORMATIONAL** -- This detects unsafe patterns in code being evaluated, not usage within the evaluator itself. |
+| `<PROJECT_ROOT>/cognition\morpheus\sweeper.py` | 129 | `subprocess.run(["taskkill", "/F", "/IM", "ollama*", "/T"], capture_output=True)` | **LOW** -- Hardcoded args, no user input |
+| `<PROJECT_ROOT>/cognition\morpheus\sweeper.py` | 133 | `subprocess.Popen(["cmd", "/c", "start", "ollama", "app"], shell=True)` | **MEDIUM** -- `shell=True` is a code smell. Args are hardcoded (no injection vector), but spawns a cmd.exe subshell unnecessarily. |
+| `<PROJECT_ROOT>/cognition\morpheus\sweeper.py` | 231 | `subprocess.run(["git", "-C", snapshot_path, "gc", "--prune=now", "--quiet"], check=True)` | **LOW** -- `snapshot_path` is derived from `opencode_home` (env). If env is poisoned, this could inject. Mitigated by `check=True`. |
+| `<PROJECT_ROOT>/cognition\morpheus\monitor.py` | 33 | `subprocess.run(["nvidia-smi", "--query-gpu=...", ...], creationflags=...)` | **LOW** -- Hardcoded args |
+| `<PROJECT_ROOT>/src\muscle\local_runtime.py` | 106 | `subprocess.Popen(cmd, ...)` where `cmd` contains `model_rel_path`, `mmproj_rel_path` | **MEDIUM** -- Model paths constructed from config/registry values. If registry is tampered, arbitrary binary execution is possible. |
+| `<PROJECT_ROOT>/src\muscle\local_runtime.py` | 130 | `subprocess.run(["taskkill", "/F", "/IM", "llama*", "/T"], ...)` | **LOW** -- Hardcoded args |
+| `<PROJECT_ROOT>/src\muscle\local_runtime.py` | 132 | `subprocess.run(["pkill", "-f", "llama"], ...)` (unreachable on win32) | **LOW** |
+| `<PROJECT_ROOT>/src\muscle\reranker.py` | 83 | `subprocess.run([binary, "-m", self.model_path, "--temp", "0.0", "-p", payload], ...)` | **MEDIUM** -- `binary` is a config-driven path. `payload` is JSON from user query. If binary is swapped or payload contains malformed control chars, risk exists. |
+| `<PROJECT_ROOT>/src\utils\sandbox.py` | 79 | `subprocess.run([sys.executable, script_path], capture_output=True, ...)` | **LOW** -- Calls same Python interp with a temp file. Environment is stripped to a safe minimal set. Forbidden path patterns are regex-blocked. |
+| `<PROJECT_ROOT>/tests\test_hermes_bridge.py` | 14 | `subprocess.run(full_cmd, ...)` where `full_cmd = [sys.executable, cli_path] + cmd_args` | **LOW** -- Test context; `cmd_args` comes from test inputs, not external user data. |
+| `<PROJECT_ROOT>/_tmp_outdated.py` | 3 | `subprocess.run([sys.executable, "-m", "pip", "list", ...])` | **LOW** -- Orphaned scratch file, hardcoded args. |
+| `<PROJECT_ROOT>/src\lachesis\verifiers\evaluator.py` | 30 | `(r"os\.system", "unsafe os.system call")` -- regex pattern in flaw list | **INFORMATIONAL** -- This detects unsafe patterns in code being evaluated, not usage within the evaluator itself. |
 
 ### 2.2 Subprocess usage in JavaScript
 
 | File | Line | Code | Risk |
 |------|------|------|------|
-| `D:\Hank\.opencode\plugins\websearch.js` | 14 | `Bun.spawn(["python", scriptPath, args.query], { env: { ...process.env } })` | **LOW** -- `args.query` is user-controlled but only passed as a positional arg to a Python script. No shell=True. Environment is inherited (whole `process.env`), which is slightly broad. |
+| `<PROJECT_ROOT>/.opencode\plugins\websearch.js` | 14 | `Bun.spawn(["python", scriptPath, args.query], { env: { ...process.env } })` | **LOW** -- `args.query` is user-controlled but only passed as a positional arg to a Python script. No shell=True. Environment is inherited (whole `process.env`), which is slightly broad. |
 
 ### 2.3 Key Risks Summary
 1. **`shell=True` in `sweeper.py:133`** -- Unnecessary subshell. Should use `subprocess.Popen(["ollama", "app"])` without cmd.exe wrapper.
@@ -72,7 +72,7 @@ None required. The single remaining reference is a deprecation-detection test --
 
 ### Severity: LOW
 
-All seemingly "secret" values in `D:\Hank\scratch\` are either:
+All seemingly "secret" values in `<PROJECT_ROOT>/scratch\` are either:
 - **(a)** Placeholder strings like `api_key="not-needed"` for QWED local inference
 - **(b)** Environment variable names like `os.getenv("ANTIGRAVITY_GATEWAY_URL")` -- not the actual value
 - **(c)** Token/context usage logs like `"tokens_used"` which are telemetry, not secrets
@@ -128,7 +128,7 @@ No actual secrets found hardcoded in scratch/. The `"antigravity-native"` and `"
 ### Pattern Analysis
 1. **Bulk event at 01:23:03** -- 34 files truncated in the same second. This is the most critical event. Likely caused by a faulty bulk write operation (possibly `replace_file_content` or auto-formatter).
 2. **Recurring target files:** `.vscode/settings.json` (2x), `telemetry/SKILL.md` (2x), `hermes.yaml` (4x), `file_watchdog.py` (3x) -- these files appear to be frequent truncation targets.
-3. **Scripts/ directory total wipe (01:23:03):** Every file in D:\Hank\scripts/ was hit simultaneously. This represents a systemic write failure.
+3. **Scripts/ directory total wipe (01:23:03):** Every file in <PROJECT_ROOT>/scripts/ was hit simultaneously. This represents a systemic write failure.
 
 ### 4.3 Watchdog Logs
 - `logs/system/watchdog/watchdog_v2.log` exists but is a **binary file** (cannot be read as text).
@@ -150,7 +150,7 @@ No actual secrets found hardcoded in scratch/. The `"antigravity-native"` and `"
 
 | File Path | Status |
 |-----------|--------|
-| `D:\Hank\.env` | **EXISTS** -- Contains environment variables. Blocked from direct read by EnvSitter policy (correctly so). |
+| `<PROJECT_ROOT>/.env` | **EXISTS** -- Contains environment variables. Blocked from direct read by EnvSitter policy (correctly so). |
 | `.opencode\.gitignore` | Exists (separate) |
 | `projects\autoresearch\.gitignore` | Exists (separate) |
 
@@ -206,8 +206,8 @@ These scripts bypass `security_utils.py` and read API keys directly:
 
 | File | Line | Usage | Risk |
 |------|------|-------|------|
-| `D:\Hank\cognition\mnemosyne\file_changelog.py` | 76 | `hashlib.md5(f.read()).hexdigest()` | **LOW** -- Used for change detection (compare file versions), not for security/cryptography. Collision resistance is irrelevant for this use case. |
-| `D:\Hank\src\lachesis\mapper\ast_parser.py` | 74 | `hashlib.md5(content.encode("utf-8")).hexdigest()[:16]` | **LOW** -- Used for content deduplication in AST parsing cache. Truncated to 16 hex chars (64 bits). Not security-critical. |
+| `<PROJECT_ROOT>/cognition\mnemosyne\file_changelog.py` | 76 | `hashlib.md5(f.read()).hexdigest()` | **LOW** -- Used for change detection (compare file versions), not for security/cryptography. Collision resistance is irrelevant for this use case. |
+| `<PROJECT_ROOT>/src\lachesis\mapper\ast_parser.py` | 74 | `hashlib.md5(content.encode("utf-8")).hexdigest()[:16]` | **LOW** -- Used for content deduplication in AST parsing cache. Truncated to 16 hex chars (64 bits). Not security-critical. |
 
 Note: `snapshot_manager.py` correctly uses `hashlib.sha256()` for integrity snapshots.
 
@@ -235,7 +235,7 @@ Note: `snapshot_manager.py` correctly uses `hashlib.sha256()` for integrity snap
 - `websearch.js:15` passes `{ ...process.env }` to `Bun.spawn`. The entire host environment (including API keys) is inherited by the subprocess. This is a **LOW** concern for local-only execution but would be elevated if the plugin were distributed.
 
 ### 7.2 Orphaned File: `_tmp_outdated.py`
-- A standalone script `D:\Hank\_tmp_outdated.py` executes `pip list --outdated` via subprocess. This appears to be a temporary artifact and should be removed from the workspace root.
+- A standalone script `<PROJECT_ROOT>/_tmp_outdated.py` executes `pip list --outdated` via subprocess. This appears to be a temporary artifact and should be removed from the workspace root.
 
 ---
 
