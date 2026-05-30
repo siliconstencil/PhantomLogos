@@ -9,6 +9,7 @@ from sqlalchemy import (
     LargeBinary,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import declarative_base
 
@@ -160,6 +161,52 @@ class ToneRecord(MnemosyneBase):
     verbosity = Column(Float, default=0.5)
     original_message = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+
+
+class EntityRecord(MnemosyneBase):
+    __tablename__ = "entities"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=False)
+    session_id = Column(String, nullable=True)
+    frequency = Column(Integer, default=1)
+    last_seen = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+
+    __table_args__ = (UniqueConstraint("name", "type"),)
+
+
+class ReflectionRecord(MnemosyneBase):
+    __tablename__ = "reflections"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    insight = Column(Text, nullable=False)
+    category = Column(String, default="general")
+    session_id = Column(String, nullable=True)
+    importance = Column(Float, default=0.5)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+
+
+class SemanticRelationRecord(MnemosyneBase):
+    __tablename__ = "semantic_relations"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    subject = Column(String, nullable=False)
+    predicate = Column(String, nullable=True)
+    object = Column(String, nullable=False)
+    session_id = Column(String, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+
+
+class FailureMemoryRecord(MnemosyneBase):
+    __tablename__ = "failure_memory"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    error_type = Column(String, nullable=False)
+    root_cause = Column(Text, nullable=True)
+    prevention_rule = Column(Text, nullable=True)
+    context_hash = Column(String, unique=True, nullable=False)
+    severity = Column(Integer, default=1)
+    recurrence_count = Column(Integer, default=1)
+    status = Column(String, default="active")
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class VisualMemory(MnemosyneBase):

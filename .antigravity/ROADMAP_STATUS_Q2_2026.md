@@ -84,7 +84,7 @@ KADEME K2 (Code Health) - 16 madde
 
 | Madde  | Baslik                             | Durum              |
 |--------|------------------------------------|--------------------|
-| K2.1   | hephaestus.py Singleton Refactor   | ACIK (25 import site, en yuksek riskli refactor, henuz yapilmadi) |
+| K2.1   | hephaestus.py Singleton Refactor   | YAPILDI (Faz 1.1.35: 16 getter _get_X() -> get_X() rename; 45 dosya degisti; backward-compat alias'lar korundu; mapper Fix A-D es zamanli uygulandi) [SRC:axis_10] |
 | K2.2   | morpheus/registry.py Shim Removal  | YAPILDI (Faz 1.1.26, 35 satir silindi) |
 | K2.3   | temperature_control.py Fold        | YAPILDI (Faz 1.1.26, 14 satir silindi) |
 | K2.4   | tool_validator.py Fold             | YAPILDI (Faz 1.1.26, 41 satir silindi) |
@@ -101,7 +101,7 @@ KADEME K2 (Code Health) - 16 madde
 | K2.15  | Memory Leak Monitoring             | YAPILDI (Faz 1.1.32: monitor.py MemoryLeakMonitor tracemalloc nframe=25, 300s interval, sweeper entegrasyonu) [SRC:axis_7] |
 | K2.16  | Disk Space Monitoring              | YAPILDI (Faz 1.1.32: sweeper._check_disk_space shutil.disk_usage <500MB sys.exit(1)) [SRC:axis_7] |
 
-K2 Ozeti: 14 YAPILDI, 1 GEREKSIZ, 1 ACIK
+K2 Ozeti: 15 YAPILDI, 1 GEREKSIZ
 
 --------------------------------------------------------------------
 KADEME K3 (New Capabilities) - 8 madde
@@ -750,4 +750,32 @@ MCP Ecosystem Repair + CI/CD Pipeline -- delta:
 
 ============================================================
 *Update: 2026-05-28 | MCP Ekosistem Onarimi & CI/CD Pipeline*
+============================================================
+
+============================================================
+APPENDIX-C: v1.1.35 STATUS UPDATE (2026-05-29)
+============================================================
+
+K2.1 Singleton Refactor + Mapper Fixes -- delta:
+
+| Item | Status |
+|------|--------|
+| K2.1 hephaestus Singleton Refactor | DONE |
+| Fix A: graph_manager Lock -> RLock | DONE |
+| Fix B: _ensure_spatial_index singleton bug | DONE |
+| Fix C: Deprecated _mapper tool removed | DONE |
+| Fix D: Dead code chunk_size/overlap | DONE |
+| Post-commit hook (register_snapshot) | DONE |
+| health_check_14_axes.py ImportError | DONE |
+| 4 rename bug fixes | DONE |
+
+| Metric | v1.1.34 | v1.1.35 |
+|--------|---------|---------|
+| Overall Maturity | ~67% | ~69% |
+| K2 Items Complete | 14/16 | 15/16 |
+| Remaining K2 OPEN | 1 (K2.8) | 1 (K2.8) |
+| Files changed | N/A | 45 files, +423/-224 |
+
+============================================================
+*Update: 2026-05-29 | K2.1 Singleton Refactor & Mapper Fixes*
 ============================================================
