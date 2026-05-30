@@ -13,11 +13,13 @@ def mcp_session() -> Generator[MCPSession, None, None]:
     os.environ["PYTHONUNBUFFERED"] = "1"
     os.environ["PYTHONIOENCODING"] = "UTF-8"
 
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    slm_path = os.path.join(project_root, ".venv", "Scripts", "slm.exe") if os.name == "nt" else os.path.join(project_root, ".venv", "bin", "slm")
     session = MCPSession(
         name="slm",
-        command=r"D:\Hank\.venv\Scripts\slm.exe",
+        command=slm_path,
         args=["mcp"],
-        env={"PYTHONPATH": "D:\\Hank"},
+        env={"PYTHONPATH": project_root},
         timeout=120.0,
     )
 

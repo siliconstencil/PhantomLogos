@@ -3,7 +3,8 @@ REM Morpheus VRAM Management Daemon (PowerShell Launcher)
 REM Launched via: wscript.exe scripts\hide_morpheus.vbs
 REM Stop: scripts\stop_morpheus.bat
 
-set ROOT=D:\Hank
+set ROOT=%~dp0
+if "%ROOT:~-1%"=="\" set ROOT=%ROOT:~0,-1%
 set LOG_DIR=%ROOT%\logs\system\morpheus
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 set LOG_FILE=%LOG_DIR%\morpheus.log
