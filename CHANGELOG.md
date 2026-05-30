@@ -1,3 +1,21 @@
+## Phase 1.1.38 - K3.6/K4.4/K4.1 Build - 2026-05-30 [11:00 AM PT]
+
+### Added
+
+- **K3.6 GraphVerifier LangGraph Node**: `src/clotho/ergon/graph_verify.py` with `graph_verify_node` async function. Z3 formal verification of LangGraph transition invariants (red zone, deadlock resolver, error path). Integrated into orchestrator.py after verify_node with conditional `should_call_tools` routing. [SRC:axis_11]
+- **K4.4 OpenTelemetry Integration**: `src/atropos/observability.py` - `init_opentelemetry()` (OTLP HTTP BatchSpanProcessor), `get_otel_tracer()`. AtroposMonitor.trace async_wrapper and sync_wrapper with optional OTel span wrapping (graceful fallback to TemporalStore when otel package absent). [SRC:axis_4]
+- **K4.1 A2A FederationBridge**: `src/architrave/a2a/bridge.py` - `FederationBridge` class with 4 methods: `send_to_agent` (specific agent), `broadcast` (all online), `send_graph_state` (GraphState snapshot sharing), `request_reasoning` (remote reasoning with 30s timeout). Uses A2ADiscovery + send_a2a_message + BusMessage + HMAC auth. [SRC:axis_13]
+
+### Changed
+
+- **ROADMAP_STATUS_Q2_2026.md**: K3.6 (ACIK -> YAPILDI), K4.1 (ACIK -> YAPILDI), K4.4 (ACIK -> YAPILDI). Overall maturity to ~74%. Appendix-E added.
+- **main_walkthrough.md**: Phase 1.1.38 entry added.
+
+### Tests
+
+- AST Syntax: 5/5 PASSED
+- Guardian rollback: 0 (L0 token ile basarili)
+
 ## Phase 1.1.35 - K2.1 Singleton Refactor & Mapper Fixes - 2026-05-29 [01:17 AM PT]
 
 ### Added
@@ -20,6 +38,44 @@
 
 - Smoke tests: 4 PASSED, 1 skipped
 - `health_check_14_axes.py`: clean run
+## Phase 1.1.36 - K2.8 ReflectionStore SQLAlchemy Migration & Layer Violation Fix - 2026-05-29 [01:45 AM PT]
+
+### Added
+
+- **K2.8 ReflectionStore SQLAlchemy Migration**: Full ORM refactor of `reflection_store.py` from raw sqlite3 to SQLAlchemy `sessionmaker` pattern. 4 new ORM models (`EntityRecord`, `ReflectionRecord`, `SemanticRelationRecord`, `FailureMemoryRecord`) added to `models.py` on `MnemosyneBase`. All 14 methods retain same API signatures. ProceduralStore pattern followed (engine + Session + commit/rollback/close). [SRC:axis_11]
+- **Alembic Migration**: NO-OP marker migration generated and applied (`594e9f875cb2`).
+
+### Fixed
+
+- **L3->L1 Layer Violation**: `file_watchdog.py` `get_meta()` import replaced with `get_meta_store()` via `service_locator`. [SRC:axis_10]
+
+### Changed
+
+- **ROADMAP_STATUS_Q2_2026.md**: K2.8 (ACIK -> YAPILDI). Overall maturity to ~71%.
+- **main_walkthrough.md**: Phase 1.1.36 entry added.
+
+### Tests
+
+- Pyright: 0 errors
+
+## Phase 1.1.37 - SLM Session Init Fix & Watchdog Snapshot Sync - 2026-05-29 [02:15 AM PT]
+
+### Added
+
+- **SLMClient.session_init() / asession_init()**: Sync and async methods wrapping MCP `session_init` tool. [SRC:axis_13]
+- **Hermes MCP Startup Integration**: `hermes_mcp.py` calls `get_slm_client().session_init()` after `_ensure_connected()` on service start. [SRC:axis_7]
+- **register_snapshot() API**: `SnapshotManager.register_snapshot()` exposed as public method for immediate snapshot baseline update after writes. [SRC:axis_11]
+- **ToolBridge Auto-Snapshot**: `fs.py` `write_file` and `replace_content` auto-call `register_snapshot()` after successful writes. [SRC:axis_2]
+
+### Fixed
+
+- **SLM Dead Detection**: `SLMClient.health()`/`ahealth()` status check corrected from `res.get("status")` (non-existent) to `res.get("success")`. [SRC:axis_13]
+
+### Tests
+
+- MCP tests: 6/6 PASSED
+- Syntax validation: 2 files validated
+
 
 ## Phase 1.1.34 - MCP Ecosystem Pipeline Repair & CI/CD Integration - 2026-05-28 [02:35 AM PT]
 

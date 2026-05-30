@@ -17,6 +17,7 @@ from .ergon import (
     deadlock_resolver_node,
     draft_node,
     expert_draft_node,
+    graph_verify_node,
     negotiate_node,
     refine_node,
     reflection_node,
@@ -206,6 +207,9 @@ def create_clotho_graph() -> Any:
     workflow.add_node("draft", with_timeout(draft_node))
     workflow.add_node("expert_draft", with_timeout(expert_draft_node))
     workflow.add_node("verify_node", with_timeout(verify_node))  # AXIS 11
+    workflow.add_node(
+        "graph_verify", with_timeout(graph_verify_node)
+    )  # AXIS 11: Z3 formal verification
     workflow.add_node("tool_exec", with_timeout(tool_exec_node))
     workflow.add_node("critique", with_timeout(critique_node))
     workflow.add_node("reflection", with_timeout(reflection_node))  # AXIS 8
@@ -273,8 +277,11 @@ def create_clotho_graph() -> Any:
     workflow.add_edge("draft", "verify_node")
     workflow.add_edge("expert_draft", "verify_node")
 
+    # K3.6: All verify_node flows pass through graph_verify (Z3 formal verification)
+    workflow.add_edge("verify_node", "graph_verify")
+
     workflow.add_conditional_edges(
-        "verify_node",
+        "graph_verify",
         should_call_tools,
         {
             "ultra_light": "critique",
