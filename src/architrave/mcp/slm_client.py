@@ -1,17 +1,35 @@
-import os
+"""
+SLM Client -- HTTP transport only.
+
+Communicates directly with the SLM daemon at http://localhost:8765.
+MCP stdio approach removed: slm.exe mcp never responds to MCP JSON-RPC
+initialize handshake, causing permanent 30-second timeouts per client.
+Single HTTP daemon serves all concurrent clients without per-client subprocess.
+"""
+
+import asyncio
+import base64
+import contextlib
+import http.client
+import json
+import struct
 import threading
 import time
+import urllib.parse
 from dataclasses import dataclass
 
 from src.utils.logging_config import setup_logger
 
-from .mcp_registry import get_mcp_registry
-
 logger = setup_logger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# Heartbeat cache -- 15s TTL, 60s backoff after failure
+# ---------------------------------------------------------------------------
+
+
 class SLMHeartbeatCache:
-    """15s TTL, thread-safe heartbeat cache for SLM. 60s backoff after failure."""
+    """Thread-safe health result cache. 15s TTL, 60s backoff on failure."""
 
     def __init__(self, ttl: float = 15.0) -> None:
         self._ttl = ttl
@@ -42,10 +60,10 @@ class SLMHeartbeatCache:
 
 _heartbeat = SLMHeartbeatCache()
 
-import base64
-import contextlib
-import json
-import struct
+
+# ---------------------------------------------------------------------------
+# Serialization helpers -- used by remember() to encode structured metadata
+# ---------------------------------------------------------------------------
 
 
 def _serialize_vector(vector) -> str:
@@ -80,133 +98,192 @@ def _flatten_meta_tags(meta: dict) -> list[str]:
     return tags
 
 
-def _normalize_result(raw: dict) -> dict:
-    tags = raw.get("tags") or []
-    content = raw.get("content") or raw.get("text") or ""
+# ---------------------------------------------------------------------------
+# HTTP response normalizer -- maps /recall item to canonical dict shape
+# ---------------------------------------------------------------------------
 
-    vector = []
-    metadata = {}
-    timestamp = 0.0
-    agent_id = "system"
-    axis_id = 6
+_FACT_TYPE_AXIS: dict[str, int] = {
+    "episodic": 1,
+    "procedural": 2,
+    "goal": 3,
+    "temporal": 4,
+    "spatial": 5,
+    "semantic": 6,
+    "operational": 7,
+    "meta": 8,
+    "metacognition": 8,
+    "tone": 9,
+    "rational": 10,
+    "verification": 11,
+    "efficiency": 12,
+    "cross_session": 13,
+    "visual": 14,
+}
 
-    for tag in tags:
-        if tag.startswith("v:"):
-            with contextlib.suppress(Exception):
-                vector = _deserialize_vector(tag[2:])
-        elif tag.startswith("m:"):
-            try:
-                legacy_meta = _deserialize_meta(tag[2:])
-                if isinstance(legacy_meta, dict):
-                    metadata.update(legacy_meta)
-            except Exception as e:
-                logger.debug(f"SLMClient: legacy meta deserialize skipped ({e})")
-        elif tag.startswith("meta:"):
-            parts = tag[5:].split(":", 1)
-            if len(parts) == 2:
-                metadata[parts[0]] = parts[1]
-        elif tag.startswith("t:"):
-            with contextlib.suppress(Exception):
-                timestamp = float(tag[2:])
-        elif tag.startswith("a:"):
-            agent_id = tag[2:]
-        elif tag.startswith("x:"):
-            with contextlib.suppress(Exception):
-                axis_id = int(tag[2:])
+
+def _normalize_http_result(item: dict) -> dict:
+    """Map a /recall HTTP response item to the canonical SLMClient result shape."""
+    content = item.get("content") or item.get("source_content") or ""
+    fact_type = (item.get("fact_type") or "semantic").lower()
+    axis_id = _FACT_TYPE_AXIS.get(fact_type, 6)
+    # confidence is already 0-1; clamp to guard against out-of-range server values
+    importance = max(0.0, min(1.0, float(item.get("confidence", 0.5))))
+    context_hash = item.get("fact_id") or item.get("memory_id") or "unknown"
 
     return {
-        "vector": vector,
+        "vector": [],
         "text": content,
         "prevention_rule": content,
-        "session_id": raw.get("session_id") or "default",
-        "metadata": json.dumps(metadata) if isinstance(metadata, dict) else str(metadata),
-        "importance": float(raw.get("importance", 0.5)),
-        "timestamp": timestamp,
-        "error_type": raw.get("error_type") or metadata.get("error_type") or "unknown",
-        "context_hash": metadata.get("context_hash") or "unknown",
-        "agent_id": agent_id,
+        "session_id": "default",
+        "metadata": json.dumps({}),
+        "importance": importance,
+        "timestamp": 0.0,
+        "error_type": "unknown",
+        "context_hash": context_hash,
+        "agent_id": "system",
         "axis_id": axis_id,
     }
 
 
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+
+
 @dataclass
 class SLMConfig:
-    mcp_cmd: str = "slm mcp"
-    mcp_timeout: int = 30
-    endpoint: str = "http://localhost:8081"  # Legacy field for backwards compatibility in tests
+    http_port: int = 8765
+    http_op_timeout: float = 30.0
+    http_health_timeout: float = 5.0
+    endpoint: str = "http://localhost:8081"  # legacy field kept for test compat
+
+
+# ---------------------------------------------------------------------------
+# HTTP transport (internal) -- uses http.client to avoid S310 (urllib audit)
+# ---------------------------------------------------------------------------
+
+
+class _SLMHttpTransport:
+    """http.client wrapper for the SLM HTTP daemon. No external dependencies."""
+
+    def __init__(
+        self,
+        port: int = 8765,
+        op_timeout: float = 30.0,
+        health_timeout: float = 5.0,
+    ):
+        self._host = "localhost"
+        self._port = port
+        self._op_timeout = op_timeout
+        self._health_timeout = health_timeout
+
+    def _conn(self, timeout: float) -> http.client.HTTPConnection:
+        return http.client.HTTPConnection(self._host, self._port, timeout=timeout)
+
+    def _get(self, path: str, params: dict | None = None, timeout: float | None = None) -> dict:
+        if params:
+            path += "?" + urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
+        conn = self._conn(timeout or self._op_timeout)
+        try:
+            conn.request("GET", path)
+            resp = conn.getresponse()
+            return json.loads(resp.read().decode("utf-8"))
+        finally:
+            conn.close()
+
+    def _post(self, path: str, body: dict, timeout: float | None = None) -> dict:
+        data = json.dumps(body).encode("utf-8")
+        conn = self._conn(timeout or self._op_timeout)
+        try:
+            conn.request(
+                "POST",
+                path,
+                body=data,
+                headers={"Content-Type": "application/json"},
+            )
+            resp = conn.getresponse()
+            return json.loads(resp.read().decode("utf-8"))
+        finally:
+            conn.close()
+
+    def health(self) -> bool:
+        try:
+            data = self._get("/health", timeout=self._health_timeout)
+            return data.get("status") == "ok"
+        except Exception:
+            return False
+
+    def search(
+        self,
+        query: str,
+        limit: int = 5,
+        project: str | None = None,
+    ) -> list[dict]:
+        params: dict = {"q": query, "limit": limit}
+        if project and project != "default":
+            params["project_name"] = project
+        data = self._get("/recall", params)
+        return data.get("results", [])
+
+    def remember(
+        self,
+        content: str,
+        tags: list[str] | None = None,
+        metadata: dict | None = None,
+    ) -> dict:
+        body: dict = {"content": content}
+        if tags:
+            # HTTP API expects tags as a single comma-separated string
+            body["tags"] = ",".join(str(t) for t in tags)
+        if metadata:
+            body["metadata"] = metadata
+        return self._post("/remember", body)
+
+    def observe(self, content: str) -> dict:
+        return self._post("/observe", {"content": content})
+
+
+# ---------------------------------------------------------------------------
+# SLMClient -- public API (same interface, http.client under the hood)
+# ---------------------------------------------------------------------------
 
 
 class SLMClient:
     def __init__(self, config: SLMConfig | None = None) -> None:
-        self.config = config or SLMConfig(
-            mcp_cmd=os.getenv("SLM_MCP_CMD", "slm mcp"),
-            mcp_timeout=int(os.getenv("SLM_MCP_TIMEOUT", "30")),
+        self.config = config or SLMConfig()
+        self._transport = _SLMHttpTransport(
+            port=self.config.http_port,
+            op_timeout=self.config.http_op_timeout,
+            health_timeout=self.config.http_health_timeout,
         )
 
-    def _get_session(self):
-        registry = get_mcp_registry()
-        session = registry.get_session("slm")
-        if session is None:
-            from .mcp_session import MCPSession
-
-            registry._sessions["slm"] = MCPSession(
-                name="slm",
-                command=self.config.mcp_cmd.split()[0]
-                if " " in self.config.mcp_cmd
-                else self.config.mcp_cmd,
-                args=self.config.mcp_cmd.split()[1:] if " " in self.config.mcp_cmd else [],
-                timeout=self.config.mcp_timeout,
-                enabled=True,
-            )
-            session = registry.get_session("slm")
-        if session is None:
-            raise RuntimeError("SLM MCP Server session is disabled or not initialized")
-        return session
+    # -- health --------------------------------------------------------------
 
     def health(self) -> bool:
         if not _heartbeat.needs_refresh():
             return _heartbeat.healthy
+        result = self._transport.health()
+        _heartbeat.update(result)
+        return result
 
-        try:
-            session = self._get_session()
-            if not session.enabled:
-                session.enabled = True
-                import threading
+    async def ahealth(self) -> bool:
+        if not _heartbeat.needs_refresh():
+            return _heartbeat.healthy
+        result = await asyncio.to_thread(self._transport.health)
+        _heartbeat.update(result)
+        return result
 
-                threading.Thread(target=session._ensure_connected, daemon=True).start()
-            res = session.call_tool_sync("get_status", {})
-            is_ok = isinstance(res, dict) and res.get("success", False)
-            _heartbeat.update(is_ok)
-            return is_ok
-        except Exception:
-            _heartbeat.update(False)
-            return False
+    # -- session_init (no-op over HTTP) -------------------------------------
 
     def session_init(self, project_path: str = "", query: str = "", max_results: int = 10) -> dict:
-        try:
-            session = self._get_session()
-            res = session.call_tool_sync(
-                "session_init",
-                {"project_path": project_path, "query": query, "max_results": max_results},
-            )
-            return res if isinstance(res, dict) else {}
-        except Exception as e:
-            logger.error(f"SLMClient.session_init failed: {e}")
-            return {}
+        return {}
 
     async def asession_init(
         self, project_path: str = "", query: str = "", max_results: int = 10
     ) -> dict:
-        try:
-            session = self._get_session()
-            res = await session.call_tool_async(
-                "session_init",
-                {"project_path": project_path, "query": query, "max_results": max_results},
-            )
-            return res if isinstance(res, dict) else {}
-        except Exception as e:
-            logger.error(f"SLMClient.asession_init failed: {e}")
-            return {}
+        return {}
+
+    # -- search / recall -----------------------------------------------------
 
     def search(
         self,
@@ -216,22 +293,11 @@ class SLMClient:
         session_id: str | None = None,
     ) -> list[dict]:
         project = table_name or "default"
-        params = {"query": query, "limit": limit, "project": project}
-        if session_id:
-            params["session_id"] = session_id
-
         try:
-            session = self._get_session()
-            res = session.call_tool_sync("recall", params)
-            raw_results = []
-            if isinstance(res, dict):
-                raw_results = res.get("results", [])
-            elif isinstance(res, list):
-                raw_results = res
-
+            raw_results = self._transport.search(query, limit=limit, project=project)
             filtered = []
-            for r in raw_results:
-                norm = _normalize_result(r)
+            for item in raw_results:
+                norm = _normalize_http_result(item)
                 if session_id:
                     if norm["session_id"] in (session_id, "system", "default", "global"):
                         filtered.append(norm)
@@ -241,6 +307,31 @@ class SLMClient:
         except Exception as e:
             logger.error(f"SLMClient.search failed: {e}")
             return []
+
+    async def asearch(
+        self,
+        query: str,
+        limit: int = 5,
+        table_name: str | None = None,
+        session_id: str | None = None,
+    ) -> list[dict]:
+        project = table_name or "default"
+        try:
+            raw_results = await asyncio.to_thread(self._transport.search, query, limit, project)
+            filtered = []
+            for item in raw_results:
+                norm = _normalize_http_result(item)
+                if session_id:
+                    if norm["session_id"] in (session_id, "system", "default", "global"):
+                        filtered.append(norm)
+                else:
+                    filtered.append(norm)
+            return filtered
+        except Exception as e:
+            logger.error(f"SLMClient.asearch failed: {e}")
+            return []
+
+    # -- remember ------------------------------------------------------------
 
     def remember(
         self,
@@ -252,16 +343,23 @@ class SLMClient:
         try:
             content = entry.get("text") or entry.get("prevention_rule") or ""
 
-            tags = []
+            tags: list[str] = []
             vector = entry.get("vector")
             if vector is not None:
                 tags.append(f"v:{_serialize_vector(vector)}")
 
             meta = entry.get("metadata") or {}
+            if isinstance(meta, str):
+                with contextlib.suppress(Exception):
+                    meta = json.loads(meta)
             if isinstance(meta, dict):
-                tags.extend(self._flatten_meta_tags(meta))
+                tags.extend(_flatten_meta_tags(meta))
 
-            timestamp = entry.get("timestamp") or meta.get("timestamp") or time.time()
+            timestamp = (
+                entry.get("timestamp")
+                or (meta.get("timestamp") if isinstance(meta, dict) else None)
+                or time.time()
+            )
             tags.append(f"t:{float(timestamp)}")
             tags.append(f"a:{agent_id}")
             tags.append(f"x:{axis_id}")
@@ -269,70 +367,18 @@ class SLMClient:
             if entry.get("error_type"):
                 tags.append(str(entry["error_type"]))
 
-            project = table_name or entry.get("table_name") or "default"
+            metadata_dict: dict = {}
+            if isinstance(meta, dict):
+                metadata_dict.update(meta)
+            metadata_dict["project"] = table_name or entry.get("table_name") or "default"
+            metadata_dict["session_id"] = entry.get("session_id", "default")
+            metadata_dict["importance"] = float(entry.get("importance", 0.5))
 
-            params = {
-                "content": content,
-                "tags": tags,
-                "importance": float(entry.get("importance", 0.5)),
-                "project": project,
-                "session_id": entry.get("session_id", "default"),
-            }
-
-            session = self._get_session()
-            session.call_tool_sync("remember", params)
+            self._transport.remember(content, tags=tags, metadata=metadata_dict)
             return True
         except Exception as e:
             logger.error(f"SLMClient.remember failed: {e}")
             return False
-
-    async def ahealth(self) -> bool:
-        if not _heartbeat.needs_refresh():
-            return _heartbeat.healthy
-
-        try:
-            session = self._get_session()
-            res = await session.call_tool_async("get_status", {})
-            is_ok = isinstance(res, dict) and res.get("success", False)
-            _heartbeat.update(is_ok)
-            return is_ok
-        except Exception:
-            _heartbeat.update(False)
-            return False
-
-    async def asearch(
-        self,
-        query: str,
-        limit: int = 5,
-        table_name: str | None = None,
-        session_id: str | None = None,
-    ) -> list[dict]:
-        project = table_name or "default"
-        params = {"query": query, "limit": limit, "project": project}
-        if session_id:
-            params["session_id"] = session_id
-
-        try:
-            session = self._get_session()
-            res = await session.call_tool_async("recall", params)
-            raw_results = []
-            if isinstance(res, dict):
-                raw_results = res.get("results", [])
-            elif isinstance(res, list):
-                raw_results = res
-
-            filtered = []
-            for r in raw_results:
-                norm = _normalize_result(r)
-                if session_id:
-                    if norm["session_id"] in (session_id, "system", "default", "global"):
-                        filtered.append(norm)
-                else:
-                    filtered.append(norm)
-            return filtered
-        except Exception as e:
-            logger.error(f"SLMClient.asearch failed: {e}")
-            return []
 
     async def aremember(
         self,
@@ -344,16 +390,23 @@ class SLMClient:
         try:
             content = entry.get("text") or entry.get("prevention_rule") or ""
 
-            tags = []
+            tags: list[str] = []
             vector = entry.get("vector")
             if vector is not None:
                 tags.append(f"v:{_serialize_vector(vector)}")
 
             meta = entry.get("metadata") or {}
+            if isinstance(meta, str):
+                with contextlib.suppress(Exception):
+                    meta = json.loads(meta)
             if isinstance(meta, dict):
-                tags.extend(self._flatten_meta_tags(meta))
+                tags.extend(_flatten_meta_tags(meta))
 
-            timestamp = entry.get("timestamp") or meta.get("timestamp") or time.time()
+            timestamp = (
+                entry.get("timestamp")
+                or (meta.get("timestamp") if isinstance(meta, dict) else None)
+                or time.time()
+            )
             tags.append(f"t:{float(timestamp)}")
             tags.append(f"a:{agent_id}")
             tags.append(f"x:{axis_id}")
@@ -361,42 +414,20 @@ class SLMClient:
             if entry.get("error_type"):
                 tags.append(str(entry["error_type"]))
 
-            project = table_name or entry.get("table_name") or "default"
+            metadata_dict: dict = {}
+            if isinstance(meta, dict):
+                metadata_dict.update(meta)
+            metadata_dict["project"] = table_name or entry.get("table_name") or "default"
+            metadata_dict["session_id"] = entry.get("session_id", "default")
+            metadata_dict["importance"] = float(entry.get("importance", 0.5))
 
-            params = {
-                "content": content,
-                "tags": tags,
-                "importance": float(entry.get("importance", 0.5)),
-                "project": project,
-                "session_id": entry.get("session_id", "default"),
-            }
-
-            session = self._get_session()
-            await session.call_tool_async("remember", params)
+            await asyncio.to_thread(self._transport.remember, content, tags, metadata_dict)
             return True
         except Exception as e:
             logger.error(f"SLMClient.aremember failed: {e}")
             return False
 
-    def observe(self, content: str, agent_id: str = "system") -> bool:
-        try:
-            params = {"content": content, "agent_id": agent_id}
-            session = self._get_session()
-            session.call_tool_sync("observe", params)
-            return True
-        except Exception as e:
-            logger.error(f"SLMClient.observe failed: {e}")
-            return False
-
-    async def aobserve(self, content: str, agent_id: str = "system") -> bool:
-        try:
-            params = {"content": content, "agent_id": agent_id}
-            session = self._get_session()
-            await session.call_tool_async("observe", params)
-            return True
-        except Exception as e:
-            logger.error(f"SLMClient.aobserve failed: {e}")
-            return False
+    # -- import_entry (alias) ------------------------------------------------
 
     def import_entry(self, entry: dict, table_name: str | None = None) -> bool:
         return self.remember(entry, table_name=table_name)
@@ -404,68 +435,56 @@ class SLMClient:
     async def aimport_entry(self, entry: dict, table_name: str | None = None) -> bool:
         return await self.aremember(entry, table_name=table_name)
 
-    def embed(self, text: str) -> list[float]:
+    # -- observe -------------------------------------------------------------
+
+    def observe(self, content: str, agent_id: str = "system") -> bool:
         try:
-            session = self._get_session()
-            res = session.call_tool_sync("aembed", {"text": text})
-            if isinstance(res, dict) and "embedding" in res:
-                return res["embedding"]
-            emb = res if isinstance(res, list) else []
-            return emb
+            self._transport.observe(content)
+            return True
         except Exception as e:
-            logger.error(f"SLMClient.embed failed: {e}")
-            return []
+            logger.error(f"SLMClient.observe failed: {e}")
+            return False
+
+    async def aobserve(self, content: str, agent_id: str = "system") -> bool:
+        try:
+            await asyncio.to_thread(self._transport.observe, content)
+            return True
+        except Exception as e:
+            logger.error(f"SLMClient.aobserve failed: {e}")
+            return False
+
+    # -- embed (delegated to local Ollama by callers) ------------------------
+
+    def embed(self, text: str) -> list[float]:
+        # SLM HTTP daemon has no public embed endpoint.
+        # All callers (matryoshka_service, theoria) gate on `if vec:` and
+        # fall back to local Ollama -- returning [] triggers that path.
+        logger.debug("SLMClient.embed: no HTTP endpoint, caller falls back to local Ollama")
+        return []
 
     async def aembed(self, text: str) -> list[float]:
-        try:
-            session = self._get_session()
-            res = await session.call_tool_async("aembed", {"text": text})
-            if isinstance(res, dict) and "embedding" in res:
-                return res["embedding"]
-            emb = res if isinstance(res, list) else []
-            return emb
-        except Exception as e:
-            logger.error(f"SLMClient.aembed failed: {e}")
-            return []
+        logger.debug("SLMClient.aembed: no HTTP endpoint, caller falls back to local Ollama")
+        return []
+
+    # -- rerank (delegated to JinaReranker by callers) ----------------------
 
     def rerank(self, query: str, documents: list[str], top_n: int = 3) -> dict:
-        try:
-            session = self._get_session()
-            res = session.call_tool_sync(
-                "rerank",
-                {
-                    "query": query,
-                    "documents": documents,
-                    "top_n": top_n,
-                },
-            )
-            if isinstance(res, dict) and "results" in res:
-                return res
-            return {"results": []}
-        except Exception as e:
-            logger.error(f"SLMClient.rerank failed: {e}")
-            return {"results": []}
+        # SLM HTTP daemon has no public rerank endpoint.
+        # All callers (retrieval, kathedra) gate on results["results"] and
+        # fall back to JinaReranker -- returning {"results":[]} triggers that.
+        logger.debug("SLMClient.rerank: no HTTP endpoint, caller falls back to JinaReranker")
+        return {"results": []}
 
     async def arerank(self, query: str, documents: list[str], top_n: int = 3) -> dict:
-        try:
-            session = self._get_session()
-            res = await session.call_tool_async(
-                "rerank",
-                {
-                    "query": query,
-                    "documents": documents,
-                    "top_n": top_n,
-                },
-            )
-            if isinstance(res, dict) and "results" in res:
-                return res
-            return {"results": []}
-        except Exception as e:
-            logger.error(f"SLMClient.arerank failed: {e}")
-            return {"results": []}
+        logger.debug("SLMClient.arerank: no HTTP endpoint, caller falls back to JinaReranker")
+        return {"results": []}
 
 
-_client_instance = None
+# ---------------------------------------------------------------------------
+# Singleton factory
+# ---------------------------------------------------------------------------
+
+_client_instance: SLMClient | None = None
 
 
 def get_slm_client() -> SLMClient:
