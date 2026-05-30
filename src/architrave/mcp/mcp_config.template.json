@@ -1,0 +1,46 @@
+{
+  "_comment": "Template for src/architrave/mcp/mcp_config.json. Run scripts/setup_mcp_config.py to generate the real file.",
+  "mcpServers": {
+    "slm": {
+      "command": "${PHANTOM_ROOT}/.venv/bin/slm",
+      "args": ["mcp"],
+      "env": {
+        "SLM_DISABLE_WARMUP_SIDE_EFFECTS": "1"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {}
+    },
+    "fetch": {
+      "command": "${PHANTOM_ROOT}/.venv/bin/python",
+      "args": ["-m", "mcp_server_fetch"],
+      "env": {}
+    },
+    "kg-mem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}/mcp-servers/kg-mem/memory.json"
+      }
+    },
+    "github": {
+      "command": "${PHANTOM_ROOT}/scripts/run_github_mcp.sh",
+      "args": [],
+      "env": {}
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@executeautomation/playwright-mcp-server"],
+      "env": {}
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PHANTOM_ROOT}"],
+      "env": {
+        "PYTHONPATH": "${PHANTOM_ROOT}"
+      }
+    }
+  }
+}
