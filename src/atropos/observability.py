@@ -60,6 +60,19 @@ class AtroposMonitor:
     def __init__(self) -> None:
         self.budget_guard = get_token_guard()
         self._temporal = None
+        self._tracer = None
+        self._otel_ready = False
+        self._init_otel()
+
+    def _init_otel(self) -> None:
+        try:
+            tracer = init_opentelemetry()
+            self._tracer = tracer
+            self._otel_ready = tracer is not None
+        except Exception as e:
+            logger.debug(f"AtroposMonitor: OTel init skipped ({e})")
+            self._tracer = None
+            self._otel_ready = False
 
     def get_temporal(self) -> Any:
         if self._temporal is None:

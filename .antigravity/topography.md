@@ -1,6 +1,6 @@
 # Phantom Logos: System Topography & Micro-Level Data Flow
 
-*Status: v1.1.34 - MCP Ecosystem Pipeline Repair & CI/CD Integration, 0 Layer Violations, System STABLE*
+*Status: v1.1.39 - GraphVerifier Node, OpenTelemetry, A2A FederationBridge & CI/CD Coverage, 0 Layer Violations, System STABLE*
 
 This document provides a high-fidelity mapping of the Phantom Logos Agentic OS, detailing module interactions, data persistence across the 14-axis Mnemosyne memory, and the Sovereign Gateway architecture.
 
@@ -36,7 +36,7 @@ graph TB
 
     subgraph L2["L2 — Clotho (Execution)"]
         KR -->|Tier 0-2| ORC[orchestrator — LangGraph]
-        ORC --> ERG[ergon/ — 11 LangGraph Nodes]
+        ORC --> ERG[ergon/ — 12 LangGraph Nodes]
         ORC --> CLOTHO[Clotho — Executor]
         ORC --> ATROP[Atropos — Context Engineer]
         ATROP -->|Token Budget| AX12[Axis 12: Efficiency]
@@ -44,12 +44,13 @@ graph TB
         TB --> SBX[LightSandbox]
         TB --> JIN[Jina Reranker v3]
         TB --> FL[File Changelog]
+        ERG --> FB[FederationBridge — A2A Remote Agent]
         ACT[ActivityMonitor] --> ORC
     end
 
     subgraph L3["L3 — Lachesis (Audit)"]
         ORC -->|Critique| LACH[Lachesis — Auditor]
-        LACH --> VER[verifiers/ — SymPy+Z3+QWED+LLM]
+        LACH --> VER[verifiers/ — SymPy+Z3+QWED+LLM+GraphVerifier]
         LACH --> OG[OutputGuard]
         LACH --> EVL[8-Pillar Evaluator]
         LACH --> ST[SelfTuner]
@@ -331,6 +332,10 @@ sequenceDiagram
 | MCP Runtime | Completed | Native MCP server integration for dynamic tool discovery via src/architrave/mcp/ (Phase 1.1.5). Wave 1+2: 6 servers, 69 tools (Phase 1.1.24) |
 | Distributed Memory | Proposed | Remote Mnemosyne sync across agent clusters. Tracked in `.antigravity/dev/ROADMAP.md` (K5 tier). |
 | SLM MCP Integration | Completed | SuperLocalMemory V3.4 memory system via MCP, 7-module dual-path fallback architecture (Phases 1.1.5, 1.1.9) |
+| CI/CD Coverage | Completed | pytest-cov with --cov-fail-under=30, XML artifact upload in ci.yml (Phase 1.1.39) |
+| GraphVerifier LangGraph Node | Completed | Z3-based formal verification of LangGraph transitions as ergon node (Phase 1.1.38) |
+| A2A FederationBridge | Completed | Orchestrator-level A2A remote messaging: send_to_agent, broadcast, send_graph_state, request_reasoning (Phase 1.1.38) |
+| OpenTelemetry | Completed | OpenTelemetry SDK integration in AtroposMonitor with OTLP HTTP BatchSpanProcessor (Phase 1.1.38) |
 
 ---
 
@@ -413,7 +418,7 @@ sequenceDiagram
 | `muscle.local_runtime` | Subprocess management for llama.cpp |
 | `clotho.bridge` | `mnemosyne.*`, `lachesis.verifiers`, `architrave.*`, `mu scle.reranker` |
 
-Total: **266 modules, 10 circular deps detected** (AST mapper scan via `scripts/update_mapper.py`)
+Total: **267 modules, 10 circular deps detected** (AST mapper scan; +1 for bridge.py) (AST mapper scan via `scripts/update_mapper.py`)
 
 ---
 
@@ -496,6 +501,14 @@ D:\HANK/
 |   |   |-- opencode_store.py            # Cross-session bridge store
 |   |   |-- entity_extractor.py          # Entity extraction for graph
 |   |   |-- otl_engine.py                # OTL trajectory engine (EWMA + epsilon-greedy)
+|   |   |-- a2a/                          # A2A Federation Protocol
+|   |   |   |-- __init__.py              # Package marker
+|   |   |   |-- auth.py                  # HMAC-SHA256 signing/verification
+|   |   |   |-- client.py                # send_a2a_message() async HTTP POST
+|   |   |   |-- discovery.py             # File-based registry agent discovery
+|   |   |   |-- protocol.py              # BusMessage dataclass + wire format
+|   |   |   |-- server.py               # aiohttp-based A2A HTTP server
+|   |   |   |-- bridge.py                # FederationBridge -- Orchestrator-level A2A messaging (Phase 1.1.38)
 |   |   |-- mcp/                          # SLM MCP client package
 |   |   |   |-- slm_client.py             # SLMClient wrapper for SLM MCP server
 |   |   |   |-- mcp_session.py            # MCPSession stdio protocol manager
@@ -507,7 +520,7 @@ D:\HANK/
 |   |   |-- context_pruner.py            # Token-aware context pruning
 |   |   |-- matryoshka_service.py        # Matryoshka embedding + slice/normalize
 |   |   |-- token_budget.py              # Rate limiter and budget guard
-|   |   |-- observability.py             # Telemetry and tracing (Axis 4)
+|   |   |-- observability.py             # Telemetry and tracing (Axis 4), OpenTelemetry integration (Phase 1.1.38)
 |   |-- muscle/                          # Local runtime (L0-L1)
 |   |   |-- local_runtime.py             # llama.cpp subprocess manager
 |   |   |-- reranker.py                  # Jina reranker wrapper
@@ -573,7 +586,11 @@ D:\HANK/
 |-- tests/                               # TEST SUITE
 |   |-- test_axis_stability.py           # 14-axis stability audit
 |   |-- test_full_pipeline.py            # End-to-end pipeline test
-|   |-- (43 test files total)
+|   |-- test_graph_verifier.py           # GraphVerifier unit tests (Phase 1.1.38)
+|   |-- test_smoke_graph_verify.py       # Smoke: graph_verify_node integration (Phase 1.1.38)
+|   |-- test_smoke_observability_otel.py # Smoke: OpenTelemetry init (Phase 1.1.38)
+|   |-- test_smoke_federation_bridge.py  # Smoke: FederationBridge methods (Phase 1.1.38)
+|   |-- (46 test files total)
 |
 |-- data/                                # RUNTIME DATA (gitignored)
 |   |-- mnemosyne.db                     # SQLite memory store
@@ -833,6 +850,8 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 
 | Version | Date | Summary |
 |---------|------|---------|
+| **1.1.39** | **2026-05-30** | **CI/CD Coverage & Topography Sync.** pytest-cov with --cov-fail-under=30, XML artifact upload in ci.yml. observability.py _init_otel() method. 3 new smoke test files (graph_verify + observability_otel + federation_bridge). topography.md fully synced: 12 ergon nodes, A2A a2a/bridge.py, verifiers + GraphVerifier, OTel integration, 46 test files. Phase 1.1.38 guard rollback: 0. Tests: 10/10 smoke PASSED, 21/21 core PASSED. |
+| **1.1.38** | **2026-05-30** | **GraphVerifier Node, OpenTelemetry & A2A FederationBridge.** K3.6: graph_verify_node (src/clotho/ergon/graph_verify.py) -- Z3 LangGraph invariant verification wired after verify_node. K4.4: OpenTelemetry in observability.py -- init_opentelemetry() + get_otel_tracer() + OTLP HTTP BatchSpanProcessor. K4.1: FederationBridge (src/architrave/a2a/bridge.py) -- send_to_agent, broadcast, send_graph_state, request_reasoning. ERG imports updated: ergon/13 files, 12 nodes. orchestrator.py: graph_verify -> should_call_tools edge. Guardian rollback: 0 (L0 token protocol followed). Tests: 5/5 AST PASSED, 10/10 smoke PASSED. |
 | **1.1.34** | **2026-05-28** | **MCP Ecosystem Pipeline Repair & CI/CD Integration.** 8 pipeline fix: filesystem MCP config, LangGraph whitelist prefix-based, VRAM flush semantic removed, SLM session_init, close_session async, health guard, LanceDB fallback, mapper deprecated. K4.5 CI/CD GitHub Actions (ruff + pytest). K2.6 parallel gnosis (asyncio.gather). K2.13 dead file cleanup. Tests: 22/22 PASSED, 4/4 smoke PASSED. Mapper: 266 modules, 0 layer violations. |
 | **1.1.26** | **2026-05-26** | **SLM MCP Repair & K2 Debt Cleanup (6 K2 items cleared, 3 dead files eliminated, SLM MCP fully operational).** 5 SLM ROOT CAUSES fixed (MCP never connected, 3-strike permanent disable, _is_our_slm bug, orphan retry_disabled_sessions, embedding worker race). 104 MCP tools re-registered. K2.2/2.3/2.4: 3 dead files (-90L) folded into existing modules. K2.5: TokenBudgetGuard Axis 4 persistence. K2.9: 8 files duplicate import cleanup. K2.10: BLACKLISTED_MODELS public API. bootstrap.py _is_our_slm restored to function ref. Tests: 16/16 critical PASSED. Mapper: 266 modules, 0 layer violations. |
 | **1.1.25** | **2026-05-26** | **Gateway & Bootstrap Refactoring (7 Greek Packages).** gateway_client.py 919L->276L (kratos/nomos/ariadne). bootstrap.py 580L->112L (ananke/hermes_mcp). sophia.py 639L->13L (telos/). hephaestus.py 330L->47L (hestia/). 7 new packages (kratos/nomos/ariadne/ananke/hermes_mcp/telos/hestia). 27/28 tests PASSED. Mapper: 266 modules, 0 layer violations. |
@@ -899,5 +918,5 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 ---
 
 *Created by Antigravity (Phantom Logos)*
-*Last Updated: 2026-05-28 [02:40 AM PT]*
-*Status: v1.1.34 - MCP Ecosystem Pipeline Repair & CI/CD Integration, 0 Layer Violations, System STABLE*
+*Last Updated: 2026-05-30 [06:10 PM PT]*
+*Status: v1.1.39 - GraphVerifier Node, OpenTelemetry, A2A FederationBridge & CI/CD Coverage, 0 Layer Violations, System STABLE*
