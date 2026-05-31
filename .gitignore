@@ -35,6 +35,9 @@ debug_config.json
 .antigravity/SYSTEM_REPORT.md
 .antigravity/restoration.md
 
+# Internal audit reports in docs/
+docs/audit/
+
 # Workspace Notes
 docs/chunk/.Hank/
 
