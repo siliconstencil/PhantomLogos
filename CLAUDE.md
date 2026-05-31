@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Phantom Logos v1.1.0** is a sovereign, local-first agentic OS built on Python 3.12+. It implements a 3-tier hierarchical agent architecture (RuFlow) with 14-axis persistent memory (Mnemosyne), formal verification, and provider-agnostic LLM routing.
+**Phantom Logos v1.2.0** is a sovereign, local-first agentic OS built on Python 3.12+. It implements a 3-tier hierarchical agent architecture (RuFlow) with 14-axis persistent memory (Mnemosyne), formal verification, and provider-agnostic LLM routing.
 
 ## Commands
 
@@ -52,7 +52,7 @@ python scripts/seed_semantic.py
 
 ## Architecture
 
-### Agent Tiers (RuFlow v1.1.0)
+### Agent Tiers (RuFlow v1.2.0)
 
 - **L0 (Hank)**: Human authority. All write/system actions require explicit L0 consent + valid `L0_AUTH_TOKEN`.
 - **L1 (Sophia)**: Strategic gateway. Full 14-axis Mnemosyne integration. Handles planning and architectural decisions.

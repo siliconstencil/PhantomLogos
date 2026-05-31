@@ -1,11 +1,11 @@
-# Phantom Logos v1.1.0 (Sovereign Rebirth)
+# Phantom Logos v1.2.0 (Sovereign Rebirth)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Governance: BA--01](https://img.shields.io/badge/Governance-BA--01-red.svg)](#5-operational-constitution-ba-01)
-[![Memory: 14--Axis](https://img.shields.io/badge/Memory-14--Axis-green.svg)](#4-the-armory-14-axis-mnemosyne)
+[![Governance: BA--01](https://img.shields.io/badge/Governance-BA--01-red.svg)](#7-operational-constitution-ba-01-governance)
+[![Memory: 14--Axis](https://img.shields.io/badge/Memory-14--Axis-green.svg)](#5-the-armory-14-axis-mnemosyne)
 
-Status: **v1.1.0 Sovereign Stable SEALED**
+Status: **v1.2.0 Sovereign Stable**
 
 ## 1. Executive Summary
 
