@@ -103,7 +103,7 @@ async def test_sqlite_row_limit(sweeper_db):
     orig_exists = os.path.exists
     orig_connect = sqlite3.connect
 
-    # Run pruning with patched DB path
+    # Run pruning with patched DB path and governance config
     with patch(
         "os.path.exists", side_effect=lambda p: True if "mnemosyne.db" in p else orig_exists(p)
     ):
@@ -113,7 +113,12 @@ async def test_sqlite_row_limit(sweeper_db):
                 orig_connect(sweeper_db) if "mnemosyne.db" in p else orig_connect(p)
             ),
         ):
-            sweeper.prune_databases()
+            with patch.object(
+                sweeper,
+                "_load_governance_config",
+                return_value={"retention_days": 30, "row_limit": 5000, "exclude_tables": []},
+            ):
+                sweeper.prune_databases()
 
     # Verify limit
     conn = sqlite3.connect(sweeper_db)
