@@ -64,3 +64,6 @@ opencode.json
 
 # Internal dev diary (not for public)
 scratch_book.md
+
+# Local MCP memory databases
+mcp-servers/kg-mem/memory.json
