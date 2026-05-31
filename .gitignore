@@ -24,7 +24,8 @@ _tmp_*
 debug_config.json
 
 # Runtime Audit
-.antigravity/audit/*.log
+.antigravity/audit/
+.antigravity/ROADMAP_STATUS*.md
 
 # Workspace Notes
 docs/chunk/.Hank/

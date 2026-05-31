@@ -40,7 +40,7 @@ def test_reflection_store_importance():
 
     db_path = to_absolute_path("data/mnemosyne.db")
 
-    store = ReflectionStore(db_path=db_path)
+    store = ReflectionStore(db_url=f"sqlite:///{db_path}")
 
     # Store reflection with custom importance
     session_id = "test_ebbinghaus_session"
@@ -77,7 +77,7 @@ def test_sweeper_ebbinghaus_prune():
     db_path = to_absolute_path("data/mnemosyne.db")
 
     # Initialize store and insert test rows
-    store = ReflectionStore(db_path=db_path)
+    store = ReflectionStore(db_url=f"sqlite:///{db_path}")
     session_id = "test_ebbinghaus_prune"
 
     conn = sqlite3.connect(db_path)

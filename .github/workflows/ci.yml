@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .
+        pip install -e ".[dev]"
     - name: Run ruff check
       run: python -m ruff check src/ cognition/ tests/
 
@@ -38,7 +38,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .
+        pip install -e ".[dev]"
     - name: Run unit tests
       run: |
         pytest tests/ -v -m "not integration" -x --ignore=tests/test_full_pipeline.py --ignore=tests/test_slm_fallback.py --ignore=tests/test_mcp_session.py --ignore=tests/test_slm_mcp_client.py --ignore=tests/test_gateway_circuit_breaker.py --ignore=tests/test_gateway_distillation.py --ignore=tests/test_genai_manager.py --ignore=tests/test_langgraph_checkpoint_persistence.py --ignore=tests/test_gateway_secondary.py --ignore=tests/test_slm_rerank.py
