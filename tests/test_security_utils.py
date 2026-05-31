@@ -9,7 +9,13 @@ from src.utils.security_utils import load_secrets_to_env, set_secret, validate_c
 # [SRC:axis_11]
 @pytest.fixture(autouse=True)
 def clean_env():
-    keys = ["GEMINI_API_KEY", "GOOGLE_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY"]
+    keys = [
+        "GATEWAY_API_KEY",
+        "GEMINI_API_KEY",
+        "GOOGLE_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "OPENAI_API_KEY",
+    ]
     old_values = {k: os.environ.get(k) for k in keys}
     for k in keys:
         if k in os.environ:
@@ -31,11 +37,10 @@ def test_validate_cloud_key():
 
 @patch("keyring.get_password")
 def test_load_secrets_keyring_success(mock_get):
-    mock_get.side_effect = lambda service, key: (
-        "AIza-from-keyring-12345678901234567890123456789" if key == "GEMINI_API_KEY" else None
-    )
+    valid_key = "AIzaSyB12345678901234567890123456789012"
+    mock_get.side_effect = lambda service, key: valid_key if key == "GATEWAY_API_KEY" else None
     load_secrets_to_env()
-    assert os.environ.get("GEMINI_API_KEY") == "AIza-from-keyring-12345678901234567890123456789"
+    assert os.environ.get("GATEWAY_API_KEY") == valid_key
     assert os.environ.get("OPENAI_API_KEY") is None
 
 

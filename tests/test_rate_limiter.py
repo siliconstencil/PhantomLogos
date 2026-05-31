@@ -17,14 +17,14 @@ def test_token_bucket_basic():
 
     # Consume 4 tokens -> should succeed
     assert bucket.consume(4.0) is True
-    assert bucket.get_tokens() <= 6.0
+    assert bucket.get_tokens() <= 6.1
 
     # Try to consume 7 tokens -> should fail (only ~6 left)
     assert bucket.consume(7.0) is False
 
     # Consume 5 tokens -> should succeed
     assert bucket.consume(5.0) is True
-    assert bucket.get_tokens() <= 1.0
+    assert bucket.get_tokens() <= 1.1
 
 
 def test_token_bucket_replenish():

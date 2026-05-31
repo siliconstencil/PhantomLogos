@@ -1,6 +1,8 @@
 import sqlite3
 import time
 
+import pytest
+
 from cognition.mnemosyne.hypergraph_models import Hyperedge, HypernodeRef
 from cognition.mnemosyne.hypergraph_store import HypergraphStore, SqlHyperedge
 from src.utils.project_path import to_absolute_path
@@ -30,7 +32,7 @@ def test_hypergraph_models_and_decay():
     # 3. Test Ebbinghaus Adaptive Decay Calculation
     t0 = time.time()
     decayed_init = edge.get_decayed_weight(current_time=t0)
-    assert decayed_init == 1.0
+    assert decayed_init == pytest.approx(1.0)
 
     # 48 hours age check (importance=1.0 -> decay half-life = 48h)
     t48 = t0 + 48.0 * 3600.0

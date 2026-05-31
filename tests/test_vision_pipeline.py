@@ -43,7 +43,7 @@ def test_krisis_tier_enforcement():
 
 def test_gnosis_axis_14_injection():
     """Verify Axis 14 context injection."""
-    with patch("cognition.sophia.gnosis.axis_14_visual._get_visual") as mock_visual_getter:
+    with patch("cognition.sophia.gnosis.axis_14_visual.get_visual") as mock_visual_getter:
         mock_store = MagicMock()
         mock_store.get_recent.return_value = [
             {
@@ -55,8 +55,8 @@ def test_gnosis_axis_14_injection():
         mock_visual_getter.return_value = mock_store
 
         context = _build_axis_14("test_session")
-        assert any("AXIS 14" in line for line in context)
-        assert any("Hello World" in line for line in context)
+        assert "AXIS 14" in context
+        assert "Hello World" in context
 
 
 @pytest.mark.asyncio
