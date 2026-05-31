@@ -27,6 +27,14 @@ debug_config.json
 .antigravity/audit/
 .antigravity/ROADMAP_STATUS*.md
 
+# Internal developer session history and walkthroughs
+.antigravity/walkthroughs/
+
+# Internal developer documents and system reports
+.antigravity/dev/
+.antigravity/SYSTEM_REPORT.md
+.antigravity/restoration.md
+
 # Workspace Notes
 docs/chunk/.Hank/
 
