@@ -16,8 +16,8 @@
 ## 2. Clone & Setup
 
 ```powershell
-git clone https://github.com/siliconstencil/phantom-logos
-cd phantom-logos
+git clone https://github.com/siliconstencil/PhantomLogos
+cd PhantomLogos
 
 # Set project root in user environment (required for path resolution)
 [System.Environment]::SetEnvironmentVariable("ANTIGRAVITY_ROOT", $PWD.Path, "User")

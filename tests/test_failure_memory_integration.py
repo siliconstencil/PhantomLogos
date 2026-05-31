@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import text
 
 from cognition.mnemosyne.reflection_store import ReflectionStore
 from cognition.sophia.gnosis import get_dynamic_context
@@ -10,7 +11,12 @@ from src.lachesis import AdversarialEvaluator
 async def test_gnosis_injection():
     store = ReflectionStore()
     # Clear existing rules to avoid state pollution from prior test failures in shared DB
-    store._execute("DELETE FROM failure_memory")
+    _session = store.Session()
+    try:
+        _session.execute(text("DELETE FROM failure_memory"))
+        _session.commit()
+    finally:
+        _session.close()
     # Rule must be > 50 chars as per ReflectionStore.store_failure logic
     test_rule = "MANDATORY RULE: Always verify absolute paths in Windows environments to prevent drive mapping errors. [EXTRA_LENGTH_FOR_STORAGE_THRESHOLD]"
     store.store_failure("test_injection", "absolute path error", test_rule, severity=3)
