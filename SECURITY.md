@@ -7,7 +7,7 @@
 If you discover a security vulnerability, please report it responsibly:
 
 **GitHub Private Advisory (preferred):**
-https://github.com/siliconstencil/phantom-logos/security/advisories/new
+https://github.com/siliconstencil/PhantomLogos/security/advisories/new
 
 **Email:**
 admin@siliconstencil.com

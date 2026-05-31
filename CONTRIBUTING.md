@@ -18,8 +18,8 @@ Contributions are welcome.
 
 ```powershell
 # Clone
-git clone https://github.com/siliconstencil/phantom-logos
-cd phantom-logos
+git clone https://github.com/siliconstencil/PhantomLogos
+cd PhantomLogos
 
 # Virtual environment
 python -m venv .venv
@@ -120,4 +120,4 @@ PYTHONPATH=. pytest tests/ --cov=src --cov-report=term
 5. Run `ruff check src/` - must be clean
 6. Submit PR against `master` branch
 
-For bug reports and feature requests, use [GitHub Issues](https://github.com/siliconstencil/phantom-logos/issues).
+For bug reports and feature requests, use [GitHub Issues](https://github.com/siliconstencil/PhantomLogos/issues).
