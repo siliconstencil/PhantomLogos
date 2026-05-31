@@ -1,6 +1,6 @@
 [project]
 name = "phantom-logos"
-version = "1.1.0"
+version = "1.2.0"
 description = "Phantom Logos Sovereign OS"
 readme = "README.md"
 requires-python = ">=3.12"
