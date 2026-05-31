@@ -7,7 +7,7 @@ pydantic-ai==1.89.1
 langgraph==1.1.6
 langchain-core
 aiosqlite
-mcp==1.27.0
+mcp>=1.27.1
 superlocalmemory>=3.4
 
 # Infrastructure & Web

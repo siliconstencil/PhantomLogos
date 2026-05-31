@@ -45,9 +45,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/siliconstencil/phantom-logos"
-Repository = "https://github.com/siliconstencil/phantom-logos.git"
-Changelog = "https://github.com/siliconstencil/phantom-logos/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/siliconstencil/PhantomLogos"
+Repository = "https://github.com/siliconstencil/PhantomLogos.git"
+Changelog = "https://github.com/siliconstencil/PhantomLogos/blob/master/CHANGELOG.md"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
