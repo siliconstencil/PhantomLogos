@@ -34,12 +34,12 @@ def run_migrations_online():
     section_name = config.config_ini_section
 
     if section_name == "alembic":
-        print("Lutfen spesifik bir veritabani secin (Ornek: alembic -n mnemosyne upgrade head)")
+        print("Specify a database section (example: alembic -n mnemosyne upgrade head)")
         return
 
     conf = DATABASES.get(section_name)
     if not conf:
-        print(f"Bilinmeyen section: {section_name}")
+        print(f"Unknown section: {section_name}")
         return
 
     print(f"--- Running migrations for: {section_name} ---")
