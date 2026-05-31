@@ -43,12 +43,12 @@ jobs:
       run: mkdir -p data
     - name: Run unit tests
       run: |
-        pytest tests/ -v -m "not integration" --timeout=60 --ignore=tests/test_full_pipeline.py --ignore=tests/test_slm_fallback.py --ignore=tests/test_mcp_session.py --ignore=tests/test_slm_mcp_client.py --ignore=tests/test_gateway_circuit_breaker.py --ignore=tests/test_gateway_distillation.py --ignore=tests/test_genai_manager.py --ignore=tests/test_langgraph_checkpoint_persistence.py --ignore=tests/test_gateway_secondary.py --ignore=tests/test_slm_rerank.py --ignore=tests/test_gnosis.py
+        pytest tests/ -v -m "not integration" --timeout=60 --ignore=tests/test_full_pipeline.py --ignore=tests/test_slm_fallback.py --ignore=tests/test_mcp_session.py --ignore=tests/test_slm_mcp_client.py --ignore=tests/test_gateway_circuit_breaker.py --ignore=tests/test_gateway_distillation.py --ignore=tests/test_genai_manager.py --ignore=tests/test_langgraph_checkpoint_persistence.py --ignore=tests/test_gateway_secondary.py --ignore=tests/test_slm_rerank.py --ignore=tests/test_gnosis.py --ignore=tests/test_hermes_bridge.py --ignore=tests/test_mcp_categories.py
       env:
         PYTHONPATH: .
     - name: Coverage report
       run: |
-        pytest tests/ --cov=src --cov=cognition --cov-report=term --cov-report=xml --cov-fail-under=30 --timeout=60 --ignore=tests/test_full_pipeline.py --ignore=tests/test_slm_fallback.py --ignore=tests/test_mcp_session.py --ignore=tests/test_slm_mcp_client.py --ignore=tests/test_gateway_circuit_breaker.py --ignore=tests/test_gateway_distillation.py --ignore=tests/test_genai_manager.py --ignore=tests/test_langgraph_checkpoint_persistence.py --ignore=tests/test_gateway_secondary.py --ignore=tests/test_slm_rerank.py --ignore=tests/test_gnosis.py
+        pytest tests/ --cov=src --cov=cognition --cov-report=term --cov-report=xml --cov-fail-under=30 --timeout=60 --ignore=tests/test_full_pipeline.py --ignore=tests/test_slm_fallback.py --ignore=tests/test_mcp_session.py --ignore=tests/test_slm_mcp_client.py --ignore=tests/test_gateway_circuit_breaker.py --ignore=tests/test_gateway_distillation.py --ignore=tests/test_genai_manager.py --ignore=tests/test_langgraph_checkpoint_persistence.py --ignore=tests/test_gateway_secondary.py --ignore=tests/test_slm_rerank.py --ignore=tests/test_gnosis.py --ignore=tests/test_hermes_bridge.py --ignore=tests/test_mcp_categories.py
       env:
         PYTHONPATH: .
     - name: Upload coverage
