@@ -67,3 +67,15 @@ scratch_book.md
 
 # Local MCP memory databases
 mcp-servers/kg-mem/memory.json
+
+# Local security and analysis reports
+security_risk_matrix.md
+rapport/
+
+# Temporary and obsolete development scripts
+scripts/rename_getters.py
+scripts/optimize_context.py
+scripts/check_reliability_temp.py
+
+# Documentation backups
+docs/topography_bck.md
