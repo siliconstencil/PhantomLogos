@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import text
 
 from cognition.mnemosyne.reflection_store import ReflectionStore
 from cognition.morpheus.sweeper import VRAMSweeper
@@ -11,40 +12,47 @@ async def test_pruning():
     store = ReflectionStore()
 
     # Insert a failure with old timestamp to simulate aged entry
-    with store._get_conn() as conn:
-        c = conn.cursor()
-        old_ts = "2025-01-01 00:00:00"
-        recent_ts = "2026-12-31 00:00:00"
-
-        c.execute(
-            "INSERT INTO failure_memory (error_type, root_cause, prevention_rule, severity, recurrence_count, status, context_hash, updated_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                "test_old",
-                "old error",
-                "Old prevention rule",
-                1,
-                5,
-                "active",
-                "deadbeef00000001",
-                old_ts,
-                old_ts,
+    old_ts = "2025-01-01 00:00:00"
+    recent_ts = "2026-12-31 00:00:00"
+    _session = store.Session()
+    try:
+        _session.execute(
+            text(
+                "INSERT INTO failure_memory (error_type, root_cause, prevention_rule, severity, recurrence_count, status, context_hash, updated_at, created_at)"
+                " VALUES (:et, :rc, :pr, :sev, :rcc, :st, :ch, :ua, :ca)"
             ),
+            {
+                "et": "test_old",
+                "rc": "old error",
+                "pr": "Old prevention rule",
+                "sev": 1,
+                "rcc": 5,
+                "st": "active",
+                "ch": "deadbeef00000001",
+                "ua": old_ts,
+                "ca": old_ts,
+            },
         )
-        c.execute(
-            "INSERT INTO failure_memory (error_type, root_cause, prevention_rule, severity, recurrence_count, status, context_hash, updated_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                "test_recent",
-                "recent error",
-                "Recent prevention rule",
-                3,
-                2,
-                "active",
-                "deadbeef00000002",
-                recent_ts,
-                recent_ts,
+        _session.execute(
+            text(
+                "INSERT INTO failure_memory (error_type, root_cause, prevention_rule, severity, recurrence_count, status, context_hash, updated_at, created_at)"
+                " VALUES (:et, :rc, :pr, :sev, :rcc, :st, :ch, :ua, :ca)"
             ),
+            {
+                "et": "test_recent",
+                "rc": "recent error",
+                "pr": "Recent prevention rule",
+                "sev": 3,
+                "rcc": 2,
+                "st": "active",
+                "ch": "deadbeef00000002",
+                "ua": recent_ts,
+                "ca": recent_ts,
+            },
         )
-        conn.commit()
+        _session.commit()
+    finally:
+        _session.close()
 
     # Run sweeper
     sweeper = VRAMSweeper()
@@ -53,9 +61,12 @@ async def test_pruning():
     after = store.get_prevention_rules(limit=10)
 
     # Clean up test records
-    with store._get_conn() as conn:
-        conn.execute("DELETE FROM failure_memory WHERE error_type LIKE 'test_%'")
-        conn.commit()
+    _session = store.Session()
+    try:
+        _session.execute(text("DELETE FROM failure_memory WHERE error_type LIKE 'test_%'"))
+        _session.commit()
+    finally:
+        _session.close()
 
     # Verify: old should be gone, recent should stay
     has_old = any(r["error_type"] == "test_old" for r in after)

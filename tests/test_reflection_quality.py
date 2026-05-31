@@ -1,3 +1,5 @@
+from sqlalchemy import text
+
 from cognition.mnemosyne.reflection_store import ReflectionStore
 
 
@@ -24,18 +26,28 @@ def test_entity_frequency():
     store.store_entities(session_id, [{"text": "TestEntity", "type": "test"}])
 
     # Check frequency
-    with store._get_conn() as conn:
-        row = conn.execute("SELECT frequency FROM entities WHERE name='TestEntity'").fetchone()
+    _session = store.Session()
+    try:
+        row = _session.execute(
+            text("SELECT frequency FROM entities WHERE name='TestEntity'")
+        ).fetchone()
         assert row[0] >= 1
         old_freq = row[0]
+    finally:
+        _session.close()
 
     # Second time
     store.store_entities(session_id, [{"text": "TestEntity", "type": "test"}])
 
     # Check increment
-    with store._get_conn() as conn:
-        row = conn.execute("SELECT frequency FROM entities WHERE name='TestEntity'").fetchone()
+    _session = store.Session()
+    try:
+        row = _session.execute(
+            text("SELECT frequency FROM entities WHERE name='TestEntity'")
+        ).fetchone()
         assert row[0] == old_freq + 1
+    finally:
+        _session.close()
 
 
 if __name__ == "__main__":
