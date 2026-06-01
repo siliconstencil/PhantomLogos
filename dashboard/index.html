@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,22 +24,22 @@
             </div>
             <nav class="sidebar-nav">
                 <a href="#overview" class="nav-item active" id="nav-overview">
-                    <span class="nav-icon">📊</span> Genel Bakış
+                    <span class="nav-icon">[O]</span> Overview
                 </a>
                 <a href="#axes" class="nav-item" id="nav-axes">
-                    <span class="nav-icon">🛡️</span> 14-Eksen Sağlık
+                    <span class="nav-icon">[A]</span> 14-Axis Health
                 </a>
                 <a href="#logs" class="nav-item" id="nav-logs">
-                    <span class="nav-icon">🖥️</span> Terminal ve Loglar
+                    <span class="nav-icon">[L]</span> Terminal & Logs
                 </a>
                 <a href="#actions" class="nav-item" id="nav-actions">
-                    <span class="nav-icon">⚡</span> Operatör Konsolu
+                    <span class="nav-icon">[C]</span> Operator Console
                 </a>
             </nav>
             <div class="sidebar-footer">
                 <div class="system-status">
                     <div class="status-indicator online pulsing"></div>
-                    <span class="status-text">Sistem Çevrimiçi</span>
+                    <span class="status-text">System Online</span>
                 </div>
                 <div class="timestamp-box" id="current-time">00:00:00 PM PT</div>
             </div>
@@ -50,12 +50,12 @@
             <!-- Header -->
             <header class="content-header">
                 <div class="header-title">
-                    <h1 id="view-title">Sistem Özeti</h1>
-                    <p class="header-desc">Sovereign Gateway ve Local Muscle gerçek zamanlı durum takibi.</p>
+                    <h1 id="view-title">System Overview</h1>
+                    <p class="header-desc">Real-time status tracking of Sovereign Gateway and Local Muscle.</p>
                 </div>
                 <div class="connection-pill">
                     <span class="pill-dot pulsing"></span>
-                    <span class="pill-label">Gateway: Bağlı</span>
+                    <span class="pill-label">Gateway: Connected</span>
                 </div>
             </header>
 
@@ -65,24 +65,22 @@
                     <!-- Sophia Reliability Card -->
                     <div class="metric-card glow-blue">
                         <div class="metric-header">
-                            <span class="metric-title">SOPHIA GÜVENİLİRLİK</span>
-                            <span class="metric-icon">🧠</span>
+                            <span class="metric-title">SOPHIA RELIABILITY</span>
                         </div>
                         <div class="metric-value-wrapper">
-                            <span class="metric-value" id="val-sophia-rel">0.00</span>
-                            <span class="metric-trend positive">↑ Kararlı</span>
+                            <span class="metric-value" id="val-sophia-rel">0.000</span>
+                            <span class="metric-trend positive">↑ Stable</span>
                         </div>
                         <div class="reliability-progress-bar">
                             <div class="progress" id="bar-sophia" style="width: 0%"></div>
                         </div>
-                        <p class="metric-footer">Eşik Limiti: 0.30 | Mevcut Seviye Güvenli</p>
+                        <p class="metric-footer">Threshold Limit: 0.30 | Current Level Safe</p>
                     </div>
 
                     <!-- VRAM Allocation Card -->
                     <div class="metric-card glow-purple">
                         <div class="metric-header">
                             <span class="metric-title">LOCAL MUSCLE (VRAM)</span>
-                            <span class="metric-icon">🔋</span>
                         </div>
                         <div class="metric-value-wrapper">
                             <span class="metric-value" id="val-vram">0.0 GB</span>
@@ -91,23 +89,22 @@
                         <div class="reliability-progress-bar">
                             <div class="progress" id="bar-vram" style="width: 0%"></div>
                         </div>
-                        <p class="metric-footer">Otomatik Tier Yönlendirme Aktif</p>
+                        <p class="metric-footer">Automatic Tier Routing Active</p>
                     </div>
 
                     <!-- System Score Card -->
                     <div class="metric-card glow-cyan">
                         <div class="metric-header">
                             <span class="metric-title">SYSTEM RELIABILITY</span>
-                            <span class="metric-icon">⚙️</span>
                         </div>
                         <div class="metric-value-wrapper">
-                            <span class="metric-value" id="val-system-rel">0.00</span>
-                            <span class="metric-trend positive">↑ Stabil</span>
+                            <span class="metric-value" id="val-system-rel">0.000</span>
+                            <span class="metric-trend positive">↑ Stable</span>
                         </div>
                         <div class="reliability-progress-bar">
                             <div class="progress" id="bar-system" style="width: 0%"></div>
                         </div>
-                        <p class="metric-footer">L0 Force Override Kapalı</p>
+                        <p class="metric-footer">L0 Force Override Disabled</p>
                     </div>
                 </div>
 
@@ -115,35 +112,35 @@
                 <div class="layout-split">
                     <!-- Agent Status List -->
                     <div class="dashboard-panel">
-                        <h3>Bağımsız Ajan Durumları</h3>
+                        <h3>Independent Agent Statuses</h3>
                         <div class="agent-list">
                             <div class="agent-item">
                                 <div class="agent-info">
                                     <span class="agent-name">Sophia (L1 Architect)</span>
                                     <span class="agent-role">Strategic Planner</span>
                                 </div>
-                                <span class="agent-badge active">Aktif</span>
+                                <span class="agent-badge active">Active</span>
                             </div>
                             <div class="agent-item">
                                 <div class="agent-info">
                                     <span class="agent-name">Clotho (L2 Runner)</span>
                                     <span class="agent-role">Local Executor</span>
                                 </div>
-                                <span class="agent-badge active">Aktif</span>
+                                <span class="agent-badge active">Active</span>
                             </div>
                             <div class="agent-item">
                                 <div class="agent-info">
                                     <span class="agent-name">Lachesis (L3 Auditor)</span>
                                     <span class="agent-role">Adversarial Auditor</span>
                                 </div>
-                                <span class="agent-badge active">Aktif</span>
+                                <span class="agent-badge active">Active</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- DB Status -->
                     <div class="dashboard-panel">
-                        <h3>Sovereign Veritabanları</h3>
+                        <h3>Sovereign Databases</h3>
                         <div class="db-grid">
                             <div class="db-card">
                                 <span class="db-title">mnemosyne.db</span>
@@ -179,7 +176,7 @@
                             <span class="dot green"></span>
                         </div>
                         <span class="console-title">system.json log tail</span>
-                        <button class="btn btn-sm btn-outline" id="btn-refresh-logs">Yenile</button>
+                        <button class="btn btn-sm btn-outline" id="btn-refresh-logs">Refresh</button>
                     </div>
                     <div class="console-body" id="log-viewport">
                         <!-- Dynamic Logs go here -->
@@ -192,22 +189,22 @@
                 <div class="actions-grid">
                     <!-- Run Health Check Card -->
                     <div class="action-card">
-                        <h3>14-Eksen Sağlık Denetimi</h3>
-                        <p>Tüm Mnemosyne eksenlerini sıfırdan tarayarak veri bütünlüğünü ve dosya boyutlarını analiz eder.</p>
-                        <button class="btn btn-primary" id="btn-run-health">Denetimi Başlat</button>
+                        <h3>14-Axis Health Audit</h3>
+                        <p>Scans all Mnemosyne axes to analyze data integrity and database sizes.</p>
+                        <button class="btn btn-primary" id="btn-run-health">Start Audit</button>
                     </div>
 
                     <!-- System Garbage Card -->
                     <div class="action-card">
-                        <h3>Önbellek ve Oturumu Temizle</h3>
-                        <p>Geçici veritabanı bağlantılarını serbest bırakır ve bellek temizliği gerçekleştirir.</p>
-                        <button class="btn btn-danger" id="btn-clear-cache">Garbage Collector Çalıştır</button>
+                        <h3>Clear Cache & Sessions</h3>
+                        <p>Releases temporary database connections and performs memory garbage collection.</p>
+                        <button class="btn btn-danger" id="btn-clear-cache">Run Garbage Collector</button>
                     </div>
                 </div>
 
                 <!-- Audit Log Output -->
                 <div class="dashboard-panel action-output-panel hide" id="panel-action-output">
-                    <h3>Denetim Çıktısı</h3>
+                    <h3>Audit Output</h3>
                     <pre class="raw-output" id="raw-action-output"></pre>
                 </div>
             </section>
