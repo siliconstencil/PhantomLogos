@@ -31,8 +31,9 @@ class MCPRegistry:
                 self.retry_disabled_sessions()
 
     def _load_config(self) -> MCPRuntimeConfig:
-        # Dynamic root: src/architrave/mcp/ -> go up 3 levels to project root
-        _project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from src.utils.config import get_config
+
+        _project_root = str(get_config().project_root)
         paths_to_try = [
             os.path.join(_project_root, "mcp_config.json"),
             os.path.join(os.path.dirname(__file__), "mcp_config.json"),

@@ -3,6 +3,10 @@ Centralized type-safe configuration via Pydantic BaseSettings.
 Phase 1.0.18: Establishing Environmental SSOT.
 """
 
+import os
+import sys
+from pathlib import Path
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,6 +27,61 @@ class PhantomLogosConfig(BaseSettings):
         extra="allow",  # Don't fail on unknown env vars
         validate_default=True,  # Validate default values as well
     )
+
+    # --- Project & Directory Layout ---
+    project_root: Path = Field(
+        default_factory=lambda: Path(__file__).resolve().parents[2],
+        description="Absolute path to the project root directory",
+    )
+    llm_model_dir: Path = Field(
+        default_factory=lambda: Path(os.environ.get("LLM_MODEL_DIR", "./models")),
+        alias="LLM_MODEL_DIR",
+        description="Directory containing local LLM models",
+    )
+    llm_binary_dir: Path = Field(
+        default_factory=lambda: Path(os.environ.get("LLM_BINARY_DIR", "./bin")),
+        alias="LLM_BINARY_DIR",
+        description="Directory containing llama runner binaries",
+    )
+    data_dir: Path = Field(
+        default_factory=lambda: Path("./data"),
+        description="Directory for local databases and persistent data",
+    )
+    logs_dir: Path = Field(
+        default_factory=lambda: Path("./logs"), description="Directory for execution logs"
+    )
+    snapshots_dir: Path = Field(
+        default_factory=lambda: Path("./data/snapshots"),
+        description="Directory for sovereign backups and snapshots",
+    )
+    venv_python: Path = Field(
+        default_factory=lambda: Path(sys.executable),
+        description="Path to the virtual environment python interpreter",
+    )
+
+    @property
+    def l0_token_path(self) -> Path:
+        """Dynamic path to L0 authorization token."""
+        return self.data_dir / "snapshots" / "L0_AUTH_TOKEN"
+
+    def resolve_model(self, name: str) -> Path:
+        """Resolves a model name against the model directory."""
+        return (self.llm_model_dir / name).resolve()
+
+    @field_validator(
+        "project_root",
+        "llm_model_dir",
+        "llm_binary_dir",
+        "data_dir",
+        "logs_dir",
+        "snapshots_dir",
+        "venv_python",
+        mode="after",
+    )
+    @classmethod
+    def _resolve_config_paths(cls, v: Path) -> Path:
+        """Ensures config path values are resolved to absolute paths."""
+        return v.resolve()
 
     # --- Infrastructure ---
     antigravity_gateway_url: str = Field(
@@ -91,3 +150,6 @@ def load_config() -> PhantomLogosConfig:
         _config = PhantomLogosConfig.model_construct()
 
     return _config
+
+
+get_config = load_config

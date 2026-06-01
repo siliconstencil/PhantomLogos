@@ -6,7 +6,6 @@ from cognition.sophia.eidos import CritiqueResult, ReasoningState
 from cognition.sophia.sophia import run_draft, run_refine
 
 
-@pytest.mark.skip(reason="mock API changed - patch.dict.__call__() encoding error. Known P1.")
 @pytest.mark.asyncio
 async def test_sophia_run_draft_prefix_alignment() -> None:
     """Verify that run_draft aligns static rules as prefix and dynamic elements as suffix."""
@@ -22,34 +21,35 @@ async def test_sophia_run_draft_prefix_alignment() -> None:
         cached_content_token_count=1000, total_token_count=1200, prompt_token_count=1100
     )
 
-    with patch("cognition.sophia.sophia.get_gateway") as mock_get_gw:
-        mock_gateway = AsyncMock()
-        mock_gateway.generate_async.return_value = mock_response
-        mock_gateway._local_fallback.return_value = mock_response
-        mock_gateway.get_active_cache_name.return_value = None
-        mock_gateway.create_session_cache.return_value = None
-        mock_get_gw.return_value = mock_gateway
+    with patch("cognition.morpheus.monitor.get_gpu_memory_info") as mock_gpu:
+        mock_gpu.return_value = {"free_gb": 6.0}
 
-        # Mock get_dynamic_context to return known stable/dynamic contexts
-        with patch("cognition.sophia.sophia.get_dynamic_context") as mock_context:
-            mock_context.return_value = (
-                "STABLE_RULES_CONTEXT",
-                "DYNAMIC_MEMORY_CONTEXT",
-                {"block": False},
-            )
+        with patch("cognition.sophia.telos.draft.get_gateway") as mock_get_gw:
+            mock_gateway = AsyncMock()
+            mock_gateway.generate_async.return_value = mock_response
+            mock_gateway._local_fallback.return_value = mock_response
+            mock_gateway.get_active_cache_name.return_value = None
+            mock_gateway.create_session_cache.return_value = None
+            mock_get_gw.return_value = mock_gateway
 
-            # Mock output guard check
-            with patch("cognition.sophia.sophia.get_output_guard") as mock_guard_func:
-                mock_guard = MagicMock()
-                mock_guard.check.return_value = {
-                    "action": "approve",
-                    "violations": [],
-                    "score_delta": 1.0,
-                }
-                mock_guard_func.return_value = mock_guard
+            # Mock get_dynamic_context to return known stable/dynamic contexts
+            with patch("cognition.sophia.telos.draft.get_dynamic_context") as mock_context:
+                mock_context.return_value = (
+                    "STABLE_RULES_CONTEXT",
+                    "DYNAMIC_MEMORY_CONTEXT",
+                    {"block": False},
+                )
 
-                # Mock rules loading
-                with patch("builtins.open", patch.dict(patch.__dict__, {})):
+                # Mock output guard check
+                with patch("cognition.sophia.telos.draft.get_output_guard") as mock_guard_func:
+                    mock_guard = MagicMock()
+                    mock_guard.check.return_value = {
+                        "action": "approve",
+                        "violations": [],
+                        "score_delta": 1.0,
+                    }
+                    mock_guard_func.return_value = mock_guard
+
                     await run_draft(state, thinking=True)
 
         # Retrieve the arguments passed to generate_async
@@ -70,7 +70,6 @@ async def test_sophia_run_draft_prefix_alignment() -> None:
         assert kwargs.get("session_id") == "test_caching_session"
 
 
-@pytest.mark.skip(reason="Module dependencies changed; requires full refactor of mocks.")
 @pytest.mark.asyncio
 async def test_sophia_run_refine_prefix_alignment() -> None:
     """Verify that run_refine places stable/task details as prefix and dynamic context as suffix."""
@@ -89,22 +88,29 @@ async def test_sophia_run_refine_prefix_alignment() -> None:
         cached_content_token_count=500, total_token_count=800, prompt_token_count=700
     )
 
-    with patch("cognition.sophia.sophia.get_gateway") as mock_get_gw:
+    with patch("cognition.sophia.telos.refine.get_gateway") as mock_get_gw:
         mock_gateway = AsyncMock()
         mock_gateway.generate_async.return_value = mock_response
         mock_get_gw.return_value = mock_gateway
 
-        # Note: get_dynamic_context is injected into run_refine by dependency, not patched here
-        with patch("cognition.sophia.sophia.get_output_guard") as mock_guard_func:
-            mock_guard = MagicMock()
-            mock_guard.check.return_value = {
-                "action": "approve",
-                "violations": [],
-                "score_delta": 1.0,
-            }
-            mock_guard_func.return_value = mock_guard
+        # Mock get_dynamic_context to return known stable/dynamic contexts
+        with patch("cognition.sophia.telos.refine.get_dynamic_context") as mock_context:
+            mock_context.return_value = (
+                "STABLE_CONTEXT_DATA",
+                "DYNAMIC_CONTEXT_DATA",
+                {"block": False},
+            )
 
-            await run_refine(task, draft, critique, session_id="test_refine_session")
+            with patch("cognition.sophia.telos.refine.get_output_guard") as mock_guard_func:
+                mock_guard = MagicMock()
+                mock_guard.check.return_value = {
+                    "action": "approve",
+                    "violations": [],
+                    "score_delta": 1.0,
+                }
+                mock_guard_func.return_value = mock_guard
+
+                await run_refine(task, draft, critique, session_id="test_refine_session")
 
         assert mock_gateway.generate_async.called
         kwargs = mock_gateway.generate_async.call_args[1]

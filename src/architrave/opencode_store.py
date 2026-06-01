@@ -8,7 +8,6 @@ import sqlite3
 from typing import Any
 
 from src.utils.logging_config import setup_logger
-from src.utils.project_path import get_project_root
 
 logger = setup_logger(__name__)
 
@@ -18,8 +17,10 @@ class OpenCodeStore:
 
     def __init__(self, db_path: str | None = None) -> None:
         if not db_path:
+            from src.utils.config import get_config
+
             opencode_home = os.getenv(
-                "OPENCODE_CONFIG_DIR", os.path.join(get_project_root(), "opencode")
+                "OPENCODE_CONFIG_DIR", os.path.join(get_config().project_root, "opencode")
             )
             db_path = os.path.join(opencode_home, "opencode.db")
         self.db_path = db_path
