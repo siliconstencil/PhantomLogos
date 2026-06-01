@@ -1,33 +1,33 @@
 # Phantom Logos Web Operator Dashboard (DASHBOARD.md)
 
-Bu doküman, Phantom Logos Sovereign OS (v1.2.1) ile entegre gelen premium web tabanlı Operatör Konsolu (Dashboard) hakkında teknik detayları ve kullanım kılavuzunu içerir.
+This document contains technical details and the user guide for the premium web-based Operator Console (Dashboard) integrated with Phantom Logos Sovereign OS (v1.2.1).
 
 ---
 
-## 1. Genel Bakış
+## 1. Overview
 
-Web Operator Dashboard, Phantom Logos sistem mimarisinin (Sovereign Gateway ve Local Muscle) çalışma durumunu, 14-Eksen Mnemosyne bellek durumlarını ve sistem güvenilirlik skorlarını (reliability) izlemek için tasarlanmış modern, premium ve responsive bir arayüzdür.
+The Web Operator Dashboard is a modern, premium, and responsive interface designed to monitor the operational status of the Phantom Logos system architecture (Sovereign Gateway and Local Muscle), the 14-Axis Mnemosyne memory status, and system reliability scores.
 
-### Ana Özellikler:
-- **Genel Bakış:** Sophia, Clotho, Lachesis ajanlarının anlık güvenilirlik seviyeleri, VRAM kullanımı ve aktif veritabanlarının (mnemosyne, reliability, spatial) durumları.
-- **14-Eksen Sağlık Matrisi:** 14 bellek ekseninin (Episodic, Procedural, Goals vb.) satır/bütünlük durumları, warn ve broken uyarıları.
-- **Terminal ve Loglar:** `logs/system.json` log dosyasının gerçek zamanlı (JSON tabanlı) takibi.
-- **Operatör Konsolu (Aksiyonlar):** Arayüz üzerinden canlı sağlık denetimi tetikleme ve sistem çöp toplayıcısını (garbage collector) çalıştırma.
+### Key Features:
+- **Overview:** Real-time reliability levels for Sophia, Clotho, and Lachesis agents, VRAM allocation, and the status of active databases (mnemosyne, reliability, spatial).
+- **14-Axis Health Matrix:** Line and integrity status of the 14 memory axes (Episodic, Procedural, Goals, etc.), including warning and broken status indicators.
+- **Terminal & Logs:** Real-time (JSON-based) tracking of the `logs/system.json` log file.
+- **Operator Console (Actions):** Trigger live health check audits and run the system garbage collector directly from the interface.
 
 ---
 
-## 2. Kurulum ve Başlatma
+## 2. Installation and Startup
 
-Dashboard ek bir bağımlılığa gerek duymadan sanal ortam (.venv) içindeki `aiohttp` kütüphanesini kullanır. Başlatmak için aşağıdaki komutu çalıştırmanız yeterlidir:
+The dashboard uses the `aiohttp` library within the virtual environment (`.venv`) without requiring any additional external dependencies. To start the dashboard, run the following command:
 
 ```bash
 python scripts/dashboard.py
 ```
 
-Sistem varsayılan olarak `8080` portunda çalışacaktır. Tarayıcınızdan aşağıdaki adrese giderek konsolu açabilirsiniz:
+By default, the system will run on port `8080`. You can access the console by navigating to the following address in your browser:
 **URL:** [http://localhost:8080](http://localhost:8080)
 
-Portu özelleştirmek için ortam değişkenini (env) kullanabilirsiniz:
+To customize the port, you can use the `PORT` environment variable:
 ```bash
 set PORT=9000
 python scripts/dashboard.py
@@ -35,20 +35,20 @@ python scripts/dashboard.py
 
 ---
 
-## 3. API Uç Noktaları (REST Endpoints)
+## 3. API Endpoints (REST Endpoints)
 
-Dashboard backend servisi (`src/dashboard/api_server.py`) aşağıdaki REST API endpoints'leri sunar:
+The dashboard backend service (`src/dashboard/api_server.py`) exposes the following REST API endpoints:
 
-- **`GET /`**: HTML Operator Console arayüzünü sunar.
-- **`GET /api/metrics`**: Sophia/System güvenilirlik skorlarını, VRAM bellek durumunu ve 14-Eksen SQLite bütünlük özetini JSON biçiminde döner.
-- **`GET /api/logs`**: `logs/system.json` dosyasındaki son 150 log satırını okur ve JSON olarak parse edip döner.
-- **`POST /api/trigger-health`**: Canlı eksen sağlık testini (`scripts/health_check_14_axes.py`) arka planda çalıştırır ve çıktısını döndürür.
+- **`GET /`**: Serves the HTML Operator Console interface.
+- **`GET /api/metrics`**: Returns Sophia/System reliability scores, VRAM allocation status, and a 14-Axis SQLite integrity summary in JSON format.
+- **`GET /api/logs`**: Reads the last 150 log entries from the `logs/system.json` file and returns them as a parsed JSON structure.
+- **`POST /api/trigger-health`**: Runs the live axis health test (`scripts/health_check_14_axes.py`) in the background and returns its output.
 
 ---
 
-## 4. Testler
+## 4. Testing
 
-Dashboard API ve web sunucusu entegrasyon testleri `tests/test_dashboard_api.py` altında otomatikleştirilmiştir:
+Dashboard API and web server integration tests are automated under `tests/test_dashboard_api.py`:
 
 ```bash
 pytest tests/test_dashboard_api.py -v
