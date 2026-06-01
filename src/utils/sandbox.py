@@ -6,7 +6,6 @@ import sys
 import tempfile
 
 from src.utils.logging_config import setup_logger
-from src.utils.project_path import get_project_root
 
 logger = setup_logger(__name__)
 
@@ -45,7 +44,9 @@ class LightSandbox:
             paths.append(sys32)
 
         # 2. .venv/Scripts (Required for the current interpreter's context)
-        venv_scripts = os.path.join(get_project_root(), ".venv", "Scripts")
+        from src.utils.config import get_config
+
+        venv_scripts = os.path.join(get_config().project_root, ".venv", "Scripts")
         if os.path.exists(venv_scripts):
             paths.append(venv_scripts)
 

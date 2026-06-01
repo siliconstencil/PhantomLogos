@@ -1,11 +1,11 @@
-# Phantom Logos v1.2.0 (Sovereign Rebirth)
+# Phantom Logos v1.2.1 (Sovereign Rebirth)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Governance: BA--01](https://img.shields.io/badge/Governance-BA--01-red.svg)](#7-operational-constitution-ba-01-governance)
 [![Memory: 14--Axis](https://img.shields.io/badge/Memory-14--Axis-green.svg)](#5-the-armory-14-axis-mnemosyne)
 
-Status: **v1.2.0 Sovereign Stable**
+Status: **v1.2.1 Sovereign Stable**
 
 ## 1. Executive Summary
 
@@ -128,26 +128,29 @@ Core governance and execution history centralized in `.antigravity/`:
 
 ## 8. Quick Start
 
-### Setup
+### Automated Installer
+To bootstrap the entire environment (venv, dependencies, models, database migrations, and initial seeds), run:
 ```bash
-pip install -r requirements.txt
-pip install -e ".[dev]"
+python scripts/bootstrap.py
 ```
+For options (e.g. skipping model downloads), run `python scripts/bootstrap.py --help`.
+
+See [INSTALLATION.md](INSTALLATION.md) for full details on hardware, Ollama setup, and troubleshooting.
 
 ### Key Commands
 ```bash
 # Run all tests
-PYTHONPATH=. pytest tests/ -v
+pytest tests/ -v
 
 # Run smoke tests
-PYTHONPATH=. pytest tests/ -m smoke -v
+pytest tests/ -m smoke -v
 
 # Lint & format
 ruff check .
 ruff format .
 
 # Type check (pyright only)
-D:/Hank/.venv/Scripts/python -m pyright src/
+pyright src/
 
 # Generate L0 auth token (required for write operations)
 python scripts/create_l0_token.py
@@ -174,13 +177,16 @@ D:\Hank\
   alembic/            Database migrations (14-axis Mnemosyne schema)
   bin/                Binary executables (llama-cli, etc.)
   cognition/          Memory (Mnemosyne 14-axis), Sophia strategic layer
+  dashboard/          Web UI Operator Console SPA frontend files (index.html, style.css, app.js)
   data/               SQLite + LanceDB stores (gitignored, seed on fresh setup)
   docs/               Auxiliary documentation
   logs/               Execution logs, watchdog events
+  models/             Local GGUF models (gitignored)
   scratch/            Temporary workspace
   scripts/            Automation: health checks, token generation, CLI, VRAM flushing
   src/                Core modules (architrave, clotho, atropos, lachesis, ankyra, muscle, tools, utils)
   tests/              Test suite (14 categories, CI/CD integration, formal verification)
+  .env.example        Environment configuration template
 ```
 
 ---
@@ -197,5 +203,20 @@ D:\Hank\
 ## 11. References
 
 - [CLAUDE.md](CLAUDE.md) — Developer guide, architecture details, constraints.
+- [INSTALLATION.md](INSTALLATION.md) — Installation and setup guide.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Contribution guidelines and BA-01 rules.
+- [CHANGELOG.md](CHANGELOG.md) — Project changelog (v1.2.1).
 - [CONSTITUTION.md](.antigravity/CONSTITUTION.md) — Governance laws.
 - [walkthroughs/main_walkthrough.md](.antigravity/walkthroughs/main_walkthrough.md) — Phase execution history.
+
+---
+
+## 12. Operator Dashboard
+
+Phantom Logos provides an interactive, local-only Web UI Dashboard to monitor 14-axis memory, VRAM usage, system health, and real-time logs.
+
+To launch it, run:
+```bash
+python scripts/dashboard.py
+```
+Open `http://127.0.0.1:8765` in your browser. See [DASHBOARD.md](docs/DASHBOARD.md) for endpoint specifications and guides.

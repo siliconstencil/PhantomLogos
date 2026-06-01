@@ -1,123 +1,81 @@
-# Contributing to Phantom Logos
+# Phantom Logos Geliştirici Katkı Rehberi (CONTRIBUTING.md)
 
-Phantom Logos is an open-source, sovereign, local-first agentic OS built on Python 3.12+.
-Contributions are welcome.
+Phantom Logos otonom işletim sistemi projesine katkıda bulunmak istediğiniz için teşekkür ederiz. Bu doküman, geliştirme standartlarımızı, kurallarımızı ve katkı süreçlerini açıklar.
 
 ---
 
-## 1. Getting Started
+## 1. Git Dal (Branch) Stratejisi
 
-### Prerequisites
+Geliştirme süreçlerinin kararlılığını korumak için git dalları aşağıdaki standartlara göre yönetilir:
 
-- Python 3.12+
-- Git
-- [Ollama](https://ollama.ai) v0.5+ (for local model execution)
-- NVIDIA GPU with 6+ GB VRAM (recommended) or CPU-only mode
+* **master**: Üretim (production) ve kararlı yayın dalıdır. Doğrudan bu dala push yapılması (L0 yetkili acil durum yamaları hariç) yasaktır.
+* **feature/<özellik-adı>**: Yeni özellikler, geliştirmeler veya refaktör çalışmaları bu dallarda geliştirilir ve testleri tamamlandıktan sonra master dalına Pull Request (PR) açılır.
+* **hotfix/<hata-adı>**: master dalındaki acil giderilmesi gereken kritik hatalar için oluşturulur.
 
-### Setup
+---
 
-```powershell
-# Clone
-git clone https://github.com/siliconstencil/PhantomLogos
-cd PhantomLogos
+## 2. BA-01 Dil ve Emoji Yönetişim Protokolü
 
-# Virtual environment
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux/Mac
+Projeye katkı sağlarken **BA-01** kurallarına kesinlikle uyulmalıdır:
 
-# Install (development mode)
-pip install -e ".[dev]"
+1. **L0 Kullanıcı Etkileşimi (Chat & Arayüz)**: L0 (Hank/Yönetici) ile olan tüm sohbetler, terminal raporları ve `.md` formatlı dokümantasyonlar tamamen **Türkçe** olmalıdır.
+2. **Çekirdek Kod Tabanı (Code, Logs, DB, Config)**: Python kodları, yorum satırları, değişken isimleri, veri tabanı şemaları ve log kayıtları tamamen **İngilizce (ASCII-only)** olmalıdır. Kod veya yorumlarda Türkçe karakter (ç, ğ, ı, ö, ş, ü, vb.) kullanımı yasaktır.
+3. **EMOJI_BAN (Emoji Yasağı)**: Tüm kod tabanında, loglarda, commmit mesajlarında ve dokümanlarda emoji veya süsleyici özel karakterlerin kullanımı **kesinlikle yasaktır**.
 
-# Configure environment
-copy .env.example .env  # Edit LLM_MODEL_DIR and other required vars
+---
 
-# Generate local MCP config
-python scripts/setup_mcp_config.py
+## 3. Pre-commit ve Kod Kalitesi standartları
 
-# Seed memory axes (first time)
-python scripts/seed_14_axes.py
+Değişikliklerinizi commit etmeden önce kod kalitesi araçlarını çalıştırmanız önerilir. Projede biçimlendirme ve statik analiz için **Ruff** kullanılmaktadır:
 
-# Verify setup
-PYTHONPATH=. pytest tests/ -m smoke -v
+```bash
+# Kod biçimlendirme (Formatting)
+ruff format src/ cognition/ scripts/ tests/
+
+# Statik analiz ve kuralların kontrolü (Linting)
+ruff check src/ cognition/ scripts/ tests/ --fix
+```
+
+Ayrıca, `pyright` ile statik tip denetimini doğrulayabilirsiniz:
+```bash
+pyright src/
 ```
 
 ---
 
-## 2. Architecture Overview
+## 4. L0_AUTH_TOKEN Protokolü
 
-### Agent Tiers (RuFlow)
+Sistemde güvenlik ve otonom bütünlük koruması (Watchdog/Guardian) aktiftir. Codebase üzerinde dosya yazma, silme veya yapılandırma değiştirme eylemleri gerçekleştirmeden önce L0 onay tokenı oluşturulmalıdır:
 
-| Tier | Agent | Role |
-|------|-------|------|
-| L1 | Sophia | Strategic gateway, 14-axis memory |
-| L2 | Clotho | Executor, LangGraph orchestrator |
-| L3 | Lachesis | Auditor, formal verification (Z3) |
-
-### Key Modules
-
-- `src/architrave/` - Gateway client, model registry, MCP layer
-- `src/clotho/` - LangGraph orchestrator, task execution
-- `src/atropos/` - Context pruning, observability
-- `src/muscle/` - Local runtime bridge (Ollama/llama.cpp)
-- `cognition/mnemosyne/` - 14-axis persistent memory (SQLite + LanceDB)
-- `agent/` - Declarative YAML agent definitions
+```bash
+python scripts/create_l0_token.py
+```
+Bu komut `data/snapshots/L0_AUTH_TOKEN` yolunda 60 saniye geçerli bir yetkilendirme penceresi açar. Yetkisiz veya süresi geçmiş yazma operasyonları Guardian tarafından otomatik olarak geri alınacaktır (Rollback).
 
 ---
 
-## 3. Adding a New Memory Axis (Mnemosyne)
+## 5. Test Ekleme Standartları
 
-1. Define schema: add table to `cognition/mnemosyne/`
-2. Create store class inheriting from base store pattern
-3. Register axis ID in `src/utils/config.py` AXIS_MAP
-4. Wire into `cognition/gnosis/` for context injection
-5. Add tests in `tests/`
+Yazdığınız her yeni özellik veya hata düzeltmesi için ilgili testleri eklemelisiniz. Testler `tests/` dizininde konumlandırılmalı ve aşağıdaki kategorilere göre etiketlenmelidir:
 
----
+* **smoke**: Temel derleme ve kararlılığı doğrulayan hızlı testler.
+* **integration**: Gerçek Ollama servisi, veritabanları veya MCP sunucu bağlantılarına ihtiyaç duyan testler.
+* **slow**: Çalışması 30 saniyeden uzun süren ağır entegrasyon testleri.
 
-## 4. Adding a New Tool
+Test marker etiketleme örneği:
+```python
+import pytest
 
-1. Implement handler in `src/tools/` or `src/clotho/bridge/`
-2. Register in tool dispatch map
-3. Add tool name to relevant agent YAML in `agent/`
-4. Document in `.antigravity/tools.md`
-
----
-
-## 5. Coding Standards
-
-- **Language:** English for all code, comments, logs, config (ASCII-only)
-- **Type hints:** Required for all function signatures
-- **Linting:** `ruff check src/` must pass with 0 errors
-- **Type checking:** `python -m pyright src/` (pyright only, not mypy)
-- **Logging:** Use `src.utils.logging_config.setup_logger`, never `print()`
-- **Thread safety:** Any singleton accessed by multiple threads must use `threading.Lock`
-- **No emojis** in any file
-
----
-
-## 6. Running Tests
-
-```powershell
-# Smoke tests (fast, no external deps)
-PYTHONPATH=. pytest tests/ -m smoke -v
-
-# All unit tests
-PYTHONPATH=. pytest tests/ -v -m "not integration"
-
-# With coverage
-PYTHONPATH=. pytest tests/ --cov=src --cov-report=term
+@pytest.mark.smoke
+def test_my_feature():
+    assert True
 ```
 
 ---
 
-## 7. Submitting a Pull Request
+## 6. Pull Request (PR) Süreci
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make changes following the coding standards above
-4. Ensure all smoke tests pass
-5. Run `ruff check src/` - must be clean
-6. Submit PR against `master` branch
-
-For bug reports and feature requests, use [GitHub Issues](https://github.com/siliconstencil/PhantomLogos/issues).
+1. Değişikliklerinizi içeren dalınızı (branch) oluşturun.
+2. Ruff, Pyright ve pytest testlerinin yerelde başarıyla geçtiğinden emin olun.
+3. Dalınızı uzak sunucuya push edin ve master dalına karşı bir Pull Request açın.
+4. PR açıklamasına yapılan değişikliklerin özetini, hangi testlerle doğrulandığını ve BA-01 uyumluluk onayını ekleyin.

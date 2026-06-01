@@ -106,5 +106,7 @@ class SessionLog:
 if __name__ == "__main__":
     log = SessionLog("test_sota_session")
     log.append("task.start", {"objective": "Test Managed Agents Pattern"})
-    log.append("tool.call", {"tool": "ls", "args": ["D:/Hank"]})
+    from src.utils.config import get_config
+
+    log.append("tool.call", {"tool": "ls", "args": [str(get_config().project_root)]})
     print(f"Wake result: {log.wake()}")

@@ -4,23 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Phantom Logos v1.2.0** is a sovereign, local-first agentic OS built on Python 3.12+. It implements a 3-tier hierarchical agent architecture (RuFlow) with 14-axis persistent memory (Mnemosyne), formal verification, and provider-agnostic LLM routing.
+**Phantom Logos v1.2.1** is a sovereign, local-first agentic OS built on Python 3.12+. It implements a 3-tier hierarchical agent architecture (RuFlow) with 14-axis persistent memory (Mnemosyne), formal verification, and provider-agnostic LLM routing.
 
 ## Commands
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-pip install -e ".[dev]"
+# Automated install and setup
+python scripts/bootstrap.py
 
 # Run all tests
-PYTHONPATH=. pytest tests/ -v
+pytest tests/ -v
 
 # Run a single test file
-PYTHONPATH=. pytest tests/path/to/test_file.py -v
+pytest tests/path/to/test_file.py -v
 
 # Run smoke tests only
-PYTHONPATH=. pytest tests/ -m smoke -v
+pytest tests/ -m smoke -v
 
 # Lint (ruff)
 ruff check .

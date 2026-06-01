@@ -1,3 +1,26 @@
+## Phase 1.2.1 - Audit 037 - Release v1.2.1 Completion - 2026-06-01 [10:10 PM PT]
+
+### Added
+
+- **scripts/bootstrap.py**: Central single-entry bootstrap installer script supporting python version checking, venv setup, dependency installs, Ollama GGUF model pulls, alembic migrations, database seeding, and final health checks.
+- **INSTALLATION.md**: Complete Turkish installation guide detailing hardware/software requirements, Ollama setup, bootstrap instructions, env configurations, FAQs, and troubleshooting.
+- **CONTRIBUTING.md**: Turkish developer guidelines outlining git branch strategies, BA-01 governance protocol, pre-commit styling hooks, L0_AUTH_TOKEN write windows, test markers, and PR templates.
+
+### Changed
+
+- **src/utils/config.py**: Appended `get_config = load_config` alias for legacy compatibility with dynamic configuration references.
+- **src/utils/sandbox.py**: Refactored virtual environment path resolution to use `get_config().project_root` instead of raw `get_project_root()`.
+- **src/architrave/mcp/mcp_registry.py**: Config files search path now uses `get_config().project_root` for absolute environment independence.
+- **src/architrave/opencode_store.py**: Database home folder path now uses `get_config().project_root` as the absolute environmental SSOT.
+- **cognition/mnemosyne/session_log.py**: Replaced raw main test path `D:/Hank` with `get_config().project_root` to preserve cross-platform testing integrity.
+- **.env.example**: Updated with the complete Audit 037 template including all default folders, security variables, and tuning timeouts.
+
+### Tests
+
+- Health checks: `python scripts/health_check_14_axes.py` completed successfully.
+- Smoke tests: `pytest tests/ -m smoke -v` completed with 5 passed, 1 skipped (100% success rate).
+- Rollback occurrences: 0 (authorized via L0 auth tokens).
+
 ## Phase 1.1.39 - CI/CD Coverage & Smoke Tests - 2026-05-30 [05:50 PM PT]
 
 ### Added
