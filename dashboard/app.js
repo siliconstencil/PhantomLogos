@@ -1,4 +1,3 @@
-// Dynamic JS interface for Phantom Logos Operator Console
 document.addEventListener("DOMContentLoaded", () => {
     // Navigation Routing Setup
     const navItems = document.querySelectorAll(".nav-item");
@@ -6,10 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const viewTitle = document.getElementById("view-title");
 
     const sectionTitles = {
-        "sec-overview": "Sistem Özeti",
-        "sec-axes": "14-Eksen Sağlık Matrisi",
-        "sec-logs": "Terminal ve Sistem Günlükleri",
-        "sec-actions": "Operatör Konsolu"
+        "sec-overview": "System Overview",
+        "sec-axes": "14-Axis Health Matrix",
+        "sec-logs": "Terminal & System Logs",
+        "sec-actions": "Operator Console"
     };
 
     navItems.forEach(item => {
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 targetSection.classList.add("active");
 
                 // Update Header Title
-                viewTitle.textContent = sectionTitles[`sec-${targetId}`] || "Kontrol Paneli";
+                viewTitle.textContent = sectionTitles[`sec-${targetId}`] || "Control Panel";
             }
         });
     });
@@ -143,24 +142,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (runHealthBtn) {
         runHealthBtn.addEventListener("click", async () => {
-            runHealthBtn.textContent = "Denetleniyor...";
+            runHealthBtn.textContent = "Auditing...";
             runHealthBtn.disabled = true;
             outputPanel.classList.remove("hide");
-            rawOutput.textContent = ">> python scripts/health_check_14_axes.py\n>> Denetim başlatıldı, eksenler taranıyor...\n";
+            rawOutput.textContent = ">> python scripts/health_check_14_axes.py\n>> Audit started, scanning axes...\n";
 
             try {
                 const res = await fetch("/api/trigger-health", { method: "POST" });
                 const data = await res.json();
 
                 if (data.status === "success") {
-                    rawOutput.textContent += "\n[BAŞARILI] Sistem Sağlık Denetimi tamamlandı.\n\n" + data.output;
+                    rawOutput.textContent += "\n[SUCCESS] System Health Audit completed.\n\n" + data.output;
                 } else {
-                    rawOutput.textContent += "\n[HATA] Denetim başarısız oldu:\n" + data.message;
+                    rawOutput.textContent += "\n[ERROR] Audit failed:\n" + data.message;
                 }
             } catch (err) {
-                rawOutput.textContent += "\n[HATA] Sunucuyla iletişim kurulamadı: " + err;
+                rawOutput.textContent += "\n[ERROR] Failed to communicate with server: " + err;
             } finally {
-                runHealthBtn.textContent = "Denetimi Başlat";
+                runHealthBtn.textContent = "Start Audit";
                 runHealthBtn.disabled = false;
                 fetchMetrics(); // Refresh stats
             }
@@ -171,17 +170,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearCacheBtn = document.getElementById("btn-clear-cache");
     if (clearCacheBtn) {
         clearCacheBtn.addEventListener("click", async () => {
-            clearCacheBtn.textContent = "Temizleniyor...";
+            clearCacheBtn.textContent = "Clearing...";
             clearCacheBtn.disabled = true;
             outputPanel.classList.remove("hide");
-            rawOutput.textContent = ">> Bellek çöp toplayıcısı (Garbage Collector) tetiklendi...\n";
+            rawOutput.textContent = ">> Memory Garbage Collector triggered...\n";
 
             await new Promise(resolve => setTimeout(resolve, 1000));
-            rawOutput.textContent += "[BİLGİ] AtroposMonitor önbellekleri temizlendi.\n";
-            rawOutput.textContent += "[BİLGİ] Pasif veritabanı bağlantı havuzları NullPool üzerinden serbest bırakıldı.\n";
-            rawOutput.textContent += "[SUCCESS] Toplam 12.4 MB bellek geri kazanıldı.\n";
+            rawOutput.textContent += "[INFO] AtroposMonitor caches cleared.\n";
+            rawOutput.textContent += "[INFO] Idle database connection pools released via NullPool.\n";
+            rawOutput.textContent += "[SUCCESS] Total of 12.4 MB memory reclaimed.\n";
 
-            clearCacheBtn.textContent = "Garbage Collector Çalıştır";
+            clearCacheBtn.textContent = "Run Garbage Collector";
             clearCacheBtn.disabled = false;
             fetchMetrics();
         });
