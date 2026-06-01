@@ -91,3 +91,11 @@ scripts/check_reliability_temp.py
 
 # Documentation backups
 docs/topography_bck.md
+
+# Local projects and temporary test outputs
+projects/
+ci_*
+decay
+list
+3
+agent/a2a_registry.json
