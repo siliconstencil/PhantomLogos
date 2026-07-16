@@ -37,6 +37,9 @@ dependencies = [
     "ollama>=0.4.0",
     "tiktoken>=0.7.0",
     "langgraph-checkpoint-sqlite>=2.0.0",
+    "aiohttp>=3.9.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
