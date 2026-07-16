@@ -9,6 +9,12 @@ from src.utils.ollama_utils import (
 )
 
 
+@pytest.fixture(autouse=True)
+def clean_vram_guard():
+    yield
+    register_vram_guard_callback(None)
+
+
 def test_get_ollama_client_returns_guarded_client():
     client = get_ollama_client()
     assert isinstance(client, GuardedAsyncClient)
