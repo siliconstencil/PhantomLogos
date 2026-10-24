@@ -16,20 +16,20 @@ tier: 2
 
 ## Overview
 
-Bu skill, harici MCP sunucularını tarayarak onların sunduğu tüm yetenekleri/araçları dinamik olarak keşfeder ve sistemin `ToolBridge` altyapısına güvenli bir namespace prefix (`{server_name}_{tool_name}`) ile kaydeder.
+This skill scans external MCP servers, dynamically discovers all the capabilities/tools they provide, and registers them in the system's `ToolBridge` infrastructure with a safe namespace prefix (`{server_name}_{tool_name}`).
 
 ## Architecture Principles
 
-1. **Dynamic Registration**: Sisteme yeni bir MCP sunucusu entegre edildiğinde, kod üzerinde hiçbir değişiklik yapmadan `mcp_config.json` içerisine eklenmesi yeterlidir. Tarayıcı motoru ilk açılışta sunucuyu keşfedip araçları kaydeder.
+1. **Dynamic Registration**: When a new MCP server is integrated into the system, adding it to `mcp_config.json` is enough, without any change to the code. The scanner engine discovers the server and registers its tools on first startup.
 
-2. **Namespace Isolation**: Çakışmaları engellemek için tüm araçlar `{sunucu_adi}_{arac_adi}` şablonuyla izole edilir.
+2. **Namespace Isolation**: To prevent collisions, all tools are isolated with the `{server_name}_{tool_name}` template.
 
-3. **Execution Safety**: Keşfedilen tüm araçlar, `ToolBridge._dispatch` üzerinden standard RBAC, telemetry ve VRAM hygiene (temizlik) kontrollerine tabi tutulur.
+3. **Execution Safety**: All discovered tools are subject to the standard RBAC, telemetry and VRAM hygiene (cleanup) checks through `ToolBridge._dispatch`.
 
-## Kullanım Rehberi
+## Usage Guide
 
-Yeni bir MCP sunucusu eklemek için:
+To add a new MCP server:
 
-1. `mcp_config.json` dosyasını güncelleyin veya çevre değişkenlerini tanımlayın.
+1. Update the `mcp_config.json` file or define the environment variables.
 
-2. Sunucu araçları ilk tetikleme anında dinamik olarak `ToolBridge` sınıfına kaydedilecek ve `_dispatch` üzerinden doğrudan çağrılabilir olacaktır.
+2. The server tools will be registered dynamically in the `ToolBridge` class on first trigger and will be directly callable through `_dispatch`.

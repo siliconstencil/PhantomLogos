@@ -1,23 +1,23 @@
-# Platformlar Arası Uyum (Cross-Platform) Test Planı
+# Cross-Platform Compatibility Test Plan
 
-Bu doküman, Phantom Logos sisteminin Windows dışındaki Unix-like (macOS, Linux vb.) işletim sistemlerinde sorunsuz çalışabilirliğini, sanal ortam bütünlüğünü ve dinamik yol çözümleme mekanizmalarını doğrulamak amacıyla hazırlanmıştır. [2:45 PM PT]
+This document was prepared to verify that the Phantom Logos system runs without issues on Unix-like operating systems other than Windows (macOS, Linux, etc.), and to verify virtual environment integrity and the dynamic path resolution mechanisms. [2:45 PM PT]
 
-## 1. Sanal Ortam ve Bağımlılık Denetimi
-- `pyproject.toml` içerisindeki tüm bağımlılıklar platformdan bağımsız olmalıdır.
-- `keyring>=25.0.0` paketinin sanal ortama düzgünce yüklendiği ve import edilebildiği test edilmelidir.
+## 1. Virtual Environment and Dependency Check
+- All dependencies in `pyproject.toml` must be platform-independent.
+- It must be tested that the `keyring>=25.0.0` package installs correctly into the virtual environment and can be imported.
 
-## 2. Test Senaryoları
+## 2. Test Scenarios
 
-### Senaryo A: Akıllı MCP Yapılandırıcı (setup_mcp_config.py)
-- **Adımlar:**
-  1. `setup_mcp_config.py` betiğini çalıştırın.
-  2. Üretilen `mcp_config.json` dosyasını açarak:
-     - Windows'ta backslash (`\\`) ve `.venv\\Scripts\\python.exe` yollarının,
-     - macOS/Linux'ta ise forward slash (`/`) ve `.venv/bin/python` yollarının kullanıldığını doğrulayın.
-- **Beklenen Sonuç:** İşletim sistemine uygun formatta hatasız ve dinamik bir yapılandırma üretilmelidir.
+### Scenario A: Smart MCP Configurator (setup_mcp_config.py)
+- **Steps:**
+  1. Run the `setup_mcp_config.py` script.
+  2. Open the generated `mcp_config.json` file and verify that:
+     - on Windows, backslash (`\\`) and `.venv\\Scripts\\python.exe` paths are used,
+     - on macOS/Linux, forward slash (`/`) and `.venv/bin/python` paths are used.
+- **Expected Result:** An error-free, dynamic configuration in the format appropriate for the operating system must be generated.
 
-### Senaryo B: Kabuk Betikleri (BAT ve SH Eşdeğerliği)
-- **Adımlar:**
-  1. Windows'ta `.bat` (örneğin `run_morpheus.bat`) ve `.vbs` betiklerinin,
-  2. macOS/Linux'ta ise `.sh` (örneğin `run_morpheus.sh`) betiklerinin çalıştırılabilir izinleriyle birlikte (`chmod +x run_morpheus.sh`) sorunsuz başlatılabildiğini doğrulayın.
-- **Beklenen Sonuç:** Her iki platformda da Morpheus arka plan daemon'ı başarıyla başlamalı ve log üretmelidir.
+### Scenario B: Shell Scripts (BAT and SH Equivalence)
+- **Steps:**
+  1. Verify that on Windows the `.bat` (for example `run_morpheus.bat`) and `.vbs` scripts,
+  2. and on macOS/Linux the `.sh` scripts (for example `run_morpheus.sh`), together with executable permissions (`chmod +x run_morpheus.sh`), start without issues.
+- **Expected Result:** On both platforms the Morpheus background daemon must start successfully and produce logs.

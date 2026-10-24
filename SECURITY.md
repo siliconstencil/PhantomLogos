@@ -1,25 +1,24 @@
-# Güvenlik Politikası (SECURITY.md)
+# Security Policy (SECURITY.md)
 
-Phantom Logos projesinin güvenliğine gösterdiğiniz ilgi için teşekkür ederiz. Bu doküman, güvenlik açıklarını nasıl bildireceğinizi ve projenin güvenlik standartlarını açıklar.
+Thank you for your interest in the security of the Phantom Logos project. This document explains how to report security vulnerabilities and describes the project's security standards.
 
-## Desteklenen Sürümler
+## Supported Versions
 
-Aşağıdaki sürümler için güvenlik yamaları ve güncellemeler aktif olarak sunulmaktadır:
+The project is paused at v1.2.1. Reports are still read, and fixes, if any, land on v1.2.1 only.
 
-| Sürüm | Destek Durumu |
+| Version | Support Status |
 | :--- | :--- |
-| v1.2.1 |   Aktif Sürüm (Destekleniyor) |
-| v1.2.0 | ⚠️ Güvenlik Yamaları |
-| < v1.2.0 | ❌ Desteklenmiyor |
+| v1.2.1 | Latest, paused |
+| < v1.2.1 | Not supported |
 
 ---
 
-## Güvenlik Açığı Bildirimi
+## Reporting a Vulnerability
 
-Eğer Phantom Logos kod tabanında veya Sovereign Gateway üzerinde bir güvenlik açığı tespit ederseniz, lütfen bunu **herkese açık bir Issue oluşturarak bildirmeyiniz**. Projenin ve kullanıcıların güvenliği için sorumlu bildirim (responsible disclosure) sürecini izleyin.
+If you find a security vulnerability in the Phantom Logos codebase or in the Sovereign Gateway, please **do not report it by opening a public Issue**. For the security of the project and its users, follow the responsible disclosure process.
 
-### Bildirim Adımları:
-1. Güvenlik açığı detaylarını ve nasıl yeniden üretilebileceğini (PoC) açıklayan bir e-posta hazırlayın.
-2. E-postayı şu adrese gönderin: **security@siliconstencil.com**
-3. Güvenlik ekibimiz bildiriminizi aldıktan sonra **48 saat** içinde size geri dönüş yapacaktır.
-4. Açık doğrulanıp kapatılana kadar lütfen ayrıntıları kamuoyu ile paylaşmayınız.
+### Reporting Steps:
+1. Prepare an email describing the vulnerability details and how it can be reproduced (PoC).
+2. Send the email to: **security@siliconstencil.com**
+3. Expect a first reply within **48 hours** of your report.
+4. Please do not share the details publicly until the vulnerability has been verified and fixed.

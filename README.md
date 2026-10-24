@@ -5,14 +5,14 @@
 [![Governance: BA--01](https://img.shields.io/badge/Governance-BA--01-red.svg)](#7-operational-constitution-ba-01-governance)
 [![Memory: 14--Axis](https://img.shields.io/badge/Memory-14--Axis-green.svg)](#5-the-armory-14-axis-mnemosyne)
 
-Status: **v1.2.1 Sovereign Stable**
+Status: **paused at v1.2.1** (last change July 2026). The code is kept as it was; parts of its memory and routing work are planned to return inside [hordecode](https://github.com/siliconstencil/hordecode). How it was built, and the rules worth reusing: [docs/METHOD.md](docs/METHOD.md).
 
 ## 1. Executive Summary
 
 **Phantom Logos** is a sovereign, local-first agentic OS built on Python 3.12+ implementing a 3-tier hierarchical agent architecture (RuFlow) with 14-axis persistent memory (Mnemosyne), formal verification, and provider-agnostic LLM routing.
 
 Core principles:
-- **Sovereign**: All data stays local. Zero external API calls for reasoning/memory.
+- **Local-first**: Memory and most reasoning run on local models. An optional cloud tier (a Gemini-compatible gateway, `GEMINI_API_KEY`) is used only for the few strategic tasks local models cannot handle.
 - **RuFlow Architecture**: L0 (Human) → L1 (Strategic) → L2 (Execution) → L3 (Verification).
 - **14-Axis Memory**: Persistent cognitive state across Episodic, Procedural, Goals, Temporal, Spatial, Semantic, Operational, Meta-Cognitive, Tone, Rational, Verification, Efficiency, Cross-Session, and Visual axes.
 - **Local-First Routing**: All LLM calls route through `GatewayArchitrave` (unified local/hybrid gateway) with formal verification via Z3 SAT solver.
@@ -34,7 +34,7 @@ Phantom Logos implements a 3-tier agent hierarchy with declarative YAML definiti
 
 **Declaration**: Agent YAML files in `agent/` (sophia.yaml, clotho.yaml, lachesis.yaml). Skills defined in `agent/skills/`.
 
-**See also:** [CLAUDE.md](CLAUDE.md#agent-tiers-ruflow-v110) for execution protocols.
+**See also:** [AGENTS.md](AGENTS.md) for execution protocols.
 
 ---
 
@@ -84,8 +84,6 @@ Core governance and execution history centralized in `.antigravity/`:
 - **[rules.json](.antigravity/rules.json)**: Machine-readable governance rules (override task-completion urges).
 - **[tools.md](.antigravity/tools.md)**: MCP tool inventory and capabilities.
 - **[topography.md](.antigravity/topography.md)**: Live codebase map (auto-regenerated).
-- **[walkthroughs/](.antigravity/walkthroughs/)**: Phase-by-phase execution history.
-- **[audit/](.antigravity/audit/)**: Formal audit logs and verification proofs.
 
 ---
 
@@ -94,7 +92,7 @@ Core governance and execution history centralized in `.antigravity/`:
 **BA-01** defines the communication protocol and security model:
 
 1. **Language Protocol**:
-   - L0 chat and user-facing `.md` artifacts: Turkish
+   - L0 chat and generated `.md` artifacts: the operator's language (Turkish by default, set in `rules.json`)
    - Code, comments, logs, config, agent internals: English (ASCII-only)
 
 2. **EMOJI_BAN**: Emojis and special decorations strictly prohibited everywhere.
@@ -105,9 +103,9 @@ Core governance and execution history centralized in `.antigravity/`:
    - Pre-write audit: identify 2 potential breaking points before executing
 
 4. **Sovereign Gateway Architecture**:
-   - All LLM calls route through `architrave.GatewayArchitrave` (local/hybrid hybrid)
-   - Zero external API calls for reasoning or memory operations
-   - Provider-agnostic: supports Ollama, Claude, etc. via unified interface
+   - All LLM calls route through `architrave.GatewayArchitrave` (local/hybrid)
+   - Memory operations never leave the machine; reasoning stays local unless a task is escalated to the optional cloud tier
+   - Local runtimes: Ollama and llama.cpp; cloud tier: a Gemini-compatible gateway
 
 5. **Database-First Persistence**:
    - All memory via Mnemosyne (SQLite + LanceDB), 14 axes
@@ -170,7 +168,7 @@ alembic upgrade head
 ## 9. Project Topography
 
 ```text
-<project-root>\
+PhantomLogos/
   .antigravity/       Sovereign Knowledge Base (Constitution, rules, tools, audit)
   agent/              YAML agent definitions (sophia.yaml, clotho.yaml, lachesis.yaml)
                       Skills in agent/skills/
@@ -202,12 +200,12 @@ alembic upgrade head
 
 ## 11. References
 
-- [CLAUDE.md](CLAUDE.md) — Developer guide, architecture details, constraints.
+- [docs/METHOD.md](docs/METHOD.md) — How it was built: approval gates, command guards, VRAM budget, failure memory.
+- [AGENTS.md](AGENTS.md) — Agent tiers, routing and rules of engagement.
 - [INSTALLATION.md](INSTALLATION.md) — Installation and setup guide.
 - [CONTRIBUTING.md](CONTRIBUTING.md) — Contribution guidelines and BA-01 rules.
 - [CHANGELOG.md](CHANGELOG.md) — Project changelog (v1.2.1).
 - [CONSTITUTION.md](.antigravity/CONSTITUTION.md) — Governance laws.
-- [walkthroughs/main_walkthrough.md](.antigravity/walkthroughs/main_walkthrough.md) — Phase execution history.
 
 ---
 

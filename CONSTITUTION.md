@@ -1,12 +1,11 @@
 # Phantom Logos Sovereign Constitution (CONSTITUTION.md)
 
-This document is the **Primary Governance Index** and **Single Source of Truth (SSOT)** for the Phantom Logos Sovereign OS (v1.4.1+). It defines the core pillars that all agents must adhere to.
+This document is the **Primary Governance Index** and **Single Source of Truth (SSOT)** for the Phantom Logos Sovereign OS (v1.2.1). It defines the core pillars that all agents must adhere to.
 
 ## 1. Core Governance Documents
-- **Identity & Cognitive Anchor**: [[GEMINI.md]](GEMINI.md)
-- **Agent Guidelines & VRAM Hygiene**: [[AGENTS.md]](AGENTS.md)
-- **IDE & Operational Protocol**: [[.cursorrules]](.cursorrules)
-- **System Rule Enforcement**: [[rules.json]](.antigravity/rules.json)
+- **Identity & Cognitive Anchor**: [IDENTITY.md](.antigravity/IDENTITY.md)
+- **Agent Guidelines & VRAM Hygiene**: [AGENTS.md](AGENTS.md)
+- **System Rule Enforcement**: [rules.json](.antigravity/rules.json)
 
 ## 2. The Golden Mandates (Non-Negotiable)
 
@@ -25,16 +24,16 @@ Automatic pre-write backup and atomic replacement for all ToolBridge file operat
 - **L0 (User) Interaction**: Turkish.
 - **System Internals**: English (ASCII-only).
 
-### 2.3. VRAM Hygiene (Axis 12)
+### 2.5. VRAM Hygiene (Axis 12)
 - **VRAM Budget**: 7.0 GB Total.
 - **OS Margin**: 1.0 GB strictly reserved.
 - **Loading**: Sequential only; `Morpheus.flush()` mandatory between heavy models.
 
-### 2.5. FUNCTIONAL_TOOL_PRIORITY
+### 2.6. FUNCTIONAL_TOOL_PRIORITY
 - Agents MUST use `mapper`, `semantic_store`, `slm_*`, `verify`, and `report` tools for status checks, context scanning, and logging operations instead of raw `fs`/`bash` tools.
 - **Severity**: HIGH. Raw fs/bash is restricted to file creation/editing and execution tasks only.
 
-### 2.6. Mnemosyne Integrity (14-Axis Memory)
+### 2.7. Mnemosyne Integrity (14-Axis Memory)
 - **Citation**: Every strategic claim must use `[SRC:axis_N]` format.
 - **Persistence**: DB-First persistence to SQLite/LanceDB.
 

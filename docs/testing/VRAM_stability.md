@@ -1,22 +1,22 @@
-# VRAM Kararlilik ve Model Gecis Test Planı
+# VRAM Stability and Model Switching Test Plan
 
-Bu doküman, Phantom Logos sisteminin 7.0 GB GPU VRAM limit korumasını, Morpheus daemon bellek temizleme mekanizmasını ve model geçişlerindeki kararlılığı test etmek amacıyla hazırlanmıştır. [2:45 PM PT]
+This document was prepared to test the Phantom Logos system's 7.0 GB GPU VRAM limit protection, the Morpheus daemon memory cleanup mechanism and stability during model switches. [2:45 PM PT]
 
-## 1. Gerekli Donanım ve Ortam
-- En az 6 GB VRAM destekli NVIDIA GPU.
-- Morpheus daemon aktif olmalıdır (python src/clotho/bootstrap.py --daemon).
-- .env dosyasında GPU_TOTAL_VRAM_GB=7.0 ayarlanmış olmalıdır.
+## 1. Required Hardware and Environment
+- An NVIDIA GPU with at least 6 GB of VRAM.
+- The Morpheus daemon must be active (python src/clotho/bootstrap.py --daemon).
+- GPU_TOTAL_VRAM_GB=7.0 must be set in the .env file.
 
-## 2. Test Senaryoları
+## 2. Test Scenarios
 
-### Senaryo A: Morpheus Daemon Başlatma ve Sağlık Kontrolü
-- **Adımlar:**
-  1. `python src/clotho/bootstrap.py --daemon` komutunu çalıştırın.
-  2. `logs/system/morpheus/morpheus.log` dosyasını inceleyerek daemon'ın başarıyla başladığını doğrulayın.
-- **Beklenen Sonuç:** Log dosyasında "Morpheus Daemon started successfully" ve PID bilgisi yer almalıdır.
+### Scenario A: Morpheus Daemon Startup and Health Check
+- **Steps:**
+  1. Run the `python src/clotho/bootstrap.py --daemon` command.
+  2. Inspect the `logs/system/morpheus/morpheus.log` file to verify that the daemon started successfully.
+- **Expected Result:** The log file must contain "Morpheus Daemon started successfully" and the PID.
 
-### Senaryo B: Model Geçişi VRAM Temizliği (Morpheus.flush)
-- **Adımlar:**
-  1. `scripts/baseline_benchmark.py` betiğini çalıştırın.
-  2. Model geçişi sırasında (örneğin L2'den L3 modeline geçerken) Morpheus daemon loglarını izleyin.
-- **Beklenen Sonuç:** Morpheus'un `Morpheus.flush()` metodunu tetiklediği, eski modelin VRAM'den temizlendiği ve yeni model için yer açıldığı loglarda görülmelidir. Toplam VRAM kullanımı hiçbir aşamada 7.0 GB'ı aşmamalıdır.
+### Scenario B: VRAM Cleanup on Model Switch (Morpheus.flush)
+- **Steps:**
+  1. Run the `scripts/baseline_benchmark.py` script.
+  2. Watch the Morpheus daemon logs during a model switch (for example when switching from the L2 to the L3 model).
+- **Expected Result:** The logs must show that Morpheus triggered the `Morpheus.flush()` method, that the old model was cleared from VRAM and that space was freed for the new model. Total VRAM usage must not exceed 7.0 GB at any stage.

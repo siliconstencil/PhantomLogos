@@ -1,10 +1,10 @@
 # Phantom Logos Sovereign OS (NOTICE.md)
 
-Phantom Logos projesi, Silicon Stencil ekibi ve topluluk katkıcıları tarafından geliştirilmiştir.
+The Phantom Logos project is developed by the Silicon Stencil team and community contributors.
 
-Telif Hakkı (c) 2026 Silicon Stencil. Tüm Hakları Saklıdır.
+Copyright (c) 2026 Silicon Stencil. All Rights Reserved.
 
-Bu yazılım aşağıdaki üçüncü taraf bileşenleri, kütüphaneleri ve teknolojileri kullanır veya onlardan yararlanır:
+This software uses or builds on the following third-party components, libraries and technologies:
 - **Google GenAI SDK** (Apache License 2.0)
 - **LangGraph & Pydantic-AI** (MIT License)
 - **SQLAlchemy** (MIT License)
@@ -14,4 +14,4 @@ Bu yazılım aşağıdaki üçüncü taraf bileşenleri, kütüphaneleri ve tekn
 - **aiohttp** (Apache License 2.0)
 - **LanceDB** (Apache License 2.0)
 
-Katkıda bulunan tüm geliştiricilere ve açık kaynak topluluğuna teşekkür ederiz.
+We thank all contributing developers and the open source community.

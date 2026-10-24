@@ -1,7 +1,7 @@
 # Phantom Logos Agent Collaboration Guidelines (AGENTS.md)
 
 ## Reference Configurations
-- [GEMINI.md](GEMINI.md) - Agent Identity and Cognitive Architecture
+- [IDENTITY.md](.antigravity/IDENTITY.md) - Agent Identity and Cognitive Architecture
 - [CONSTITUTION.md](.antigravity/CONSTITUTION.md) - Sovereign Core Constitution
 - [rules.json](.antigravity/rules.json) - Governance and Verification Rules
 

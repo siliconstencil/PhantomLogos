@@ -1,68 +1,68 @@
-# Phantom Logos Geliştirici Katkı Rehberi (CONTRIBUTING.md)
+# Phantom Logos Developer Contribution Guide (CONTRIBUTING.md)
 
-Phantom Logos otonom işletim sistemi projesine katkıda bulunmak istediğiniz için teşekkür ederiz. Bu doküman, geliştirme standartlarımızı, kurallarımızı ve katkı süreçlerini açıklar.
-
----
-
-## 1. Git Dal (Branch) Stratejisi
-
-Geliştirme süreçlerinin kararlılığını korumak için git dalları aşağıdaki standartlara göre yönetilir:
-
-* **master**: Üretim (production) ve kararlı yayın dalıdır. Doğrudan bu dala push yapılması (L0 yetkili acil durum yamaları hariç) yasaktır.
-* **feature/<özellik-adı>**: Yeni özellikler, geliştirmeler veya refaktör çalışmaları bu dallarda geliştirilir ve testleri tamamlandıktan sonra master dalına Pull Request (PR) açılır.
-* **hotfix/<hata-adı>**: master dalındaki acil giderilmesi gereken kritik hatalar için oluşturulur.
+Thank you for wanting to contribute to the Phantom Logos autonomous operating system project. This document describes our development standards, rules and contribution processes.
 
 ---
 
-## 2. BA-01 Dil ve Emoji Yönetişim Protokolü
+## 1. Git Branch Strategy
 
-Projeye katkı sağlarken **BA-01** kurallarına kesinlikle uyulmalıdır:
+To keep the development process stable, git branches are managed according to the following standards:
 
-1. **L0 Kullanıcı Etkileşimi (Chat & Arayüz)**: L0 (Hank/Yönetici) ile olan tüm sohbetler, terminal raporları ve `.md` formatlı dokümantasyonlar tamamen **Türkçe** olmalıdır.
-2. **Çekirdek Kod Tabanı (Code, Logs, DB, Config)**: Python kodları, yorum satırları, değişken isimleri, veri tabanı şemaları ve log kayıtları tamamen **İngilizce (ASCII-only)** olmalıdır. Kod veya yorumlarda Türkçe karakter (ç, ğ, ı, ö, ş, ü, vb.) kullanımı yasaktır.
-3. **EMOJI_BAN (Emoji Yasağı)**: Tüm kod tabanında, loglarda, commmit mesajlarında ve dokümanlarda emoji veya süsleyici özel karakterlerin kullanımı **kesinlikle yasaktır**.
+* **master**: The production and stable release branch. Pushing directly to this branch is forbidden (except for L0-authorized emergency patches).
+* **feature/<feature-name>**: New features, improvements or refactoring work are developed on these branches, and once their tests are complete a Pull Request (PR) is opened against the master branch.
+* **hotfix/<bug-name>**: Created for critical bugs on the master branch that must be fixed urgently.
 
 ---
 
-## 3. Pre-commit ve Kod Kalitesi standartları
+## 2. BA-01 Language and Emoji Governance Protocol
 
-Değişikliklerinizi commit etmeden önce kod kalitesi araçlarını çalıştırmanız önerilir. Projede biçimlendirme ve statik analiz için **Ruff** kullanılmaktadır:
+When contributing to the project, the **BA-01** rules must be followed strictly:
+
+1. **Operator Interaction (Chat & Interface)**: The agents talk to the operator (L0) in the operator's language, set in `.antigravity/rules.json` (Turkish by default). Repository documentation is in **English**.
+2. **Core Codebase (Code, Logs, DB, Config)**: Python code, comments, variable names, database schemas and log records must be entirely in **English (ASCII-only)**. Using Turkish characters (ç, ğ, ı, ö, ş, ü, etc.) in code or comments is forbidden.
+3. **EMOJI_BAN (Emoji Ban)**: Using emojis or decorative special characters anywhere in the codebase, logs, commit messages and documents is **strictly forbidden**.
+
+---
+
+## 3. Pre-commit and Code Quality Standards
+
+Before committing your changes, it is recommended to run the code quality tools. The project uses **Ruff** for formatting and static analysis:
 
 ```bash
-# Kod biçimlendirme (Formatting)
+# Code formatting
 ruff format src/ cognition/ scripts/ tests/
 
-# Statik analiz ve kuralların kontrolü (Linting)
+# Static analysis and rule checks (Linting)
 ruff check src/ cognition/ scripts/ tests/ --fix
 ```
 
-Ayrıca, `pyright` ile statik tip denetimini doğrulayabilirsiniz:
+You can also verify static type checking with `pyright`:
 ```bash
 pyright src/
 ```
 
 ---
 
-## 4. L0_AUTH_TOKEN Protokolü
+## 4. L0_AUTH_TOKEN Protocol
 
-Sistemde güvenlik ve otonom bütünlük koruması (Watchdog/Guardian) aktiftir. Codebase üzerinde dosya yazma, silme veya yapılandırma değiştirme eylemleri gerçekleştirmeden önce L0 onay tokenı oluşturulmalıdır:
+Security and autonomous integrity protection (Watchdog/Guardian) is active in the system. Before performing actions that write files, delete files or change configuration in the codebase, an L0 approval token must be created:
 
 ```bash
 python scripts/create_l0_token.py
 ```
-Bu komut `data/snapshots/L0_AUTH_TOKEN` yolunda 60 saniye geçerli bir yetkilendirme penceresi açar. Yetkisiz veya süresi geçmiş yazma operasyonları Guardian tarafından otomatik olarak geri alınacaktır (Rollback).
+This command opens an authorization window valid for 60 seconds at `data/snapshots/L0_AUTH_TOKEN`. Unauthorized or expired write operations will be automatically reverted by the Guardian (Rollback).
 
 ---
 
-## 5. Test Ekleme Standartları
+## 5. Standards for Adding Tests
 
-Yazdığınız her yeni özellik veya hata düzeltmesi için ilgili testleri eklemelisiniz. Testler `tests/` dizininde konumlandırılmalı ve aşağıdaki kategorilere göre etiketlenmelidir:
+You should add the relevant tests for every new feature or bug fix you write. Tests must be placed in the `tests/` directory and labeled according to the following categories:
 
-* **smoke**: Temel derleme ve kararlılığı doğrulayan hızlı testler.
-* **integration**: Gerçek Ollama servisi, veritabanları veya MCP sunucu bağlantılarına ihtiyaç duyan testler.
-* **slow**: Çalışması 30 saniyeden uzun süren ağır entegrasyon testleri.
+* **smoke**: Fast tests that verify basic build and stability.
+* **integration**: Tests that require a real Ollama service, databases or MCP server connections.
+* **slow**: Heavy integration tests that take longer than 30 seconds to run.
 
-Test marker etiketleme örneği:
+Test marker labeling example:
 ```python
 import pytest
 
@@ -73,9 +73,9 @@ def test_my_feature():
 
 ---
 
-## 6. Pull Request (PR) Süreci
+## 6. Pull Request (PR) Process
 
-1. Değişikliklerinizi içeren dalınızı (branch) oluşturun.
-2. Ruff, Pyright ve pytest testlerinin yerelde başarıyla geçtiğinden emin olun.
-3. Dalınızı uzak sunucuya push edin ve master dalına karşı bir Pull Request açın.
-4. PR açıklamasına yapılan değişikliklerin özetini, hangi testlerle doğrulandığını ve BA-01 uyumluluk onayını ekleyin.
+1. Create a branch containing your changes.
+2. Make sure the Ruff, Pyright and pytest checks pass locally.
+3. Push your branch to the remote and open a Pull Request against the master branch.
+4. In the PR description, include a summary of the changes, which tests verified them, and the BA-01 compliance confirmation.

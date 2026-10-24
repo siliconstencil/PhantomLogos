@@ -1,17 +1,16 @@
-# Yol Temizliği ve Güvenlik Denetim Test Planı
+# Path Sanitization and Security Audit Test Plan
 
-Bu doküman, kod tabanındaki hardcoded yolların temizlendiğini, platform-agnostik yol doğrulama mekanizmalarını ve SQL injection / path traversal korumalarını doğrulamak amacıyla hazırlanmıştır. [2:45 PM PT]
+This document was prepared to verify that hardcoded paths have been removed from the codebase, and to verify the platform-agnostic path validation mechanisms and the SQL injection / path traversal protections. [2:45 PM PT]
 
-## 1. Test Senaryoları
+## 1. Test Scenarios
 
-### Senaryo A: Hardcoded Yol Denetimi (Path Audit)
-- **Adımlar:**
-  1. Proje ana dizininde aşağıdaki PowerShell komutlarını çalıştırarak hardcoded yolların kalıp kalmadığını denetleyin:
-     `Get-ChildItem -Path src/, scripts/ -Recurse -Include *.py | Select-String -Pattern "<project-root>"`
-     `Get-ChildItem -Path src/, scripts/ -Recurse -Include *.py | Select-String -Pattern "<home>"`
-- **Beklenen Sonuç:** Her iki komutun da sıfır (0) sonuç dönmesi gerekmektedir.
+### Scenario A: Hardcoded Path Audit
+- **Steps:**
+  1. In the project root directory, run the following PowerShell command to check whether any hardcoded absolute paths remain:
+     `Get-ChildItem -Path src/, scripts/ -Recurse -Include *.py | Select-String -Pattern "<your-old-absolute-path>"`
+- **Expected Result:** The command must return zero (0) results.
 
-### Senaryo B: Path Traversal Koruması
-- **Adımlar:**
-  1. `ls` veya dosya okuma araçları üzerinden proje kök dizininin dışındaki bir yola (örneğin `../../Windows/` veya `/etc/`) erişmeye çalışın.
-- **Beklenen Sonuç:** Sistem `os.path.commonpath` veya benzeri korumalarla erişimi engelleyerek "Unsafe path detected" veya "Access denied" hatası fırlatmalıdır.
+### Scenario B: Path Traversal Protection
+- **Steps:**
+  1. Try to access a path outside the project root directory (for example `../../Windows/` or `/etc/`) through `ls` or file reading tools.
+- **Expected Result:** The system must block access with `os.path.commonpath` or similar protections and raise an "Unsafe path detected" or "Access denied" error.
