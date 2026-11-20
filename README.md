@@ -48,7 +48,7 @@ Phantom Logos implements a 3-tier agent hierarchy with declarative YAML definiti
 | **lachesis** | Self-tuner, snapshot manager, file watchdog. Triggers formal verification and auditing. |
 | **ankyra** | Anchor/embedding generation. Semantic indexing for 14-axis memory. |
 | **muscle** | Local runtime bridge (Ollama/llama.cpp), binary management, reranker integration. VRAM budget enforcement. |
-| **tools** | MCP tool implementations (34 tools total). Device drivers for external systems. |
+| **tools** | MCP: its own MCP server with 10 browsing tools (`scripts/browse_mcp_server.py`), and an MCP client bridge (`src/clotho/bridge`) to an external SuperLocalMemory server whose tool inventory is listed in AGENTS.md. Device drivers for external systems. |
 | **utils** | Config, logging, rate limiting, security, token budget management, project path resolution. |
 
 ---

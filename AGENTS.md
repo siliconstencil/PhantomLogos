@@ -142,7 +142,7 @@ Every phase must utilize the following triple-artifact structure:
 ### 11. FUNCTIONAL_TOOL_PRIORITY
 
 - **Mandate:** Agents MUST use local SLM MCP tools and Muscle tools for status checks, context operations, and logging. Raw fs/bash is strictly prohibited for status/directory checks.
-- **SLM MCP Tool Inventory (34 Tools):**
+- **SLM MCP Tool Inventory (external SuperLocalMemory server, consumed through ToolBridge; not implemented in this repo):**
   - **Memory CUD:** `mcp_slm_remember` and `mcp_slm_observe` (active via ToolBridge custom interceptors with Axis 1 logging & shadow verify); `mcp_slm_update_memory`, `mcp_slm_delete_memory`, `mcp_slm_fetch`, `mcp_slm_list_recent` (maintenance/audit only).
   - **Retrieval:** `mcp_slm_recall` (as search), `mcp_slm_search` (FTS5), `mcp_slm_rerank`, `mcp_slm_embed` (embedding), `mcp_slm_context`.
   - **Session Lifecycle:** `mcp_slm_session_init` (must run at session start), `mcp_slm_close_session` (must run at session end), `mcp_slm_report_feedback`, `mcp_slm_report_outcome` (must run at phase end), `mcp_slm_get_session`, `mcp_slm_list_sessions`, `mcp_slm_tag_session`.
