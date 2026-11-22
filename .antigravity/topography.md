@@ -325,13 +325,13 @@ sequenceDiagram
 | WAL Checkpoint Optimization | Completed | Thread-safe write counter + PRAGMA wal_checkpoint(TRUNCATE) (Phase 1.0.11) |
 | Agent Contextual Awareness | Completed | system_status.json flag, SYSTEM CRITICAL context injection (Phase 1.0.12) |
 | Semantic Hardening | Completed | Real Ollama embeddings, Matryoshka 256 slicing, health guard (Phase 1.0.13) |
-| Environmental Hardening | Completed | .pth sys.path anchoring, zero-config imports (Phase 1.0.14) |
+| Environmental Hardening | PARTIAL | The editable install writes a `__editable__.phantom_logos-*.pth` file into the venv, so imports work without `PYTHONPATH` inside that venv. A committed `phantom_logos.pth` in the project root is not present. (Phase 1.0.14) |
 | Infrastructure SSOT | Completed | PEP 621 metadata, ruff replaces black/isort, selective mypy (Phase 1.0.15) |
 | Quality Gate Actuation | Completed | pre-commit hooks, auto-fix mode, 239 violation audit (Phase 1.0.16) |
 | Dynamic Quality Remediation | Completed | pyproject.toml lint migration, organic remediation (Phase 1.0.17) |
-| MCP Runtime | Completed | Native MCP server integration for dynamic tool discovery via src/architrave/mcp/ (Phase 1.1.5). Wave 1+2: 6 servers, 69 tools (Phase 1.1.24) |
+| MCP Runtime | Completed | Native MCP client integration for dynamic tool discovery via src/architrave/mcp/ (Phase 1.1.5). The template ships 6 external servers (sequential-thinking, fetch, kg-mem, github, playwright, filesystem); the tool count depends on the servers that are actually installed and enabled (Phase 1.1.24). |
 | Distributed Memory | Proposed | Remote Mnemosyne sync across agent clusters. Tracked in `.antigravity/dev/ROADMAP.md` (K5 tier). |
-| SLM MCP Integration | Completed | SuperLocalMemory V3.4 memory system via MCP, 7-module dual-path fallback architecture (Phases 1.1.5, 1.1.9) |
+| SLM HTTP Transport | Completed | SuperLocalMemory 4.2 as an optional daemon reached over HTTP on port 8765 (own venv `.venv-slm`), dual-path fallback to LanceDB+Ollama+Jina. The MCP stdio path is retired. |
 | CI/CD Coverage | Completed | pytest-cov with --cov-fail-under=30, XML artifact upload in ci.yml (Phase 1.1.39) |
 | GraphVerifier LangGraph Node | Completed | Z3-based formal verification of LangGraph transitions as ergon node (Phase 1.1.38) |
 | A2A FederationBridge | Completed | Orchestrator-level A2A remote messaging: send_to_agent, broadcast, send_graph_state, request_reasoning (Phase 1.1.38) |
@@ -798,7 +798,7 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 | Path Standardization | COMPLETED | 11 Mnemosyne stores migrated to `to_absolute_path` — no more ghost DBs (Phase 1.0.4) |
 | Circular Dep SSOT | COMPLETED | `base_models.py` created in `src/architrave/` to decouple `model_registry`-`self_tuner` (Phase 1.0.4) |
 | Vision Stability Pivot | COMPLETED | MiMo-VL-7B-RL replaced by Qwen2.5-VL as default vision engine due to `seq_add` instability (Phase 1.0.2) |
-| Secret Migration | COMPLETED | API keys moved from plain-text `.env` to Windows Credential Manager via `scripts/migrate_secrets.py` (Phase 1.0.1) |
+| Secret Migration | PARTIAL | API keys are read from the OS keyring through `src/utils/security_utils.py` (Windows Credential Manager on Windows) with a `.env` fallback. The original `scripts/migrate_secrets.py` migration helper is no longer in the tree. (Phase 1.0.1) |
 | LSP Restoration | ACTIVE | Pyright 1.1.409 installed in `.venv`, Opencode LSP command fixed to `pyright.langserver --stdio` (Phase 1.0.5) |
 | Snapshots Purge | COMPLETED | 857MB -> 16KB via DELETE+VACUUM after zombi watchdog terminated (Phase 1.0.5) |
 | Sovereign Gate Hardening | COMPLETED | CONSTITUTION.md SSOT, L0 Auth Protocol codified in rules.json/AGENTS.md/.cursorrules, Ollama-based hybrid reranker (Nomic+Jina), Model Registry sync to Qwen 3.5 UD v1.4.1 (Phase 1.0.6) |
@@ -809,11 +809,11 @@ Always resident: Nomic Embed (0.5 GB) + Jina Reranker (0.6 GB) = 1.1 GB
 | WAL Checkpoint Optimization | COMPLETED | Thread-safe write counter + PRAGMA wal_checkpoint(TRUNCATE) in episodic_store.py, DBAPI cursor management to prevent WAL bloat (Phase 1.0.11) |
 | Agent Contextual Awareness | COMPLETED | Atomic system_status.json flag in file_watchdog.py, cycle-level had_violation detection, real-time SYSTEM CRITICAL injection into Gnosis context (Phase 1.0.12) |
 | Semantic Hardening | COMPLETED | Real Ollama embeddings with Matryoshka 256-dim slicing in theoria.py, autonomous health check + Emergency Mode in retrieval.py, TOKEN_TIER limits externalized to .env (Phase 1.0.13) |
-| Environmental Hardening | COMPLETED | .pth file (phantom_logos.pth) for permanent sys.path anchoring, zero-config imports in raw shell without PYTHONPATH (Phase 1.0.14) |
+| Environmental Hardening | PARTIAL | The editable install writes a `__editable__.phantom_logos-*.pth` file into the venv, so imports work without `PYTHONPATH` inside that venv. A committed `phantom_logos.pth` in the project root is not present. (Phase 1.0.14) |
 | Infrastructure SSOT | COMPLETED | PEP 621 metadata standardization (authors, license, classifiers, urls), dependency cleanup (gliner, langchain removal), ruff replaces black/isort, selective mypy, base_models integration for EntityExtractor (Phase 1.0.15) |
 | Quality Gate Actuation | COMPLETED | pre-commit installation with auto-fix hooks (ruff --fix + ruff-format), pip recovery via get-pip.py, quality debt audit (239 violations), global exclude for logs/data/scratch (Phase 1.0.16) |
 | Dynamic Quality Remediation | COMPLETED | pyproject.toml lint config migration to [tool.ruff.lint], pre-commit transition from check-only to auto-fix mode, organic (no bulk --all-files) remediation strategy (Phase 1.0.17) |
-| SLM MCP Integration | COMPLETED | SuperLocalMemory V3.4 via MCP, 7-module dual-path fallback: SLMClient→MCPSession→slm.exe, fallback to LanceDB+Ollama+Jina (Phase 1.1.5) |
+| SLM HTTP Transport | COMPLETED | Optional SuperLocalMemory 4.2 daemon over HTTP on port 8765, installed in its own venv (`.venv-slm`, separate torch/transformers pins) and started out of process. The MCP stdio path is retired; the registry never creates an "slm" session. Fallback: LanceDB + Ollama + Jina. |
 | SLM Zombie Remediation | COMPLETED | MCPSession async shutdown, CancelledError handling, zombie process cleanup verified (Phase 1.1.9) |
 | ServiceLocator Cross-Tier | COMPLETED | `src/utils/service_locator.py` — L2-L3 circular dependency resolved, self_tuner→bootstrap via locator pattern (Phase 11.19.19) |
 | Sovereign Shield Hardening | ACTIVE | Full Mutation Detection via SHA-256 Hash. Replaces 10% size-drop threshold to catch unauthorized additions/overwrites (Phase 1.0.22). |

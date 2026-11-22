@@ -1,7 +1,10 @@
 # Phantom Logos: Installation Guide
 
-**Target:** Windows 11 with NVIDIA GPU (6+ GB VRAM recommended)
-**Tested on:** RTX 4070 Laptop 8GB | 32 GB RAM | Python 3.12
+**Target:** Linux or Windows with an NVIDIA GPU (6+ GB VRAM recommended)
+**Tested on:** RTX 4070 Laptop 8GB | 32 GB RAM | Python 3.12 | Ubuntu 26.04
+
+The core is pure Python 3.12 and runs on Linux and Windows. GitHub Actions runs
+the test suite on `ubuntu-latest`. Ollama provides the local models.
 
 ---
 
@@ -10,82 +13,115 @@
 - Python 3.12+
 - Git
 - [Ollama](https://ollama.ai) v0.5+
-- NVIDIA Driver 545+ (CUDA 12.3+) - for GPU acceleration
+- NVIDIA Driver 545+ (CUDA 12.3+) for GPU acceleration
 - Docker Desktop + NVIDIA Container Toolkit (optional)
 
 ## 2. Clone & Setup
 
-```powershell
+The bootstrap script creates the virtual environment, installs the dependencies,
+pulls the models, runs the Alembic migrations and seeds the memory stores:
+
+```bash
 git clone https://github.com/siliconstencil/PhantomLogos
 cd PhantomLogos
+python scripts/bootstrap.py
+```
 
-# Set project root in user environment (required for path resolution)
-[System.Environment]::SetEnvironmentVariable("ANTIGRAVITY_ROOT", $PWD.Path, "User")
+Manual alternative:
 
+```bash
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
+`requirements.txt` is a hardware-specific superset (CUDA torch, optional
+extras) and is not what the installer or CI uses.
+
 ## 3. Configure Environment
 
+```bash
+cp .env.example .env             # Windows: copy .env.example .env
+```
+
+Edit `.env` if your setup differs from the defaults:
+
+- `OLLAMA_HOST` / `OLLAMA_BASE_URL`: the Ollama endpoint (default `127.0.0.1:11434`)
+- `GPU_TOTAL_VRAM_GB`: usable VRAM (default `7.0`)
+- `SLM_ENABLED`: the optional SuperLocalMemory daemon (default `false`)
+- `PHANTOM_DATA_DIR`: relocate the runtime data directory (default `data/`)
+
+On Windows, set the project root for path resolution:
+
 ```powershell
-copy .env.example .env
-# Edit .env:
-#   LLM_MODEL_DIR = absolute path to your .gguf model files
-#   GEMINI_API_KEY = your key (optional)
-#   GPU_TOTAL_VRAM_GB = your GPU VRAM
+[System.Environment]::SetEnvironmentVariable("ANTIGRAVITY_ROOT", $PWD.Path, "User")
 ```
 
 ## 4. Generate Local Config
 
-```powershell
+```bash
 python scripts/setup_mcp_config.py
 ```
 
+This writes `mcp_config.json` from `mcp_config.template.json` with the project
+root substituted. The template lists the external MCP servers (sequential-thinking,
+fetch, kg-mem, github, playwright, filesystem); each one is optional and needs
+its own credentials or `npx` availability.
+
 ## 5. Required Models
 
-### Tier 0 - Essential
+`scripts/bootstrap.py` pulls these tags:
 
 | Model | Type | VRAM | How |
 |-------|------|------|-----|
-| phi-4-mini-ud:latest | Reasoning (L3) | 2.8 GB | Download GGUF, ollama create |
-| nomic-embed-text:latest | Embedding | 0.5 GB | `ollama pull nomic-embed-text` |
-| functiongemma-270m-it-Q8_0 | Router | 0.3 GB | Download GGUF, ollama create |
-| jina-reranker-v3-Q8_0 | Reranker | 0.6 GB | Download GGUF, ollama create |
+| qwen3.5-4b-ud:latest | Main LLM (L1/L2) | 2.8 GB | `ollama pull` via the installer |
+| ministral-3b-ud:latest | Light LLM (tier 1) | 2.2 GB | `ollama pull` via the installer |
+| phi-4-mini-ud:latest | Reasoning (L3) | 2.8 GB | `ollama pull` via the installer |
+| nomic-embed-text-v2-moe-q8:latest | Embedding | 0.5 GB | `ollama pull` via the installer |
 
-Download GGUF files from HuggingFace to your `LLM_MODEL_DIR`, then:
-
-```powershell
-# Example for phi-4-mini
-echo "FROM $env:LLM_MODEL_DIR\phi-4-mini-ud-UD-Q5_K_XL.gguf" > Modelfile
-ollama create phi-4-mini-ud -f Modelfile
-```
-
-### Tier 1 - Recommended
-
-| Model | VRAM | How |
-|-------|------|-----|
-| qwen2-vl-ocr | 2.1 GB | `ollama pull qwen2-vl-ocr` |
-| qwen2.5-coder-7b-instruct-q4_k_m | 4.7 GB | Download GGUF, ollama create |
+The tags are custom aliases: `ollama cp <base-model> <tag>` creates them from the
+upstream Ollama models. The base model behind `qwen3.5-4b-ud` is `qwen3.5:4b`,
+behind `ministral-3b-ud` is `ministral-3:3b`, behind `phi-4-mini-ud` is
+`phi4-mini:3.8b` and behind `nomic-embed-text-v2-moe-q8` is
+`nomic-embed-text-v2-moe`.
 
 ## 6. Seed Memory & Verify
 
-```powershell
+```bash
 python scripts/seed_14_axes.py
+python scripts/seed_semantic.py
 python scripts/health_check_14_axes.py
-PYTHONPATH=. pytest tests/ -m smoke -v
+pytest tests/ -m smoke -v
 ```
+
+The health check prints the state of all 14 axes and one line for the optional
+SuperLocalMemory daemon. An absent SLM daemon is reported as INFO, not BROKEN.
 
 ## 7. Running the System
 
-```powershell
-# Start Morpheus VRAM manager
+```bash
+# Start the Morpheus VRAM manager and the optional SLM daemon
 python src/clotho/bootstrap.py --daemon
 
 # CLI interface
 python scripts/hermes_cli.py
+
+# Operator dashboard (http://127.0.0.1:8080, override with PORT)
+python scripts/dashboard.py
 ```
+
+## 8. Optional: SuperLocalMemory (full memory mode)
+
+SuperLocalMemory pins a newer torch and transformers than the project venv, so
+it is installed into its own venv and runs as its own process:
+
+```bash
+python scripts/bootstrap.py --with-slm   # creates .venv-slm and installs superlocalmemory
+.venv-slm/bin/slm serve start           # serves HTTP on 127.0.0.1:8765
+```
+
+Then set `SLM_ENABLED=true` in `.env`. Without it the system uses
+LanceDB + Ollama, which is the supported default.
 
 ---
 
@@ -93,18 +129,20 @@ python scripts/hermes_cli.py
 
 ```
 Total:          8.0 GB
-OS reserve:    -1.5 GB
-Usable:        ~6.5 GB
+OS reserve:    -1.0 GB
+Usable:        ~7.0 GB
 
-phi-4 resident:    2.8 GB
-nomic (swap):      0.5 GB
-router:            0.3 GB
-reranker (demand): 0.6 GB
-                  -------
-Peak:            ~4.2 GB
-Headroom:        ~2.3 GB
+qwen3.5-4b-ud:       2.8 GB
+phi-4-mini-ud:      2.8 GB
+nomic (embedding):  0.5 GB
+                    -------
+Peak (one heavy):  ~2.8 GB
+Headroom:          ~4.2 GB
 ```
+
+Only one model heavier than 3 GB may be resident at a time; the Morpheus
+scheduler flushes between transitions.
 
 ---
 
-*Last Updated: 2026-05-30*
+*Last Updated: 2026-07-22*

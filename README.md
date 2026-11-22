@@ -12,7 +12,7 @@ Status: **paused at v1.2.1** (last change July 2026). The code is kept as it was
 **Phantom Logos** is a sovereign, local-first agentic OS built on Python 3.12+ implementing a 3-tier hierarchical agent architecture (RuFlow) with 14-axis persistent memory (Mnemosyne), formal verification, and provider-agnostic LLM routing.
 
 Core principles:
-- **Local-first**: Memory and most reasoning run on local models. An optional cloud tier (a Gemini-compatible gateway, `GEMINI_API_KEY`) is used only for the few strategic tasks local models cannot handle.
+- **Local-first**: Memory and all reasoning run on local models. An optional local gateway proxy (`ANTIGRAVITY_GATEWAY_URL`, a Gemini-compatible endpoint) is used when present; without it the gateway falls back to Ollama.
 - **RuFlow Architecture**: L0 (Human) → L1 (Strategic) → L2 (Execution) → L3 (Verification).
 - **14-Axis Memory**: Persistent cognitive state across Episodic, Procedural, Goals, Temporal, Spatial, Semantic, Operational, Meta-Cognitive, Tone, Rational, Verification, Efficiency, Cross-Session, and Visual axes.
 - **Local-First Routing**: All LLM calls route through `GatewayArchitrave` (unified local/hybrid gateway) with formal verification via Z3 SAT solver.
@@ -30,7 +30,7 @@ Phantom Logos implements a 3-tier agent hierarchy with declarative YAML definiti
 | **L0** | Hank | Human Authority | N/A | Consent, L0_AUTH_TOKEN governance, final approval |
 | **L1** | Sophia | Strategic Gateway | `qwen3.5-4b-ud` | Planning, 14-axis memory integration, architectural decisions, citation |
 | **L2** | Clotho | Execution Gateway | `qwen3.5-4b-ud` (coding), `ministral-3b-ud` (routine), `deepscaler-1.5b` (rapid) | Task execution, code generation, tool orchestration, skill orchestration via LangGraph |
-| **L3** | Lachesis | Auditor | `phi-4-mini-ud` (logic), `qwen2.5-coder-3b` (code/math) | Formal verification, adversarial auditing, Z3 SAT solving |
+| **L3** | Lachesis | Auditor | `phi-4-mini-ud` (logic), `qwen3.5-4b-ud` (code/math) | Formal verification, adversarial auditing, Z3 SAT solving |
 
 **Declaration**: Agent YAML files in `agent/` (sophia.yaml, clotho.yaml, lachesis.yaml). Skills defined in `agent/skills/`.
 
@@ -48,14 +48,14 @@ Phantom Logos implements a 3-tier agent hierarchy with declarative YAML definiti
 | **lachesis** | Self-tuner, snapshot manager, file watchdog. Triggers formal verification and auditing. |
 | **ankyra** | Anchor/embedding generation. Semantic indexing for 14-axis memory. |
 | **muscle** | Local runtime bridge (Ollama/llama.cpp), binary management, reranker integration. VRAM budget enforcement. |
-| **tools** | MCP: its own MCP server with 10 browsing tools (`scripts/browse_mcp_server.py`), and an MCP client bridge (`src/clotho/bridge`) to an external SuperLocalMemory server whose tool inventory is listed in AGENTS.md. Device drivers for external systems. |
+| **tools** | MCP: its own MCP server with 10 browsing tools (`scripts/browse_mcp_server.py`), and an MCP client bridge (`src/clotho/bridge`) that connects to the external MCP servers listed in `mcp_config.json`. SuperLocalMemory is reached over its own HTTP daemon, not through MCP. Device drivers for external systems. |
 | **utils** | Config, logging, rate limiting, security, token budget management, project path resolution. |
 
 ---
 
 ## 5. The Armory: 14-Axis Mnemosyne
 
-Persistent cognitive state across 14 dimensions stored in SQLite + LanceDB (`.data/`):
+Persistent cognitive state across 14 dimensions stored in SQLite + LanceDB (`data/`):
 
 1. **Episodic**: Session/interaction history
 2. **Procedural**: Learned task workflows and skills
@@ -104,8 +104,8 @@ Core governance and execution history centralized in `.antigravity/`:
 
 4. **Sovereign Gateway Architecture**:
    - All LLM calls route through `architrave.GatewayArchitrave` (local/hybrid)
-   - Memory operations never leave the machine; reasoning stays local unless a task is escalated to the optional cloud tier
-   - Local runtimes: Ollama and llama.cpp; cloud tier: a Gemini-compatible gateway
+   - Memory operations never leave the machine; reasoning stays local unless a task is escalated to the optional gateway proxy
+   - Local runtimes: Ollama and llama.cpp; optional tier: a local Gemini-compatible gateway proxy
 
 5. **Database-First Persistence**:
    - All memory via Mnemosyne (SQLite + LanceDB), 14 axes
@@ -133,19 +133,51 @@ python scripts/bootstrap.py
 ```
 For options (e.g. skipping model downloads), run `python scripts/bootstrap.py --help`.
 
+The installer copies `.env.example` to `.env` on first run. Edit `.env` if your Ollama
+endpoint, GPU budget or data directory differ from the defaults.
+
 See [INSTALLATION.md](INSTALLATION.md) for full details on hardware, Ollama setup, and troubleshooting.
+
+### What Runs Where
+
+| Component | Where it runs | Required |
+| :--- | :--- | :--- |
+| Core (orchestrator, memory, verification) | Pure Python 3.12, in this process | yes |
+| Ollama | Local inference server, `127.0.0.1:11434` | yes for inference |
+| SuperLocalMemory | Optional daemon in its own venv, HTTP on `127.0.0.1:8765` | no |
+| MCP bridge | Client for external MCP servers listed in `mcp_config.json` | no |
+
+- **Linux and Windows** are both supported; GitHub Actions runs the test suite on
+  `ubuntu-latest`.
+- **Ollama** provides every local model. The tags the installer pulls are listed in
+  `scripts/bootstrap.py` (`qwen3.5-4b-ud`, `ministral-3b-ud`, `phi-4-mini-ud`,
+  `nomic-embed-text-v2-moe-q8`).
+- **SuperLocalMemory (SLM)** is the optional full-memory mode. It pins a newer torch
+  and transformers than the project venv, so it is installed into its own venv and
+  started as its own process:
+
+  ```bash
+  python scripts/bootstrap.py --with-slm   # creates .venv-slm
+  .venv-slm/bin/slm serve start           # serves HTTP on port 8765
+  ```
+
+  With `SLM_ENABLED=false` (the default) the system uses LanceDB + Ollama instead.
+  The MCP stdio path for SLM is retired; the daemon is reached over HTTP only.
+- The **MCP bridge** connects to the external MCP servers configured in
+  `mcp_config.json`. Generate that file from the template with
+  `python scripts/setup_mcp_config.py`.
 
 ### Key Commands
 ```bash
-# Run all tests
-pytest tests/ -v
+# Run the unit tests (the CI subset)
+pytest tests/ -v -m "not integration and not slow"
 
 # Run smoke tests
 pytest tests/ -m smoke -v
 
 # Lint & format
-ruff check .
-ruff format .
+ruff check src/ cognition/ tests/
+ruff format src/ cognition/ scripts/ tests/
 
 # Type check (pyright only)
 pyright src/
@@ -159,8 +191,10 @@ python scripts/health_check_14_axes.py
 # CLI interface
 python scripts/hermes_cli.py
 
-# Database migrations
-alembic upgrade head
+# Database migrations (named sections: mnemosyne, reliability, spatial)
+alembic -n mnemosyne upgrade head
+alembic -n reliability upgrade head
+alembic -n spatial upgrade head
 ```
 
 ---
@@ -217,4 +251,4 @@ To launch it, run:
 ```bash
 python scripts/dashboard.py
 ```
-Open `http://127.0.0.1:8765` in your browser. See [DASHBOARD.md](docs/DASHBOARD.md) for endpoint specifications and guides.
+Open `http://127.0.0.1:8080` in your browser (the `PORT` environment variable overrides the port). See [DASHBOARD.md](docs/DASHBOARD.md) for endpoint specifications and guides.

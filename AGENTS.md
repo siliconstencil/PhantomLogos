@@ -16,8 +16,10 @@ changing anything.
   `http://localhost:32553`). Model/VRAM lifecycle: `cognition/morpheus/`, `src/muscle/`.
 - Formal verification chain (AST, QWED, SymPy, Z3) in `src/lachesis/verifiers/`, driven
   by `scripts/sovereign_audit.py`.
-- MCP bridge in `src/architrave/mcp/`. The external SuperLocalMemory server is optional;
-  `SLM_ENABLED=false` falls back to LanceDB + Ollama without raising.
+- MCP bridge in `src/architrave/mcp/`. It is a client for the external MCP servers
+  listed in `mcp_config.json`. SuperLocalMemory is optional and is reached over its
+  own HTTP daemon (port 8765), never as an MCP stdio server; `SLM_ENABLED=false`
+  falls back to LanceDB + Ollama without raising.
 - Scripts are the entrypoints; there is no installed console command.
 
 ## What this is not
@@ -30,9 +32,9 @@ changing anything.
   paths, and a Linux CI exist.
 - Not a git checkout in this working copy (no `.git`). Do not rely on branches,
   history, or `git diff`; `CONTRIBUTING.md` describes the upstream workflow.
-- Not doc-consistent. Examples: `README.md` says the dashboard runs on `8765` but the
-  code defaults to `8080`; `.env.example` is referenced but absent; some docs claim
-  Turkish while checked-in docs are English.
+- Not doc-consistent. Examples: some docs claim Turkish while checked-in docs are
+  English; the migration command needs a named section (`alembic -n mnemosyne
+  upgrade head`), not a bare `alembic upgrade head`.
 
 ## Setup
 
@@ -42,6 +44,7 @@ Python 3.12 is required. Preferred bootstrap:
 python scripts/bootstrap.py              # creates .venv, installs -e ".[dev]", needs Ollama
 python scripts/bootstrap.py --skip-models   # skip model pulls
 python scripts/bootstrap.py --check-only    # verify an existing install
+python scripts/bootstrap.py --with-slm      # also install the optional SLM daemon into .venv-slm
 ```
 
 Bootstrap also creates `data/ logs/ models/ bin/`, runs Alembic (`mnemosyne`,
@@ -49,7 +52,7 @@ Bootstrap also creates `data/ logs/ models/ bin/`, runs Alembic (`mnemosyne`,
 
 Manual alternative: create a venv and `pip install -e ".[dev]"`. `requirements.txt` is a
 pinned, hardware-specific superset (CUDA torch, `superlocalmemory`, `logfire`) and is
-not what CI installs. `.env` is optional; `.env.example` is not in the repo.
+not what CI installs. `.env` is optional; `.env.example` is in the repo.
 
 ## Commands
 
@@ -72,8 +75,8 @@ python scripts/health_check_14_axes.py
 python scripts/dashboard.py      # http://127.0.0.1:8080, override with PORT
 ```
 
-- CI (`.github/workflows/ci.yml`) runs the unit subset with **21 test files ignored** and a
-  30% coverage gate. `mkdir -p data` is required before pytest in a clean checkout.
+- CI (`.github/workflows/ci.yml`) runs the unit subset (`-m "not integration and not slow"`)
+  with a 30% coverage gate. `mkdir -p data` is required before pytest in a clean checkout.
 - Tests needing live Ollama or a gateway are marked `slow` / `integration`; skip rationale
   is in `tests/IGNORED_TESTS.md`.
 - Root `pyrightconfig.json` overrides `[tool.pyright]` in `pyproject.toml`. It is `basic`
@@ -110,8 +113,9 @@ with memory reads/writes through `cognition/mnemosyne/` and verification through
   templates. Real `opencode.json` / `mcp_config.json` are gitignored; generate them with
   `scripts/setup_mcp_config.py` (substitutes `${PHANTOM_ROOT}`). Template edits do not
   change the local runtime.
-- Gitignored, do not commit: `data/`, `logs/`, `scratch/`, `bin/`, `models/`, `projects/`,
-  `.venv*`, `.env*`, `opencode/`, `.opencode/`, `opencode.json`, `mcp_config.json`.
+- Gitignored, do not commit: `data/`, `logs/`, `scratch/`, `tmp/`, `bin/`, `models/`, `projects/`,
+  `.venv*`, `.env` (but `.env.example` is tracked), `opencode/`, `.opencode/`, `opencode.json`,
+  `mcp_config.json`.
 - Code, comments, logs, and config are English ASCII-only. No emojis anywhere.
   User-facing chat follows `.antigravity/rules.json` (Turkish by default).
 - Ruff: py312, line length 100, broad rule set including `S` and `ANN`.

@@ -212,9 +212,9 @@ These rules are critical for correct model behavior. Violations cause silent deg
  | `qwen2.5-math-7b-q4:latest` | Aktif | Standard Math Auditor |
 
 
-## 8. SLM MCP Tool Bridge
+## 8. SLM Tool Bridge
 
-The SuperLocalMemory (SLM) MCP tool bridge provides 34 tools across 7 categories. All tools exposed via the mcp_slm_ prefix through ToolBridge in src/clotho/bridge/base.py. Dual-path fallback: SLM unhealthy -> LanceDB+Ollama+Jina.
+SuperLocalMemory (SLM) is the optional full-memory mode. It is an HTTP daemon on port 8765 (own venv `.venv-slm`), not an MCP stdio server. The ToolBridge in src/clotho/bridge/base.py exposes the mcp_slm_ prefix through the MCP client bridge, which forwards to the daemon. Dual-path fallback: SLM unhealthy -> LanceDB+Ollama+Jina. The tool list below reflects the SuperLocalMemory 4.x surface; the exact set depends on the installed daemon version.
 
 ### 8.1 Memory CRUD
 - mcp_slm_remember - Store with semantic indexing

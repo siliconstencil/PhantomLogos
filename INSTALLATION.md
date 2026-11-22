@@ -46,6 +46,7 @@ python scripts/bootstrap.py
 * `--skip-models`: Skips the Ollama model download step (use it if you have already downloaded the models or want to manage them manually).
 * `--skip-seeds`: Skips the database pre-seed (seeding) steps.
 * `--check-only`: Only verifies the current state and integrity without installing anything.
+* `--with-slm`: Also installs the optional SuperLocalMemory daemon into its own venv (`.venv-slm`). See section 5.
 * `--verbose`: Prints detailed installation logs to the screen.
 
 Example (quick setup, skipping the model download):
@@ -57,24 +58,22 @@ python scripts/bootstrap.py --skip-models
 
 ## 4. Environment Variables (.env) Guide
 
-The bootstrap process automatically copies `.env.example` to `.env`. For the system to run, edit the settings in the `.env` file to match your environment:
+The bootstrap process automatically copies `.env.example` to `.env`. The template lists every variable the code reads; the defaults are used when a variable is absent. For a local install:
 
 ```env
-# Directory containing the GGUF and Ollama models (absolute or relative path)
-LLM_MODEL_DIR=./models
-
 # Ollama service connection settings
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_HOST=localhost:11434
+OLLAMA_HOST=http://127.0.0.1:11434
+OLLAMA_BASE_URL=http://127.0.0.1:11434
 
 # Maximum amount of VRAM to reserve on the GPU (default: 7.0 GB)
 GPU_TOTAL_VRAM_GB=7.0
 
-# Security and agent-to-agent (A2A) communication encryption key (must be at least 32 characters)
-A2A_SECRET_KEY=your-super-secret-key-min-32-chars
+# Optional SuperLocalMemory daemon (default: off, LanceDB + Ollama is used)
+SLM_ENABLED=false
+SLM_HTTP_PORT=8765
 
-# L0 administrator authorization token lifetime (default: 60 seconds)
-L0_AUTH_TOKEN_TTL=60
+# Runtime data directory (default: ./data)
+# PHANTOM_DATA_DIR=./data
 
 # Logging level (DEBUG, INFO, WARNING, ERROR)
 LOG_LEVEL=INFO
@@ -96,11 +95,28 @@ Prints the state and data integrity of all 14 axes to the screen.
 ```bash
 pytest tests/ -m smoke -v
 ```
-If the 5 basic smoke tests pass (`PASSED`), the installation has been done completely correctly.
+If the smoke tests pass, the installation has been done completely correctly.
 
 ---
 
-## 6. Frequently Asked Questions (FAQ)
+## 6. Optional: SuperLocalMemory (full memory mode)
+
+SuperLocalMemory is not required. It pins a newer torch and transformers than
+the project venv, so it lives in its own venv and is started as its own
+process. The daemon is reached over HTTP on port 8765; the MCP stdio path is
+retired.
+
+```bash
+python scripts/bootstrap.py --with-slm   # creates .venv-slm
+.venv-slm/bin/slm serve start           # serves HTTP on 127.0.0.1:8765
+```
+
+Set `SLM_ENABLED=true` in `.env` to use it. With `SLM_ENABLED=false` (the
+default) the system runs on LanceDB + Ollama.
+
+---
+
+## 7. Frequently Asked Questions (FAQ)
 
 ### Q: I am getting an "Ollama Port Conflict" error. What should I do?
 Another service in the background may be blocking port 11434. You can point the `OLLAMA_BASE_URL` and `OLLAMA_HOST` addresses in the `.env` file to another free port and start the Ollama service on that port.
@@ -109,11 +125,11 @@ Another service in the background may be blocking port 11434. You can point the 
 Yes, it will. However, set the `GPU_TOTAL_VRAM_GB` value in the `.env` file according to your graphics card (e.g. `5.0`). When memory is insufficient, the system will automatically move some model layers to the CPU (offloading).
 
 ### Q: The MCP servers do not start, or I get a permission error.
-Confirm that the paths in the `.mcp.json` file in the project root directory are correct. Also, refresh the L0 administrator authorization by running `python scripts/create_l0_token.py`.
+Confirm that the paths in the generated `mcp_config.json` are correct (`python scripts/setup_mcp_config.py` regenerates it) and that the server's own requirements are installed (`npx` for the Node servers, `mcp_server_fetch` for the fetch server). Also, refresh the L0 administrator authorization by running `python scripts/create_l0_token.py`.
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 * **System Logs**: All actions in the system and detailed error records are written to `logs/system.json` (structured logs in JSON format) and `logs/system.log` (plain text format). When an error occurs, check these files first.
 * **Emergency Reset**: If a lock-up or inconsistency occurs in the databases or MCP sessions, you can run the emergency reset:
