@@ -177,6 +177,18 @@ class TestMemoryLeakMonitor:
         leaks = monitor.check()
         assert isinstance(leaks, list)
 
+    def test_check_skips_an_oversized_snapshot(self):
+        """A huge snapshot must not stall the caller with an expensive comparison."""
+        from cognition.morpheus.monitor import MemoryLeakMonitor
+
+        monitor = MemoryLeakMonitor(top_n=3)
+        monitor.start()
+        monitor._max_traces = 0
+        previous = monitor._snapshot
+
+        assert monitor.check() == []
+        assert monitor._snapshot is not previous
+
     def test_should_warn_no_leak(self):
         from cognition.morpheus.monitor import MemoryLeakMonitor
 

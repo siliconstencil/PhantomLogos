@@ -134,20 +134,26 @@ def get_fragmentation_estimate() -> float:
 
 
 class MemoryLeakMonitor:
+    # A snapshot above this many traces is too expensive to compare; the monitor
+    # then refreshes the baseline and reports nothing instead of stalling the caller.
+    MAX_TRACES = 200_000
+
     def __init__(self, top_n: int = 10, interval_s: int = 300):
         self._top_n = top_n
         self._interval_s = interval_s
         self._snapshot = None
         self._enabled = False
+        self._max_traces = self.MAX_TRACES
 
     def start(self):
         try:
             import tracemalloc
 
-            tracemalloc.start(25)
+            # A shallow trace keeps the snapshot small enough to compare quickly.
+            tracemalloc.start(5)
             self._snapshot = tracemalloc.take_snapshot()
             self._enabled = True
-            logger.info("MemoryLeakMonitor: tracemalloc started (nframe=25).")
+            logger.info("MemoryLeakMonitor: tracemalloc started (nframe=5).")
         except Exception as e:
             logger.warning(f"MemoryLeakMonitor: tracemalloc not available ({e})")
             self._enabled = False
@@ -162,7 +168,14 @@ class MemoryLeakMonitor:
             if self._snapshot is None:
                 self._snapshot = new_snap
                 return []
-            stats = new_snap.compare_to(self._snapshot, "lineno")
+            if len(new_snap.traces) > self._max_traces:
+                logger.debug(
+                    f"MemoryLeakMonitor: snapshot too large ({len(new_snap.traces)} traces), "
+                    "comparison skipped"
+                )
+                self._snapshot = new_snap
+                return []
+            stats = new_snap.compare_to(self._snapshot, "lineno", nframe=1)
             top = stats[: self._top_n]
             result = []
             for stat in top:
