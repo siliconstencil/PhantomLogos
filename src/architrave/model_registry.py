@@ -35,11 +35,11 @@ def get_embedding_model(variant: str = "primary") -> str:
 
 
 def resolve_slm_endpoint() -> str:
-    """Returns the SLM endpoint from environment or default (SSOT)."""
+    """Returns the SLM daemon endpoint from environment or default (SSOT)."""
     import os
 
     return os.getenv(
-        "SLM_ENDPOINT", ROLE_TO_MODEL.get("slm", {}).get("endpoint", "http://localhost:8081")
+        "SLM_ENDPOINT", ROLE_TO_MODEL.get("slm", {}).get("endpoint", "http://localhost:8765")
     )
 
 

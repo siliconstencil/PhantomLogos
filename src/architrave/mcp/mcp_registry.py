@@ -6,10 +6,14 @@ import time
 
 from src.utils.logging_config import setup_logger
 
-from .mcp_models import MCPRuntimeConfig, MCPServerConfig
+from .mcp_models import MCPRuntimeConfig
 from .mcp_session import MCPSession
 
 logger = setup_logger(__name__)
+
+# SuperLocalMemory is reached over its own HTTP daemon, never as an MCP stdio
+# server. Any legacy "slm" entry in a config file is therefore ignored.
+RETIRED_SERVERS = frozenset({"slm"})
 
 
 class MCPRegistry:
@@ -19,6 +23,11 @@ class MCPRegistry:
         self._config = self._load_config()
         self._initialize_sessions()
         self._start_retry_timer()
+
+    @property
+    def config(self) -> MCPRuntimeConfig:
+        """The runtime configuration the sessions were built from."""
+        return self._config
 
     def _start_retry_timer(self) -> None:
         timer = threading.Thread(target=self._retry_loop, daemon=True, name="MCPRetryTimer")
@@ -54,19 +63,15 @@ class MCPRegistry:
                             continue
                         data = json.loads(content)
                     config = MCPRuntimeConfig.model_validate(data)
+                    retired = RETIRED_SERVERS.intersection(config.mcpServers)
+                    if retired:
+                        logger.warning(
+                            f"MCPRegistry: Ignoring retired MCP servers {sorted(retired)}; "
+                            "SuperLocalMemory is reached over HTTP."
+                        )
+                        for name in retired:
+                            del config.mcpServers[name]
                     logger.info(f"MCPRegistry: Loaded config file successfully from: {config_path}")
-                    slm_entry = config.mcpServers.get("slm")
-                    if slm_entry is not None:
-                        slm_cmd_override = os.getenv("SLM_MCP_CMD")
-                        if slm_cmd_override:
-                            cmd_parts = slm_cmd_override.split()
-                            slm_entry.command = cmd_parts[0]
-                            slm_entry.args = cmd_parts[1:]
-                        if os.getenv("SLM_MCP_TIMEOUT"):
-                            slm_entry.timeout = int(os.getenv("SLM_MCP_TIMEOUT"))
-                        slm_enabled_override = os.getenv("SLM_ENABLED")
-                        if slm_enabled_override:
-                            slm_entry.enabled = slm_enabled_override.lower() == "true"
                     return config
                 except Exception as e:
                     logger.warning(
@@ -75,22 +80,7 @@ class MCPRegistry:
                     continue
 
         config_path = os.path.join(os.path.dirname(__file__), "mcp_config.json")
-        slm_cmd = os.getenv("SLM_MCP_CMD", "slm mcp")
-        cmd_parts = slm_cmd.split() if slm_cmd else ["slm", "mcp"]
-        slm_enabled_env = os.getenv("SLM_ENABLED", "true")
-        slm_enabled = slm_enabled_env.lower() == "true" if slm_enabled_env else True
-
-        default_config = MCPRuntimeConfig(
-            mcpServers={
-                "slm": MCPServerConfig(
-                    command=cmd_parts[0],
-                    args=cmd_parts[1:],
-                    env={},
-                    timeout=int(os.getenv("SLM_MCP_TIMEOUT", "30")),
-                    enabled=slm_enabled,
-                )
-            }
-        )
+        default_config = MCPRuntimeConfig(mcpServers={})
         try:
             os.makedirs(os.path.dirname(config_path), exist_ok=True)
             with open(config_path, "w", encoding="utf-8") as f:
@@ -100,75 +90,7 @@ class MCPRegistry:
             logger.error(f"MCPRegistry: Failed to write default config: {e}")
         return default_config
 
-    def _kill_orphaned_slm(self) -> None:
-        """Kill orphaned slm.exe processes before spawning a new one.
-
-        An slm.exe is an orphan if and only if its parent PID no longer exists,
-        or the process at that PID was born after the SLM (Windows PID reuse).
-
-        Deliberately does NOT filter by parent process name: multiple IDEs, CLIs,
-        and agents (Python, Node, Electron, etc.) may each own a healthy slm.exe
-        simultaneously. Any live parent - regardless of type - means the SLM is
-        not an orphan and must be left alone.
-        """
-        import sys
-
-        if sys.platform != "win32":
-            return
-        try:
-            import psutil  # type: ignore
-        except ImportError:
-            logger.debug("MCPRegistry: psutil unavailable, orphan SLM cleanup skipped")
-            return
-
-        killed = 0
-        try:
-            for proc in psutil.process_iter(["pid", "name", "ppid", "create_time"]):
-                try:
-                    if (proc.info["name"] or "").lower() != "slm.exe":
-                        continue
-                    ppid = proc.info["ppid"]
-                    slm_create_time = proc.info["create_time"] or 0.0
-
-                    is_orphan = False
-                    if ppid is None or not psutil.pid_exists(ppid):
-                        # Parent PID is gone - true orphan
-                        is_orphan = True
-                    else:
-                        try:
-                            parent_create_time = psutil.Process(ppid).create_time()
-                            if parent_create_time > slm_create_time:
-                                # A new process reused the parent PID after the real
-                                # parent died - treat as orphan
-                                is_orphan = True
-                        except psutil.NoSuchProcess:
-                            is_orphan = True
-
-                    if is_orphan:
-                        try:
-                            proc.kill()
-                            killed += 1
-                            logger.info(
-                                f"MCPRegistry: Killed orphaned SLM pid={proc.pid} "
-                                f"(parent pid={ppid} is dead)"
-                            )
-                        except (psutil.NoSuchProcess, psutil.AccessDenied) as _e:
-                            logger.debug(
-                                f"MCPRegistry: Could not kill orphaned SLM pid={proc.pid} ({_e})"
-                            )
-                except (psutil.NoSuchProcess, psutil.ZombieProcess, psutil.AccessDenied):
-                    continue
-
-            if killed:
-                time.sleep(0.5)
-                logger.info(
-                    f"MCPRegistry: Cleaned up {killed} orphaned SLM process(es) before init."
-                )
-        except Exception as e:
-            logger.debug(f"MCPRegistry: Orphan SLM cleanup skipped ({e})")
-
     def _initialize_sessions(self) -> None:
-        self._kill_orphaned_slm()
         for srv_name, server in self._config.mcpServers.items():
             session = MCPSession(
                 name=srv_name,

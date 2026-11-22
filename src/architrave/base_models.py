@@ -73,8 +73,8 @@ ROLE_TO_MODEL = {
         "primary": "fastino/gliner2-base-v1",
     },
     "slm": {
-        "primary": "slm-mcp:latest",
-        "endpoint": os.getenv("SLM_ENDPOINT", "http://localhost:8081"),
+        "primary": "slm-http-daemon",
+        "endpoint": os.getenv("SLM_ENDPOINT", "http://localhost:8765"),
     },
 }
 
@@ -88,7 +88,7 @@ VISION_ROUTING = {
 
 # VRAM Requirements (GB)
 VRAM_CATALOG_GB = {
-    "slm-mcp:latest": 0.0,
+    "slm-http-daemon": 0.0,
     "granite-3-2b:latest": 1.6,
     "nomic-embed-text-v2-moe-q8:latest": 0.5,
     "nomic-embed-text-v2-moe-q16:latest": 1.0,

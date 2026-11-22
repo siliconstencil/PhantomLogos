@@ -25,7 +25,7 @@ class ToolBridge:
         "jina-reranker": "jina-reranker-v3:latest",
         "nomic-embed": "nomic-embed-text-v2-moe-q8:latest",
         "qwen-math": "qwen2.5-math-7b-q4:latest",
-        "slm": "slm-mcp:latest",
+        "slm": "slm-http-daemon",
     }
 
     _mcp_handlers: ClassVar[dict] = {}

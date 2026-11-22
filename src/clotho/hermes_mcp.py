@@ -1,31 +1,46 @@
-import os
-import threading
-import time as time_module
+"""Bootstrap helpers for the optional SuperLocalMemory daemon.
 
-from src.architrave.mcp import get_slm_client
+SuperLocalMemory (SLM) is reached over its own HTTP daemon on port 8765.
+The daemon must run as a separate OS process: starting it inside the host
+process fails on Linux with "cannot schedule new futures after shutdown".
+"""
+
+import http.client
+import json
+import os
+import socket
+import subprocess
+from pathlib import Path
+
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
+SLM_HOST = "127.0.0.1"
+SLM_PORT = 8765
 
-def discover_slm_port(host: str = "127.0.0.1", port: int = 8765) -> str:
-    import socket
 
+def discover_slm_port(host: str = SLM_HOST, port: int = SLM_PORT) -> str:
+    """Classify what listens on the SLM port.
+
+    Returns "ours" for a healthy SuperLocalMemory daemon, "foreign" for any
+    other listener and "none" when the port is free.
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.settimeout(2.0)
         if sock.connect_ex((host, port)) != 0:
             return "none"
-        import http.client
 
         conn = http.client.HTTPConnection(host, port, timeout=2.0)
         try:
             conn.request("GET", "/health")
             resp = conn.getresponse()
-            if resp.status == 200:
-                data = resp.read().decode()
-                if '"agent":"phantom-logos"' in data or "phantom-logos" in data:
-                    return "ours"
+            if resp.status != 200:
+                return "foreign"
+            data = json.loads(resp.read().decode() or "{}")
+            if data.get("status") == "ok":
+                return "ours"
             return "foreign"
         except Exception:
             return "foreign"
@@ -38,90 +53,63 @@ def discover_slm_port(host: str = "127.0.0.1", port: int = 8765) -> str:
 
 
 def start_slm_server() -> None:
-    try:
-        slm_status = discover_slm_port()
-        if slm_status == "ours":
-            logger.info("Bootstrap: SLM daemon already running (our process). Reusing.")
-            return
-        if slm_status == "foreign":
-            logger.warning("Bootstrap: Port 8765 occupied by foreign process. Skipping SLM start.")
-            return
+    """Start the SuperLocalMemory daemon as a separate process.
 
-        import logging
-        from logging.handlers import RotatingFileHandler
+    The daemon is only started when SLM_BIN points at its executable. Without
+    it the system keeps running on the LanceDB + Ollama fallback.
+    """
+    slm_status = discover_slm_port()
+    if slm_status == "ours":
+        logger.info("Bootstrap: SLM daemon already running on port 8765. Reusing.")
+        return
+    if slm_status == "foreign":
+        logger.warning("Bootstrap: Port 8765 is occupied by another service. Skipping SLM start.")
+        return
 
-        log_dir = "logs/system/slm"
-        os.makedirs(log_dir, exist_ok=True)
-        log_file = os.path.join(log_dir, "slm_daemon.log")
-
-        slm_logger = logging.getLogger("superlocalmemory")
-        f_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        f_handler = RotatingFileHandler(
-            log_file, maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"
-        )
-        f_handler.setFormatter(f_formatter)
-        f_handler.setLevel(logging.INFO)
-
-        slm_logger.addHandler(f_handler)
-        slm_logger.setLevel(logging.INFO)
-
+    slm_bin = os.getenv("SLM_BIN")
+    if not slm_bin:
         logger.info(
-            "Bootstrap: Starting SLM Unified Daemon Server programmatically in background thread..."
+            "Bootstrap: SLM daemon not running and SLM_BIN is not set. "
+            "Start it manually (for example: .venv-slm/bin/slm serve start) or continue "
+            "with the LanceDB + Ollama fallback."
         )
+        return
 
-        def run_slm() -> None:
-            try:
-                from superlocalmemory.server.unified_daemon import start_server
+    log_dir = Path("logs") / "system" / "slm"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "slm_daemon.log"
 
-                start_server(port=8765)
-            except Exception as e:
-                logger.error(f"Bootstrap: SLM Daemon server thread crashed: {e}")
-
-        slm_thread = threading.Thread(target=run_slm, name="SLMServerThread", daemon=True)
-        slm_thread.start()
-        logger.info(
-            "Bootstrap: SLM Unified Daemon Server thread launched successfully (logs routed to logs/system/slm/slm_daemon.log)."
+    logger.info(f"Bootstrap: Starting the SLM daemon from {slm_bin} ...")
+    with open(log_file, "a", encoding="utf-8") as handle:
+        subprocess.Popen(  # noqa: S603
+            [slm_bin, "serve", "start"],
+            stdout=handle,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True,
         )
-
-        time_module.sleep(2.0)
-    except Exception as e:
-        logger.warning(f"Bootstrap: Failed to start SLM Daemon Server ({e})")
+    logger.info(f"Bootstrap: SLM daemon process launched (logs: {log_file}).")
 
 
 def start_slm() -> None:
+    """Initialise the HTTP SLM client when SLM is enabled and the daemon answers."""
     try:
-        if os.getenv("SLM_ENABLED", "true").lower() == "true":
-            from src.architrave.mcp.mcp_registry import get_mcp_registry
-
-            registry = get_mcp_registry()
-            session = registry.get_session("slm")
-            if session and session.enabled:
-                logger.info("Bootstrap: SLM MCP session initialized (enabled=True). Connecting...")
-                for attempt in range(3):
-                    connected = session._ensure_connected()
-                    if connected:
-                        logger.info("Bootstrap: SLM MCP session connected successfully.")
-                        try:
-                            slm = get_slm_client()
-                            _proj = str(__import__("pathlib").Path(__file__).resolve().parents[2])
-                            slm.session_init(project_path=_proj)
-                            logger.info("Bootstrap: SLM MCP session_init completed.")
-                        except Exception as e:
-                            logger.warning(f"Bootstrap: SLM session_init failed ({e})")
-                        break
-                    logger.warning(f"Bootstrap: SLM MCP connection attempt {attempt + 1}/3 failed.")
-                    time_module.sleep(2.0)
-                else:
-                    logger.warning(
-                        "Bootstrap: SLM MCP session failed to connect after 3 attempts. "
-                        "MCP tools (fetch, playwright, github, kg-mem, sequential-thinking) will be unavailable "
-                        "until the first task triggers retry."
-                    )
-            else:
-                logger.info(
-                    "Bootstrap: SLM MCP session disabled (SLM_ENABLED=false or config disabled)."
-                )
-        else:
+        if os.getenv("SLM_ENABLED", "true").lower() != "true":
             logger.info("Bootstrap: SLM disabled via SLM_ENABLED env var.")
+            return
+
+        from src.architrave.mcp import get_slm_client
+
+        slm = get_slm_client()
+        if not slm.health():
+            logger.warning(
+                "Bootstrap: SLM is enabled but the daemon does not answer on port 8765. "
+                "The system continues with the LanceDB + Ollama fallback."
+            )
+            return
+
+        project_path = str(Path(__file__).resolve().parents[2])
+        slm.session_init(project_path=project_path)
+        logger.info("Bootstrap: SLM HTTP session initialised.")
     except Exception as e:
-        logger.warning(f"Bootstrap: SLM MCP initialization skipped ({e})")
+        logger.warning(f"Bootstrap: SLM initialisation skipped ({e})")

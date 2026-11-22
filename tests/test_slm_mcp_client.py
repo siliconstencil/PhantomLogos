@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from cognition.mnemosyne.semantic_store import SemanticStore
-from src.architrave.mcp import SLMClient, get_slm_client
+from src.architrave.mcp import SLMClient, SLMConfig, get_slm_client
 from src.atropos.matryoshka_service import MatryoshkaService
 
 
@@ -12,6 +12,11 @@ def test_slm_config_and_singleton():
     assert client.config.http_port == 8765
     assert client.config.http_op_timeout > 0
     assert get_slm_client() is client
+
+
+def test_slm_config_reads_the_port_from_the_environment(monkeypatch):
+    monkeypatch.setenv("SLM_HTTP_PORT", "9911")
+    assert SLMConfig.from_env().http_port == 9911
 
 
 def test_slm_active_flag_decoupled(monkeypatch):

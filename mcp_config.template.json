@@ -1,22 +1,8 @@
 {
   "mcpServers": {
-    "slm": {
-      "command": "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\slm.exe",
-      "args": [
-        "mcp"
-      ],
-      "env": {
-        "PYTHONPATH": "${PHANTOM_ROOT}",
-        "SLM_DISABLE_WARMUP_SIDE_EFFECTS": "1"
-      },
-      "timeout": 30,
-      "enabled": false
-    },
     "sequential-thinking": {
-      "command": "cmd",
+      "command": "npx",
       "args": [
-        "/c",
-        "npx",
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ],
@@ -25,7 +11,7 @@
       "enabled": true
     },
     "fetch": {
-      "command": "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\python.exe",
+      "command": "${PHANTOM_ROOT}/.venv/bin/python",
       "args": [
         "-m",
         "mcp_server_fetch"
@@ -35,34 +21,27 @@
       "enabled": true
     },
     "kg-mem": {
-      "command": "cmd",
+      "command": "npx",
       "args": [
-        "/c",
-        "npx",
         "-y",
         "@modelcontextprotocol/server-memory"
       ],
       "env": {
-        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}\\mcp-servers\\kg-mem\\memory.json"
+        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}/mcp-servers/kg-mem/memory.json"
       },
       "timeout": 30,
       "enabled": true
     },
     "github": {
-      "command": "cmd",
-      "args": [
-        "/c",
-        "${PHANTOM_ROOT}\\scripts\\run_github_mcp.bat"
-      ],
+      "command": "${PHANTOM_ROOT}/scripts/run_github_mcp.sh",
+      "args": [],
       "env": {},
       "timeout": 30,
-      "enabled": true
+      "enabled": false
     },
     "playwright": {
-      "command": "cmd",
+      "command": "npx",
       "args": [
-        "/c",
-        "npx",
         "-y",
         "@executeautomation/playwright-mcp-server"
       ],
@@ -71,17 +50,17 @@
       "enabled": true
     },
     "filesystem": {
-      "command": "cmd",
+      "command": "npx",
       "args": [
-        "/c",
-        "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "${PHANTOM_ROOT}"
       ],
       "env": {
         "PYTHONPATH": "${PHANTOM_ROOT}"
-      }
+      },
+      "timeout": 30,
+      "enabled": true
     }
   }
 }

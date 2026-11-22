@@ -12,6 +12,7 @@ import base64
 import contextlib
 import http.client
 import json
+import os
 import struct
 import threading
 import time
@@ -57,8 +58,20 @@ class SLMHeartbeatCache:
             if not result:
                 self._fail_until = time.time() + 60.0
 
+    def reset(self) -> None:
+        """Forget the cached result so the next health call probes the daemon."""
+        with self._lock:
+            self._last_result = False
+            self._last_check = 0.0
+            self._fail_until = 0.0
+
 
 _heartbeat = SLMHeartbeatCache()
+
+
+def reset_heartbeat() -> None:
+    """Drop the cached health result so the next health call probes the daemon."""
+    _heartbeat.reset()
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +170,12 @@ class SLMConfig:
     http_health_timeout: float = 5.0
     endpoint: str = "http://localhost:8081"  # legacy field kept for test compat
 
+    @classmethod
+    def from_env(cls) -> "SLMConfig":
+        """Build the config from the environment, falling back to the defaults."""
+        port = os.getenv("SLM_HTTP_PORT")
+        return cls(http_port=int(port) if port else cls.http_port)
+
 
 # ---------------------------------------------------------------------------
 # HTTP transport (internal) -- uses http.client to avoid S310 (urllib audit)
@@ -250,7 +269,7 @@ class _SLMHttpTransport:
 
 class SLMClient:
     def __init__(self, config: SLMConfig | None = None) -> None:
-        self.config = config or SLMConfig()
+        self.config = config or SLMConfig.from_env()
         self._transport = _SLMHttpTransport(
             port=self.config.http_port,
             op_timeout=self.config.http_op_timeout,

@@ -23,14 +23,14 @@ if __name__ == "__main__":
 
 
 def test_mcp_session_init():
-    session = MCPSession(name="test_srv", command="slm", args=["mcp"], enabled=False)
+    session = MCPSession(name="test_srv", command="server-binary", args=[], enabled=False)
     assert session.name == "test_srv"
     assert not session.enabled
     assert not session.healthy
 
 
 def test_mcp_session_disabled():
-    session = MCPSession(name="test_srv", command="slm", args=["mcp"], enabled=False)
+    session = MCPSession(name="test_srv", command="server-binary", args=[], enabled=False)
     with pytest.raises(RuntimeError, match="disabled"):
         session.call_tool_sync("test_tool", {})
 
