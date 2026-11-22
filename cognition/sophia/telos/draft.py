@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 
 import yaml
 
@@ -193,7 +194,7 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
             except Exception as ve:
                 logger.warning(f"Sophia: VRAM monitor check bypassed ({ve})")
 
-            sys_instruction += '\n\nYou MUST return a single JSON object matching this schema:\n{\n  "thought": "your internal reasoning process",\n  "technical_claims": [],\n  "tool_calls": [],\n  "final_response": "your response content"\n}'
+            sys_instruction += '\n\nYou MUST return a single JSON object matching this schema:\n{\n  "final_response": "your response content",\n  "thought": "brief internal reasoning (max 80 words)",\n  "technical_claims": [],\n  "tool_calls": []\n}'
 
             if fallback_model:
                 logger.warning(f"Sophia: Fallback model active: {fallback_model}")
@@ -318,9 +319,11 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
             return output, []
 
         parsed = None
+        parse_error: Exception | None = None
         try:
             parsed = SophiaOutput.model_validate_json(clean_text)
-        except Exception:
+        except Exception as exc:
+            parse_error = exc
             try:
                 brace_depth = 0
                 json_start = -1
@@ -335,11 +338,26 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
                             json_str = clean_text[json_start : i + 1]
                             parsed = SophiaOutput.model_validate_json(json_str)
                             break
-            except Exception:
-                pass
+            except Exception as exc2:
+                parse_error = exc2
 
         if parsed is None:
-            logger.error("Sophia: Model failed to provide structured JSON. REJECTING.")
+            match = re.search(
+                r'"final_response"\s*:\s*"((?:[^"\\]|\\.)*)"', clean_text, re.DOTALL
+            )
+            if match:
+                try:
+                    recovered = json.loads(f'"{match.group(1)}"')
+                except json.JSONDecodeError:
+                    recovered = match.group(1)
+                if recovered.strip():
+                    logger.warning("Sophia: Recovered final_response from truncated JSON.")
+                    return recovered, []
+            logger.error(
+                "Sophia: Model failed to provide structured JSON "
+                f"({type(parse_error).__name__}: {parse_error}). "
+                f"len={len(clean_text)} tail={clean_text[-300:]!r}"
+            )
             return "", []
 
         try:
@@ -400,7 +418,7 @@ async def run_draft(state: ReasoningState, thinking: bool = True) -> str | tuple
                     logger.warning(f"Sophia: Goal completion trigger failed ({ge})")
 
         _consecutive_draft_timeouts = 0
-        return output, tool_calls
+        return (parsed.final_response or output), tool_calls
     except TimeoutError:
         _consecutive_draft_timeouts += 1
         logger.error(
