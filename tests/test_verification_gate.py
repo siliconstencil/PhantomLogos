@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -61,16 +62,45 @@ def test_output_guard_no_exempt():
 
 
 def test_reranker_warning():
-    """Test 5: reranker should return integrity_warning if model is missing."""
-    r = JinaReranker(model_path="/non/existent/path.gguf")
-    result = r.rerank("query", ["doc1", "doc2"])
+    """The reranker reports the integrity warning of the path it actually used."""
+    r = JinaReranker()
+
+    # Primary path (embeddings) fails -> the Jina model path takes over.
+    with (
+        patch.object(
+            r, "_rerank_embeddings", new=AsyncMock(side_effect=RuntimeError("no embedding model"))
+        ),
+        patch.object(
+            r,
+            "_rerank_jina",
+            new=AsyncMock(
+                return_value={
+                    "results": [{"index": 0, "score": 0.5, "text": "doc1"}],
+                    "integrity_warning": "Jina precision mode active",
+                }
+            ),
+        ),
+    ):
+        result = asyncio.run(r._execute_pipeline("query", ["doc1"], 1))
+
     assert "integrity_warning" in result
-    assert result["integrity_warning"] is not None
+    assert result["integrity_warning"] == "Jina precision mode active"
+    assert result["results"][0]["text"] == "doc1"
+
+    # Both paths fail -> the reranker refuses to return a silent empty result.
+    with (
+        patch.object(
+            r, "_rerank_embeddings", new=AsyncMock(side_effect=RuntimeError("no embedding model"))
+        ),
+        patch.object(r, "_rerank_jina", new=AsyncMock(side_effect=RuntimeError("no jina model"))),
+    ):
+        with pytest.raises(RuntimeError, match="All ranking methods failed"):
+            asyncio.run(r._execute_pipeline("query", ["doc1"], 1))
 
 
 @pytest.mark.asyncio
 async def test_verify_retry_limit():
-    """Test 6: force_pass in case of 3 consecutive retries."""
+    """Three consecutive verification retries break the loop instead of re-drafting."""
     state = {
         "verification_retry": 3,
         "iteration": 1,
@@ -79,7 +109,7 @@ async def test_verify_retry_limit():
         "critique": {"is_valid": False},
     }
     result = should_continue(state)
-    assert result == "refine"
+    assert result == "deadlock_resolver"
 
 
 if __name__ == "__main__":
