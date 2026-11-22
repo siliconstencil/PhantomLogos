@@ -9,7 +9,9 @@ from cognition.mnemosyne.temporal_store import TemporalStore
 
 @pytest.fixture
 def store():
-    db_path = "data/test_temporal.db"
+    from src.utils.project_path import get_data_dir
+
+    db_path = str(get_data_dir() / "test_temporal.db")
     if os.path.exists(db_path):
         os.remove(db_path)
     store = TemporalStore(db_path=db_path)
@@ -77,3 +79,15 @@ def test_migration_integrity(store):
     assert "valid_until" in columns
     assert "superseded_by" in columns
     conn.close()
+
+
+def test_optimize_does_not_delete_directories(monkeypatch):
+    """optimize() must not remove the semantic store directory."""
+    import shutil
+
+    removed: list = []
+    monkeypatch.setattr(shutil, "rmtree", lambda path, *args, **kwargs: removed.append(path))
+
+    TemporalStore().optimize()
+
+    assert not removed, f"TemporalStore.optimize() deleted directories: {removed}"

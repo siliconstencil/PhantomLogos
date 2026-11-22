@@ -349,22 +349,13 @@ class TemporalStore:
             conn.close()
 
     def optimize(self) -> None:
-        """SQLite VACUUM equivalent. Drops deprecated LanceDB data if present."""
+        """SQLite VACUUM equivalent."""
         try:
             conn = sqlite3.connect(self._db_path, timeout=30)
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA auto_vacuum=INCREMENTAL")
             conn.execute("VACUUM")
             conn.close()
-
-            # Cleanup legacy LanceDB directory if it exists
-            base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            lancedb_path = os.path.join(base, "data", "lancedb")
-            if os.path.isdir(lancedb_path):
-                import shutil
-
-                shutil.rmtree(lancedb_path, ignore_errors=True)
-                logger.info(f"TemporalStore: Removed legacy LanceDB directory at {lancedb_path}")
 
             logger.info(f"TemporalStore (Axis {self.AXIS_ID}): SQLite optimized.")
         except Exception as e:
