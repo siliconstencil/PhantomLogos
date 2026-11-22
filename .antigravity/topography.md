@@ -515,7 +515,7 @@ D:\HANK/
 |   |   |   |-- mcp_registry.py           # MCP session lifecycle manager
 |   |   |   |-- mcp_models.py             # Pydantic config models (MCPServerConfig, MCPRuntimeConfig)
 |   |   |   |-- mcp_tool_bridge.py        # MCP tool discovery + ToolBridge registration
-|   |   |   |-- mcp_config.json           # Default MCP configuration (slm.exe -> mcp)
+|   |   |   |-- mcp_config.json           # External MCP servers (generated from the template)
 |   |-- atropos/                         # Context engineering (L2)
 |   |   |-- context_pruner.py            # Token-aware context pruning
 |   |   |-- matryoshka_service.py        # Matryoshka embedding + slice/normalize

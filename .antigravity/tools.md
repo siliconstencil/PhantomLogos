@@ -214,7 +214,9 @@ These rules are critical for correct model behavior. Violations cause silent deg
 
 ## 8. SLM Tool Bridge
 
-SuperLocalMemory (SLM) is the optional full-memory mode. It is an HTTP daemon on port 8765 (own venv `.venv-slm`), not an MCP stdio server. The ToolBridge in src/clotho/bridge/base.py exposes the mcp_slm_ prefix through the MCP client bridge, which forwards to the daemon. Dual-path fallback: SLM unhealthy -> LanceDB+Ollama+Jina. The tool list below reflects the SuperLocalMemory 4.x surface; the exact set depends on the installed daemon version.
+SuperLocalMemory (SLM) is the optional full-memory mode. It is an HTTP daemon on port 8765 (own venv `.venv-slm`), not an MCP stdio server: the MCP registry never creates an `slm` session. The runtime reaches it through `SLMClient` (src/architrave/mcp/slm_client.py) on /remember, /recall, /observe and /health. Dual-path fallback: SLM unhealthy or disabled -> LanceDB+Ollama+Jina.
+
+The `mcp_slm_` names below are the historical MCP tool surface of SuperLocalMemory 4.x. They are still accepted as tool names by the RBAC allow-list in src/clotho/ergon/synergeia.py, but the runtime no longer spawns a server that provides them; the HTTP daemon exposes the memory operations directly.
 
 ### 8.1 Memory CRUD
 - mcp_slm_remember - Store with semantic indexing

@@ -52,19 +52,9 @@
     "filesearch": true
   },
   "mcp": {
-    "slm": {
-      "type": "local",
-      "command": [
-        "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\slm.exe",
-        "mcp"
-      ],
-      "enabled": true
-    },
     "sequential-thinking": {
       "type": "local",
       "command": [
-        "cmd",
-        "/c",
         "npx",
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
@@ -74,7 +64,7 @@
     "fetch": {
       "type": "local",
       "command": [
-        "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\python.exe",
+        "${PHANTOM_ROOT}/.venv/bin/python",
         "-m",
         "mcp_server_fetch"
       ],
@@ -83,50 +73,42 @@
     "kg-mem": {
       "type": "local",
       "command": [
-        "cmd",
-        "/c",
         "npx",
         "-y",
         "@modelcontextprotocol/server-memory"
       ],
       "env": {
-        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}\\\\mcp-servers\\\\kg-mem\\\\memory.json"
+        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}/mcp-servers/kg-mem/memory.json"
       },
       "enabled": true
     },
     "github": {
       "type": "local",
       "command": [
-        "cmd",
-        "/c",
-        "${PHANTOM_ROOT}\\\\scripts\\\\run_github_mcp.bat"
+        "${PHANTOM_ROOT}/scripts/run_github_mcp.sh"
       ],
       "enabled": true
     },
     "playwright": {
       "type": "local",
       "command": [
-        "cmd",
-        "/c",
         "npx",
         "-y",
         "@executeautomation/playwright-mcp-server"
       ],
-       "enabled": true
-     },
-     "filesystem": {
-       "type": "local",
-       "command": [
-         "cmd",
-         "/c",
-         "npx",
-         "-y",
-         "@modelcontextprotocol/server-filesystem",
-         "${PHANTOM_ROOT}"
-       ],
-       "enabled": true
-     }
-   },
+      "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${PHANTOM_ROOT}"
+      ],
+      "enabled": true
+    }
+  },
   "skills": {
     "paths": [
       "agent/skills"

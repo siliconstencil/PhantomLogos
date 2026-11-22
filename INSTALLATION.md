@@ -58,7 +58,7 @@ python scripts/bootstrap.py --skip-models
 
 ## 4. Environment Variables (.env) Guide
 
-The bootstrap process automatically copies `.env.example` to `.env`. The template lists every variable the code reads; the defaults are used when a variable is absent. For a local install:
+The bootstrap process automatically copies `.env.example` to `.env`. The template lists the variables an operator normally changes; every other variable falls back to the default in the source. For a local install:
 
 ```env
 # Ollama service connection settings

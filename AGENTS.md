@@ -30,8 +30,8 @@ changing anything.
 - Not a general-purpose library. There is no stable public API or package entrypoint.
 - Not Windows-only despite the classifier and `.bat` files: POSIX `.sh` scripts, `bin/`
   paths, and a Linux CI exist.
-- Not a git checkout in this working copy (no `.git`). Do not rely on branches,
-  history, or `git diff`; `CONTRIBUTING.md` describes the upstream workflow.
+- Not a published package. There is no release pipeline; `CONTRIBUTING.md`
+  describes the upstream workflow.
 - Not doc-consistent. Examples: some docs claim Turkish while checked-in docs are
   English; the migration command needs a named section (`alembic -n mnemosyne
   upgrade head`), not a bare `alembic upgrade head`.

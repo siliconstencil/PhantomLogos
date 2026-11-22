@@ -30,7 +30,7 @@ Phantom Logos implements a 3-tier agent hierarchy with declarative YAML definiti
 | **L0** | Hank | Human Authority | N/A | Consent, L0_AUTH_TOKEN governance, final approval |
 | **L1** | Sophia | Strategic Gateway | `qwen3.5-4b-ud` | Planning, 14-axis memory integration, architectural decisions, citation |
 | **L2** | Clotho | Execution Gateway | `qwen3.5-4b-ud` (coding), `ministral-3b-ud` (routine), `deepscaler-1.5b` (rapid) | Task execution, code generation, tool orchestration, skill orchestration via LangGraph |
-| **L3** | Lachesis | Auditor | `phi-4-mini-ud` (logic), `qwen3.5-4b-ud` (code/math) | Formal verification, adversarial auditing, Z3 SAT solving |
+| **L3** | Lachesis | Auditor | `phi-4-mini-ud` | Formal verification, adversarial auditing, Z3 SAT solving |
 
 **Declaration**: Agent YAML files in `agent/` (sophia.yaml, clotho.yaml, lachesis.yaml). Skills defined in `agent/skills/`.
 

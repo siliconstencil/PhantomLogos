@@ -1,23 +1,12 @@
 {
   "mcpServers": {
-    "slm": {
-      "args": [
-        "mcp"
-      ],
-      "command": "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\slm.exe",
-      "env": {
-        "PYTHONPATH": "${PHANTOM_ROOT}",
-        "SLM_DISABLE_WARMUP_SIDE_EFFECTS": "1"
-      }
-    },
     "sequential-thinking": {
       "args": [
-        "/c",
         "npx",
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ],
-      "command": "cmd",
+      "command": "npx",
       "env": {}
     },
     "fetch": {
@@ -25,55 +14,51 @@
         "-m",
         "mcp_server_fetch"
       ],
-      "command": "${PHANTOM_ROOT}\\\\.venv\\\\Scripts\\\\python.exe",
+      "command": "${PHANTOM_ROOT}/.venv/bin/python",
       "env": {
         "PYTHONPATH": "${PHANTOM_ROOT}"
       }
     },
     "kg-mem": {
       "args": [
-        "/c",
         "npx",
         "-y",
         "@modelcontextprotocol/server-memory"
       ],
-      "command": "cmd",
+      "command": "npx",
       "env": {
-        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}\\\\mcp-servers\\\\kg-mem\\\\memory.json",
+        "MEMORY_FILE_PATH": "${PHANTOM_ROOT}/mcp-servers/kg-mem/memory.json",
         "PYTHONPATH": "${PHANTOM_ROOT}"
       }
     },
     "github": {
       "args": [
-        "/c",
-        "${PHANTOM_ROOT}\\\\scripts\\\\run_github_mcp.bat"
+        "${PHANTOM_ROOT}/scripts/run_github_mcp.sh"
       ],
-      "command": "cmd",
+      "command": "bash",
       "env": {
         "PYTHONPATH": "${PHANTOM_ROOT}"
       }
     },
     "playwright": {
       "args": [
-        "/c",
         "npx",
         "-y",
         "@executeautomation/playwright-mcp-server"
       ],
-      "command": "cmd",
+      "command": "npx",
       "env": {
         "PYTHONPATH": "${PHANTOM_ROOT}"
       }
     },
     "filesystem": {
       "args": [
-        "/c",
         "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "${PHANTOM_ROOT}"
       ],
-      "command": "cmd",
+      "command": "npx",
       "env": {
         "PYTHONPATH": "${PHANTOM_ROOT}"
       }
