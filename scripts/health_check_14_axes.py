@@ -144,4 +144,8 @@ if __name__ == "__main__":
     try:
         asyncio.run(check_all_14_axes())
     finally:
+        # os._exit skips the interpreter shutdown, so the buffered report would be
+        # lost whenever stdout is a pipe or a file.
+        sys.stdout.flush()
+        sys.stderr.flush()
         os._exit(0)
