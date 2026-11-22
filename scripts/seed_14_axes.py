@@ -68,7 +68,9 @@ def seed_all():
     print("  Axis 8 (Meta): seeded")
 
     # Axis 9: Tone
-    ToneStore().record_tone(session_id=session_id, message="Seed baseline tone")
+    ToneStore().record_tone(
+        session_id=session_id, message="Hey, thanks for the quick help"
+    )
     print("  Axis 9 (Tone): seeded")
 
     # Axis 10: Rational
