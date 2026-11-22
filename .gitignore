@@ -25,6 +25,7 @@ data/
 # System Artifacts
 logs/
 scratch/
+tmp/
 bin/
 temp_*
 _tmp_*

@@ -2,10 +2,19 @@ import os
 import unittest
 from unittest.mock import patch
 
+import pytest
+
 # Set environment variable
 os.environ["SLM_ENABLED"] = "true"
 
+# The SuperLocalMemory package is optional; without it there is nothing to test here.
+pytest.importorskip(
+    "superlocalmemory", reason="SuperLocalMemory is not installed in this environment"
+)
+
 from superlocalmemory.mcp.server import server
+
+pytestmark = pytest.mark.integration
 
 
 async def handle_list_tools():
