@@ -112,5 +112,34 @@ async def test_verify_retry_limit():
     assert result == "deadlock_resolver"
 
 
+def test_red_zone_respects_the_iteration_guardrail():
+    """A red zone must not loop forever: past the iteration cap it routes to reflection.
+
+    The red zone check used to run before the iteration guardrail, so every
+    failing draft went back to draft through the deadlock resolver and the
+    graph never terminated.
+    """
+    state = {
+        "verification_retry": 0,
+        "iteration": 2,
+        "ru_flow_tier": 2,
+        "draft": "some draft",
+        "critique": {"is_valid": False, "zone": "red", "overall_score": 0.0},
+    }
+    assert should_continue(state) == "reflection"
+
+
+def test_red_zone_below_the_guardrail_still_routes_to_the_deadlock_resolver():
+    """Inside the iteration budget the red zone keeps its deadlock resolver route."""
+    state = {
+        "verification_retry": 0,
+        "iteration": 0,
+        "ru_flow_tier": 2,
+        "draft": "some draft",
+        "critique": {"is_valid": False, "zone": "red", "overall_score": 0.0},
+    }
+    assert should_continue(state) == "deadlock_resolver"
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

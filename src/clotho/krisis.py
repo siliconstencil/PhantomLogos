@@ -249,6 +249,14 @@ def should_continue(state: Any):
     iteration = state.get("iteration", 0)
     max_iter = 2  # SOTA Guardrail: Hard limit for reasoning loops
 
+    # SOTA Guardrail: The iteration cap is checked before the zone, otherwise a
+    # red zone keeps routing to the deadlock resolver and the graph never ends.
+    if iteration >= max_iter:
+        logger.warning(
+            f"krisis: Max iterations reached ({iteration}/{max_iter}). Routing to reflection."
+        )
+        return "reflection"
+
     # Phase 11.19.2: Red Zone (Score < 0.4) triggers immediate deadlock resolver
     if zone == "red":
         logger.error(
@@ -259,12 +267,6 @@ def should_continue(state: Any):
     if is_valid:
         logger.info(
             f"krisis: Critique PASS (Zone: {zone}, iter={iteration}). Routing to reflection before refine."
-        )
-        return "reflection"
-
-    if iteration >= max_iter:
-        logger.warning(
-            f"krisis: Max iterations reached ({iteration}/{max_iter}). Routing to reflection."
         )
         return "reflection"
 
