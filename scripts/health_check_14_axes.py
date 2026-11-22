@@ -45,6 +45,7 @@ from cognition.sophia.gnosis.axis_12_cache import _build_axis_12
 from cognition.sophia.gnosis.axis_13_patterns import _build_axis_13
 from cognition.sophia.gnosis.axis_14_visual import _build_axis_14
 from src.utils.project_path import to_absolute_path
+from src.utils.slm_status import check_slm
 
 
 def _get_latest_session_id() -> str:
@@ -130,6 +131,9 @@ async def check_all_14_axes() -> None:
     print(f"  BROKEN : {broken}")
     print(f"  ERROR  : {err}")
     print(f"  Total  : {ok + warn + broken + err}/14")
+    print("\n=== Optional Services ===")
+    slm_status, slm_detail = check_slm()
+    print(f"    SLM (SuperLocalMemory): {slm_status:6} ({slm_detail})")
     if broken == 0 and err == 0:
         if warn == 0:
             print("\nSovereign Integrity: VERIFIED (0.98+)")

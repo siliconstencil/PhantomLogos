@@ -16,6 +16,8 @@ REQUIRED_MODELS = [
     "phi-4-mini-ud:latest",
     "nomic-embed-text-v2-moe-q8:latest",
 ]
+SLM_VENV = ".venv-slm"
+SLM_PACKAGE = "superlocalmemory>=4.2"
 
 
 def log(msg: str, level: str = "INFO") -> None:
@@ -164,7 +166,35 @@ def verify_system_integrity() -> None:
         log("System health check reported anomalies, please review logs.", "WARNING")
 
 
-def main() -> None:
+def install_slm_venv() -> None:
+    """Install the optional SuperLocalMemory daemon into its own venv.
+
+    SuperLocalMemory pins a newer torch and transformers than the project
+    venv, so it must not be installed into .venv. The daemon is started
+    separately with `.venv-slm/bin/slm serve start`.
+    """
+    python_name = "python.exe" if os.name == "nt" else "python"
+    slm_python = os.path.join(SLM_VENV, "Scripts", python_name) if os.name == "nt" else os.path.join(SLM_VENV, "bin", "python")
+
+    if not os.path.exists(slm_python):
+        log(f"Creating {SLM_VENV} for SuperLocalMemory ...")
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "venv",
+                SLM_VENV,
+            ],
+            check=False,
+        )
+
+    log(f"Installing {SLM_PACKAGE} into {SLM_VENV} ...")
+    subprocess.run([slm_python, "-m", "pip", "install", SLM_PACKAGE], check=False)
+    log("Start the daemon with: .venv-slm/bin/slm serve start")
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the bootstrap command line."""
     parser = argparse.ArgumentParser(
         description="Phantom Logos Single-Entry Bootstrap Installer Script (v1.2.1)"
     )
@@ -175,9 +205,17 @@ def main() -> None:
     parser.add_argument(
         "--check-only", action="store_true", help="Only verify existing environment and integrity"
     )
+    parser.add_argument(
+        "--with-slm",
+        action="store_true",
+        help="Also install the optional SuperLocalMemory daemon into its own venv",
+    )
     parser.add_argument("--verbose", action="store_true", help="Enable detailed installer logging")
+    return parser.parse_args(argv)
 
-    args = parser.parse_args()
+
+def main() -> None:
+    args = parse_args()
 
     log("--- Starting Phantom Logos Bootstrap Installer (v1.2.1) ---")
 
@@ -210,6 +248,10 @@ def main() -> None:
     log("Installing dependencies in editable mode...")
     subprocess.run([pip_cmd, "install", "-e", ".[dev]"], check=True)
     log("Dependencies successfully installed.")
+
+    # 2b. Optional SuperLocalMemory daemon, in its own venv
+    if args.with_slm:
+        install_slm_venv()
 
     # 3. Model Pulls
     check_ollama(skip_models=args.skip_models)
