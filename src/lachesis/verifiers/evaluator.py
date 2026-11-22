@@ -32,7 +32,8 @@ FLAW_PATTERNS = [
 MATH_EXPR_PATTERN = re.compile(r"(\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+)")
 INEQUALITY_PATTERN = re.compile(r"([a-zA-Z]\s*[><]=?\s*\d+)")
 CODE_MARKER_PATTERN = re.compile(
-    r"(?m)^\s*(def|class|import|from|return|if|for|while|async|with|try)\b"
+    r"(?m)^\s*(def|class|import|from|return|if|elif|else|for|while|async|with|try|except|raise|print)\b"
+    r"|\b[A-Za-z_]\w*\s*=\s*[^\s=]"
 )
 
 
