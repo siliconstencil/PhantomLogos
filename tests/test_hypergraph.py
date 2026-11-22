@@ -1,5 +1,6 @@
 import sqlite3
 import time
+import uuid
 
 import pytest
 
@@ -88,6 +89,46 @@ def test_hypergraph_store_persistence():
     queried_edges = store.query_by_entity(axis_id=5, entity_key="sweeper.py")
     assert len(queried_edges) > 0
     assert any(e.edge_id == "test_edge_1" for e in queried_edges)
+
+
+def test_hypergraph_add_edge_batch_flush_no_deadlock():
+    store = HypergraphStore()
+    prefix = f"test_edge_batch_{uuid.uuid4().hex[:8]}_"
+
+    session = store.Session()
+    try:
+        session.query(SqlHyperedge).filter(SqlHyperedge.edge_id.like(f"{prefix}%")).delete(
+            synchronize_session=False
+        )
+        session.commit()
+    finally:
+        session.close()
+
+    node = HypernodeRef(axis_id=5, entity_type="module", entity_key="batch.py", label="Batch")
+    for index in range(5):
+        store.add_edge(
+            Hyperedge(
+                nodes=[node],
+                relation_type="batch",
+                edge_id=f"{prefix}{index}",
+            )
+        )
+    store.flush()
+
+    session = store.Session()
+    try:
+        count = (
+            session.query(SqlHyperedge)
+            .filter(SqlHyperedge.edge_id.like(f"{prefix}%"))
+            .count()
+        )
+        assert count == 5
+    finally:
+        session.query(SqlHyperedge).filter(SqlHyperedge.edge_id.like(f"{prefix}%")).delete(
+            synchronize_session=False
+        )
+        session.commit()
+        session.close()
 
 
 def test_hypergraph_multi_hop_query():

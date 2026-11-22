@@ -75,7 +75,7 @@ class HypergraphStore:
 
         self._graph = nx.MultiDiGraph()
         self._write_queue: list[Hyperedge] = []
-        self._queue_lock = threading.Lock()
+        self._queue_lock = threading.RLock()
 
         # Load from SQLite database on startup
         self._load_from_db()
