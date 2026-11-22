@@ -10,12 +10,13 @@ from src.atropos.matryoshka_service import MatryoshkaService
 @pytest.mark.asyncio
 @patch("src.architrave.mcp.get_slm_client")
 @patch("src.atropos.matryoshka_service.get_ollama_client")
-async def test_zero_vector_fallback_matryoshka(mock_ollama, mock_get_client):
+async def test_zero_vector_fallback_matryoshka(mock_ollama, mock_get_client, monkeypatch):
     """
     K1.4 Zero-Vector Fallback Test:
     Verifies that when SLMClient.aembed() returns an empty list (zero-vector equivalent),
     MatryoshkaService successfully falls back to local Ollama.
     """
+    monkeypatch.setenv("SLM_ENABLED", "true")
     # 1. Mock SLM client to return an empty list for aembed (async)
     mock_slm = MagicMock()
     mock_slm.health.return_value = True
