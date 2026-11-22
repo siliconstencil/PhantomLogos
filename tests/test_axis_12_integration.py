@@ -1,17 +1,16 @@
-import os
 import sqlite3
 
 import pytest
 
 from cognition.sophia.gnosis.axis_12_cache import _build_axis_12
 from src.architrave.nomos import log_cache_metrics as _log_cache_metrics
+from src.utils.project_path import to_absolute_path
 
 
 @pytest.fixture
 def clean_axis_12_db():
     """Ensure a clean database for testing cache metrics."""
-    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    db_path = os.path.join(base, "data", "mnemosyne.db")
+    db_path = to_absolute_path("data/mnemosyne.db")
 
     # Backup existing database or modify in-place
     conn = sqlite3.connect(db_path)

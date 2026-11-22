@@ -2,6 +2,7 @@ import os
 import sqlite3
 
 from src.architrave.context_cache import ContextCacheStore
+from src.utils.project_path import to_absolute_path
 
 
 def _build_axis_12(session_id: str = "default") -> str:
@@ -12,10 +13,7 @@ def _build_axis_12(session_id: str = "default") -> str:
         if active_caches > 0:
             lines.append(f"Active context caches: {active_caches}")
 
-        base = os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        )
-        db_path = os.path.join(base, "data", "mnemosyne.db")
+        db_path = to_absolute_path("data/mnemosyne.db")
         if os.path.exists(db_path):
             conn = sqlite3.connect(db_path)
             try:

@@ -23,3 +23,11 @@ def test_non_data_paths_still_resolve_against_the_project_root():
     assert Path(to_absolute_path("dashboard/index.html")) == (
         get_project_root() / "dashboard" / "index.html"
     )
+
+
+def test_the_cache_stores_resolve_inside_the_redirected_data_dir():
+    """The cache stores must not hardcode the real data directory."""
+    from src.architrave.context_cache import ContextCacheStore
+
+    store = ContextCacheStore(start_sweep=False)
+    assert Path(store.db_path).parent == Path(get_data_dir())

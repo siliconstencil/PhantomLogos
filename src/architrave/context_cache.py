@@ -4,13 +4,12 @@ Manages Sovereign Gateway explicit caching for 1-hour TTL context anchors.
 """
 
 import hashlib
-import os
 import sqlite3
 import threading
 import time
 
 from src.utils.logging_config import setup_logger
-from src.utils.project_path import get_project_root
+from src.utils.project_path import get_project_root, to_absolute_path
 
 logger = setup_logger(__name__)
 
@@ -26,8 +25,7 @@ class ContextCacheStore:
     def __init__(
         self, db_path: str | None = None, start_sweep: bool = True, sweep_interval: float = 60.0
     ) -> None:
-        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        self.db_path = db_path or os.path.join(base, "data", "mnemosyne.db")
+        self.db_path = db_path or to_absolute_path("data/mnemosyne.db")
         self._lock = threading.Lock()
         self._ensure_table()
 

@@ -11,6 +11,7 @@ import numpy as np
 from google.genai import types
 
 from ..utils.logging_config import setup_logger
+from ..utils.project_path import to_absolute_path
 from ..utils.run_async import run_async
 from .kratos import build_safety_settings, retry
 
@@ -31,8 +32,7 @@ def log_cache_metrics(session_id: str, prompt: str, usage: Any, latency_ms: floa
         else:
             hit_status = "partial"
 
-        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        db_path = os.path.join(base, "data", "mnemosyne.db")
+        db_path = to_absolute_path("data/mnemosyne.db")
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
         conn = sqlite3.connect(db_path, timeout=10.0)
