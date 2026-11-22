@@ -1,7 +1,7 @@
 import os
 
 from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
-from src.architrave.mcp import get_slm_client
+from src.architrave.mcp import get_slm_client, is_slm_enabled
 
 from ..hephaestus import get_episodic
 
@@ -29,7 +29,7 @@ async def _build_axis_1(session_id: str) -> str:
         )
 
     # SLM Recall integration (Axis 1)
-    if os.getenv("SLM_ENABLED", "true").lower() == "true":
+    if is_slm_enabled():
         try:
             slm = get_slm_client()
             if slm.health():

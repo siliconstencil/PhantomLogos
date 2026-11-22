@@ -5,8 +5,6 @@ absent the system falls back to LanceDB + Ollama, so an absent daemon is
 reported as INFO and never as a broken axis.
 """
 
-import os
-
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -18,11 +16,12 @@ def check_slm() -> tuple[str, str]:
     Returns a (status, detail) pair where status is one of OK, INFO, BROKEN.
     A missing or disabled daemon is INFO: the core keeps working without it.
     """
-    if os.getenv("SLM_ENABLED", "false").lower() != "true":
-        return "INFO", "SLM disabled (LanceDB + Ollama fallback in use)"
-
     try:
+        from src.architrave.mcp import is_slm_enabled
         from src.architrave.mcp.slm_client import SLMClient, SLMConfig, reset_heartbeat
+
+        if not is_slm_enabled():
+            return "INFO", "SLM disabled (LanceDB + Ollama fallback in use)"
 
         config = SLMConfig.from_env()
         reset_heartbeat()

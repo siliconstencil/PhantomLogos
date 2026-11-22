@@ -35,13 +35,11 @@ class MatryoshkaService:
         logger.info("MatryoshkaService: Initialized (Axis 4).")
 
     def _is_slm_active(self) -> bool:
-        import os
+        from src.architrave.mcp import get_slm_client, is_slm_enabled
 
-        if os.getenv("SLM_ENABLED", "true").lower() != "true":
+        if not is_slm_enabled():
             return False
         try:
-            from src.architrave.mcp import get_slm_client
-
             return get_slm_client().health()
         except Exception:
             return False

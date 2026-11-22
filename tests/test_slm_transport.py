@@ -13,6 +13,7 @@ from typing import Any
 
 import pytest
 
+from src.architrave.mcp import is_slm_enabled
 from src.architrave.mcp.mcp_registry import MCPRegistry
 from src.clotho.hermes_mcp import discover_slm_port, start_slm, start_slm_server
 from src.utils.slm_status import check_slm
@@ -98,9 +99,15 @@ def test_start_slm_server_launches_the_daemon_as_a_process(monkeypatch, tmp_path
             launched.append(list(cmd))
             self.kwargs = kwargs
 
-    monkeypatch.setattr("src.clotho.hermes_mcp.discover_slm_port", lambda *a, **k: "none")
+    states = iter(["none", "ours"])
+
+    def _discover(*args: Any, **kwargs: Any) -> str:
+        return next(states, "ours")
+
+    monkeypatch.setattr("src.clotho.hermes_mcp.discover_slm_port", _discover)
     monkeypatch.setenv("SLM_BIN", str(tmp_path / "slm"))
     monkeypatch.setattr("subprocess.Popen", _FakePopen)
+    monkeypatch.setattr("src.clotho.hermes_mcp.time.sleep", lambda *a: None)
 
     start_slm_server()
 
@@ -116,6 +123,24 @@ def test_start_slm_server_without_slm_bin_does_nothing(monkeypatch):
     )
 
     start_slm_server()
+
+
+def test_start_slm_server_waits_for_the_daemon_to_answer(monkeypatch, tmp_path):
+    """The daemon is polled after the launch, otherwise the health probe races it."""
+    calls = {"n": 0}
+
+    def _discover(*args: Any, **kwargs: Any) -> str:
+        calls["n"] += 1
+        return "none" if calls["n"] < 3 else "ours"
+
+    monkeypatch.setattr("src.clotho.hermes_mcp.discover_slm_port", _discover)
+    monkeypatch.setenv("SLM_BIN", str(tmp_path / "slm"))
+    monkeypatch.setattr("subprocess.Popen", lambda *a, **k: None)
+    monkeypatch.setattr("src.clotho.hermes_mcp.time.sleep", lambda *a: None)
+
+    start_slm_server()
+
+    assert calls["n"] >= 3, "the daemon port was not polled after the launch"
 
 
 def test_start_slm_does_not_open_an_mcp_session(monkeypatch):
@@ -134,6 +159,14 @@ def test_check_slm_reports_disabled_as_info(monkeypatch):
     status, detail = check_slm()
     assert status == "INFO"
     assert "disabled" in detail.lower()
+
+
+def test_slm_is_disabled_by_default(monkeypatch):
+    """SLM is optional, so it is off unless the operator switches it on."""
+    monkeypatch.delenv("SLM_ENABLED", raising=False)
+    assert is_slm_enabled() is False
+    monkeypatch.setenv("SLM_ENABLED", "true")
+    assert is_slm_enabled() is True
 
 
 def test_check_slm_reports_a_healthy_daemon(monkeypatch, fake_slm_daemon):

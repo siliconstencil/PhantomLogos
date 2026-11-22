@@ -17,14 +17,15 @@ async def _check_embedding_health(bridge: Any) -> bool:
     In Emergency Mode (unhealthy), triggers every call until recovery.
     Uses async slm.ahealth() to prevent blocking the event loop.
     """
-    import os
 
     global _embedding_healthy, _health_check_counter
     _health_check_counter += 1
 
     # Check every 30 calls or every call if already unhealthy (Emergency Mode)
     if not _embedding_healthy or _health_check_counter % 30 == 0:
-        if os.getenv("SLM_ENABLED", "true").lower() == "true":
+        from src.architrave.mcp import is_slm_enabled
+
+        if is_slm_enabled():
             try:
                 from src.architrave.mcp import get_slm_client
 
@@ -163,13 +164,11 @@ def _rerank_results(query: str, candidates: list[dict]) -> dict[str, Any]:
     if not candidates:
         return {"results": [], "integrity_warning": None}
 
-    import os
-
-    from src.architrave.mcp import get_slm_client
+    from src.architrave.mcp import get_slm_client, is_slm_enabled
 
     slm = get_slm_client()
 
-    use_slm = os.getenv("SLM_ENABLED", "true").lower() == "true" and slm.health()
+    use_slm = is_slm_enabled() and slm.health()
     if use_slm:
         try:
             texts = [doc.get("text", "") for doc in candidates]

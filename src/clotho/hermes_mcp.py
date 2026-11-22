@@ -10,6 +10,7 @@ import json
 import os
 import socket
 import subprocess
+import time
 from pathlib import Path
 
 from src.utils.logging_config import setup_logger
@@ -18,6 +19,9 @@ logger = setup_logger(__name__)
 
 SLM_HOST = "127.0.0.1"
 SLM_PORT = 8765
+# The daemon needs a moment to bind the port after the launch.
+SLM_START_ATTEMPTS = 10
+SLM_START_POLL_SECONDS = 1.0
 
 
 def discover_slm_port(host: str = SLM_HOST, port: int = SLM_PORT) -> str:
@@ -90,15 +94,27 @@ def start_slm_server() -> None:
         )
     logger.info(f"Bootstrap: SLM daemon process launched (logs: {log_file}).")
 
+    # The daemon needs a moment to bind the port. Without this wait the health
+    # probe that follows races the launch and reports a false negative.
+    for _attempt in range(SLM_START_ATTEMPTS):
+        if discover_slm_port() == "ours":
+            logger.info("Bootstrap: SLM daemon is answering on port 8765.")
+            return
+        time.sleep(SLM_START_POLL_SECONDS)
+    logger.warning(
+        "Bootstrap: SLM daemon did not answer on port 8765 within the start window. "
+        "The system continues with the LanceDB + Ollama fallback."
+    )
+
 
 def start_slm() -> None:
     """Initialise the HTTP SLM client when SLM is enabled and the daemon answers."""
     try:
-        if os.getenv("SLM_ENABLED", "true").lower() != "true":
+        from src.architrave.mcp import get_slm_client, is_slm_enabled
+
+        if not is_slm_enabled():
             logger.info("Bootstrap: SLM disabled via SLM_ENABLED env var.")
             return
-
-        from src.architrave.mcp import get_slm_client
 
         slm = get_slm_client()
         if not slm.health():

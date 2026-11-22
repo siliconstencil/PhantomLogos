@@ -168,10 +168,10 @@ async def clotho_handoff(task_description: str, session_id: str | None = None):
         # Phase 1.0.10: Found valid checkpoint. Logging for future resume support.
         logger.info(f"clotho_handoff: Recovered valid checkpoint (Axis 13) for {actual_session_id}")
 
-    from src.architrave.mcp import get_slm_client
+    from src.architrave.mcp import get_slm_client, is_slm_enabled
 
     slm = get_slm_client()
-    slm_active = os.getenv("SLM_ENABLED", "true").lower() == "true" and slm.health()
+    slm_active = is_slm_enabled() and slm.health()
 
     if slm_active:
         try:

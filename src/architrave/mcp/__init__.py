@@ -16,5 +16,8 @@ from .slm_client import (
     get_slm_client as get_slm_client,
 )
 from .slm_client import (
+    is_slm_enabled as is_slm_enabled,
+)
+from .slm_client import (
     reset_heartbeat as reset_heartbeat,
 )

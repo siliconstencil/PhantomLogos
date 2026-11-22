@@ -124,13 +124,11 @@ async def reflection_node(state: dict) -> dict:
                 )
                 if context_hash:
                     # B3: Exposing embedding errors (removed masking try/except)
-                    import os
-
-                    from src.architrave.mcp import get_slm_client
+                    from src.architrave.mcp import get_slm_client, is_slm_enabled
 
                     slm = get_slm_client()
                     resp_embedding = []
-                    if os.getenv("SLM_ENABLED", "true").lower() == "true" and slm.health():
+                    if is_slm_enabled() and slm.health():
                         try:
                             resp_embedding = await slm.aembed(state["task"])
                         except Exception as e:

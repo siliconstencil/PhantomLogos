@@ -23,11 +23,11 @@ class SemanticStore:
     AXIS_ID = 6
 
     def _is_slm_active(self) -> bool:
-        if os.getenv("SLM_ENABLED", "true").lower() != "true":
+        from src.architrave.mcp import get_slm_client, is_slm_enabled
+
+        if not is_slm_enabled():
             return False
         try:
-            from src.architrave.mcp import get_slm_client
-
             return get_slm_client().health()
         except Exception:
             return False

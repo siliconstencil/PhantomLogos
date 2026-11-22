@@ -63,17 +63,16 @@ async def anchor_inject_node(state: Any) -> dict[str, Any]:
                 matched = await asyncio.to_thread(loader.match_for_agent, agent_id)
 
                 # AXIS 2/5: SLM/Jina Reranking for Skills
-                import os
 
                 skill_texts = []
                 for m in matched:
                     ctx_test = await asyncio.to_thread(loader.get_context, m)
                     skill_texts.append(ctx_test or m)
 
-                from src.architrave.mcp import get_slm_client
+                from src.architrave.mcp import get_slm_client, is_slm_enabled
 
                 slm = get_slm_client()
-                use_slm = os.getenv("SLM_ENABLED", "true").lower() == "true" and slm.health()
+                use_slm = is_slm_enabled() and slm.health()
                 reranked = None
                 if use_slm:
                     try:

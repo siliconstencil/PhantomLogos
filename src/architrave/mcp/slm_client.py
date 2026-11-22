@@ -74,6 +74,15 @@ def reset_heartbeat() -> None:
     _heartbeat.reset()
 
 
+def is_slm_enabled() -> bool:
+    """True when the optional SuperLocalMemory mode is switched on.
+
+    SLM is off by default: the system uses LanceDB + Ollama unless the operator
+    sets SLM_ENABLED=true. This is the single place the flag is read.
+    """
+    return os.getenv("SLM_ENABLED", "false").strip().lower() == "true"
+
+
 # ---------------------------------------------------------------------------
 # Serialization helpers -- used by remember() to encode structured metadata
 # ---------------------------------------------------------------------------
@@ -168,7 +177,6 @@ class SLMConfig:
     http_port: int = 8765
     http_op_timeout: float = 30.0
     http_health_timeout: float = 5.0
-    endpoint: str = "http://localhost:8081"  # legacy field kept for test compat
 
     @classmethod
     def from_env(cls) -> "SLMConfig":

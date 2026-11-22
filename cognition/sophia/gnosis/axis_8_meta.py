@@ -3,7 +3,7 @@ from typing import Any
 
 from cognition.mnemosyne.hypergraph_feeder import feed_hypergraph
 from cognition.sophia.hephaestus import get_meta, get_reflection
-from src.architrave.mcp import get_slm_client
+from src.architrave.mcp import get_slm_client, is_slm_enabled
 
 
 async def _build_axis_8_meta(session_id: str = "default") -> str:
@@ -23,7 +23,7 @@ async def _build_axis_8_meta(session_id: str = "default") -> str:
                 lines.append(f"  * {r['insight']}")
 
         # SLM Recall integration (Axis 8)
-        if os.getenv("SLM_ENABLED", "true").lower() == "true":
+        if is_slm_enabled():
             try:
                 slm = get_slm_client()
                 if slm.health():
