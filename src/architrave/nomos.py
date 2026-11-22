@@ -134,12 +134,17 @@ async def _local_fallback(
     local_fallback_timeout: float = 60.0,
 ) -> MockResponse:
     try:
-        from ..utils.ollama_utils import get_ollama_client
+        from ..utils.ollama_utils import GuardedAsyncClient
 
-        client = get_ollama_client()
+        client = GuardedAsyncClient(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
         from .base_models import FALLBACK_MODEL, LOCAL_REASONING_MODEL
 
         fallback_model = model or FALLBACK_MODEL or LOCAL_REASONING_MODEL
+
+        chat_kwargs: dict[str, Any] = {}
+        instruction = system_instruction or ""
+        if "json" in instruction.lower() or "schema" in instruction.lower():
+            chat_kwargs["format"] = "json"
 
         response = await asyncio.wait_for(
             client.chat(
@@ -152,6 +157,7 @@ async def _local_fallback(
                     },
                     {"role": "user", "content": prompt},
                 ],
+                **chat_kwargs,
             ),
             timeout=local_fallback_timeout,
         )

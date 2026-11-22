@@ -43,6 +43,7 @@ class GuardedAsyncClient(ollama.AsyncClient):
             except Exception as e:
                 logger.warning(f"GuardedAsyncClient: Safeguard callback failed ({e})")
 
+        kwargs.setdefault("think", False)
         return await super().chat(model, *args, **kwargs)
 
     async def generate(self, model: str, *args: Any, **kwargs: Any) -> Any:
@@ -63,6 +64,7 @@ class GuardedAsyncClient(ollama.AsyncClient):
             except Exception as e:
                 logger.warning(f"GuardedAsyncClient: Safeguard callback failed ({e})")
 
+        kwargs.setdefault("think", False)
         return await super().generate(model, *args, **kwargs)
 
     async def embeddings(self, model: str, *args: Any, **kwargs: Any) -> Any:
@@ -86,8 +88,7 @@ class GuardedAsyncClient(ollama.AsyncClient):
         return await super().embeddings(model, *args, **kwargs)
 
 
-_client: GuardedAsyncClient | None = None
-_client_loop_id: int | None = None
+_clients: dict[int, GuardedAsyncClient] = {}
 
 
 def _get_current_loop_id() -> int:
@@ -100,15 +101,16 @@ def _get_current_loop_id() -> int:
 
 def get_ollama_client() -> GuardedAsyncClient:
     """
-    Returns a singleton instance of GuardedAsyncClient to prevent socket leaks and protect hardware.
-    Recreates the client if the event loop has changed (prevents 'Event loop is closed' errors).
+    Returns a loop-scoped GuardedAsyncClient.
+
+    The Ollama async client binds its transport to the event loop that first uses it.
+    The runtime has several loops (main, dedicated run_async loop, daemon threads), so a
+    single cached client raises 'Event is bound to a different event loop'. Keeping one
+    client per loop preserves reuse without cross-loop reuse.
     """
-    global _client, _client_loop_id
-    current_loop = _get_current_loop_id()
-    if _client is not None and _client_loop_id is not None and _client_loop_id != current_loop:
-        logger.info("OllamaUtils: Event loop changed, recreating client.")
-        _client = None
-    if _client is None:
-        _client = GuardedAsyncClient(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
-        _client_loop_id = current_loop
-    return _client
+    loop_id = _get_current_loop_id()
+    client = _clients.get(loop_id)
+    if client is None:
+        client = GuardedAsyncClient(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
+        _clients[loop_id] = client
+    return client

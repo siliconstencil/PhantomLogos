@@ -1,4 +1,5 @@
 import json
+import re
 
 import ollama
 
@@ -36,7 +37,35 @@ class TaskRouter:
     def __init__(self, model: str = ROUTER_MODEL):
         self.model = model
 
+    _GREETINGS = {
+        "hello",
+        "hi",
+        "hey",
+        "hello there",
+        "hi there",
+        "hey there",
+        "hello how are you",
+        "hi how are you",
+        "hey how are you",
+        "how are you",
+        "how are you doing",
+        "good morning",
+        "good afternoon",
+        "good evening",
+        "merhaba",
+        "selam",
+        "nasilsin",
+        "naber",
+    }
+
+    def _is_greeting(self, task: str) -> bool:
+        normalized = re.sub(r"[^a-z0-9\s]", "", task.lower()).strip()
+        normalized = re.sub(r"\s+", " ", normalized)
+        return normalized in self._GREETINGS
+
     def classify(self, task: str) -> str:
+        if self._is_greeting(task):
+            return "chat"
         prompt = (
             "You are a task classifier. Respond in JSON format.\n"
             'Format: {"category": "string", "confidence": float}\n'
@@ -48,6 +77,7 @@ class TaskRouter:
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
                 format="json",
+                think=False,
                 options={"temperature": 0.0, "num_predict": 30},
             )
             data = json.loads(resp["message"]["content"])
