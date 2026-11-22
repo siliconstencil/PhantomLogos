@@ -184,14 +184,19 @@ class LocalRuntime:
 
             creationflags = 0x08000000 if sys.platform == "win32" else 0
             if sys.platform == "win32":
-                subprocess.run(
-                    ["taskkill", "/F", "/IM", "llama*", "/T"],  # noqa: S607
-                    capture_output=True,
-                    creationflags=creationflags,
-                )
+                for image in ("llama-cli.exe", "llama-mtmd-cli.exe", "llama-llava-cli.exe"):
+                    subprocess.run(  # noqa: S603
+                        ["taskkill", "/F", "/IM", image, "/T"],  # noqa: S607
+                        capture_output=True,
+                        creationflags=creationflags,
+                    )
             else:
-                subprocess.run(["pkill", "-f", "llama"], capture_output=True)  # noqa: S607
-            logger.info("LocalRuntime: All active llama processes terminated.")
+                # Do not match Ollama's llama-server; it owns its own model lifecycle.
+                subprocess.run(
+                    ["pkill", "-f", "llama-(cli|mtmd-cli|llava-cli)"],  # noqa: S607
+                    capture_output=True,
+                )
+            logger.info("LocalRuntime: Local llama.cpp processes terminated.")
         except Exception as e:
             logger.warning(f"LocalRuntime: Failed to terminate processes ({e})")
 
