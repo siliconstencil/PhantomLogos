@@ -225,13 +225,13 @@ class VRAMSweeper:
         retention_days = gov.get("retention_days", 30)
         row_limit = gov.get("row_limit", 1000)
         exclude = set(gov.get("exclude_tables", []))
-        from src.utils.project_path import get_project_root
+        from src.utils.project_path import get_project_root, to_absolute_path
 
         root = get_project_root()
         opencode_home = os.getenv("OPENCODE_CONFIG_DIR", str(root / ".opencode"))
         databases = [
             (
-                "data/mnemosyne.db",
+                to_absolute_path("data/mnemosyne.db"),
                 [
                     ("temporal_metrics", "timestamp", "float"),
                     ("operational_logs_v2", "timestamp", "text_iso"),
@@ -247,8 +247,11 @@ class VRAMSweeper:
                     ("visual_memories", "timestamp", "text_iso"),
                 ],
             ),
-            ("data/spatial.db", [("spatial_modules", "last_indexed", "text_iso")]),
-            ("data/reliability.db", [("agent_reliability", "updated_at", "text_iso")]),
+            (to_absolute_path("data/spatial.db"), [("spatial_modules", "last_indexed", "text_iso")]),
+            (
+                to_absolute_path("data/reliability.db"),
+                [("agent_reliability", "updated_at", "text_iso")],
+            ),
             (
                 os.path.join(opencode_home, "opencode.db"),
                 [("session", "time_created", "int_ms"), ("message", "time_created", "int_ms")],

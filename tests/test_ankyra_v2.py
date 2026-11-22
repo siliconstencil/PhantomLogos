@@ -13,10 +13,11 @@ async def test_ankyra_v2_atomic_anchors():
     """Verify Atomic Anchor & DB Persistence (Axis 7, 12)."""
     # 1. DB Persistence
     from src.utils.logging_config import log_system_event
+    from src.utils.project_path import to_absolute_path
 
     log_system_event("INFO", "Verification: log_system_event writing to mnemosyne.db")
 
-    conn = sqlite3.connect("data/mnemosyne.db")
+    conn = sqlite3.connect(to_absolute_path("data/mnemosyne.db"))
     res = conn.execute(
         "SELECT message FROM operational_logs_v2 ORDER BY id DESC LIMIT 1"
     ).fetchone()

@@ -1,5 +1,8 @@
+import atexit
 import os
+import shutil
 import sys
+import tempfile
 
 import pytest
 
@@ -10,6 +13,14 @@ sys.path.append(os.getcwd())
 # [SRC:axis_10]
 # Ensure project root is in path for all tests
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# [SRC:axis_10]
+# Tests must never write into the real data/ directory. The override is set at
+# import time because several stores resolve their database path while the test
+# modules are collected.
+_TEST_DATA_DIR = tempfile.mkdtemp(prefix="phantom-test-data-")
+os.environ["PHANTOM_DATA_DIR"] = _TEST_DATA_DIR
+atexit.register(shutil.rmtree, _TEST_DATA_DIR, True)
 
 
 @pytest.fixture(autouse=True)

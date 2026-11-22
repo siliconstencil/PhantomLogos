@@ -11,7 +11,9 @@ from cognition.morpheus.sweeper import VRAMSweeper
 # [SRC:axis_7]
 @pytest.fixture
 def sweeper_db():
-    db_path = "data/test_mnemosyne.db"
+    from src.utils.project_path import get_data_dir
+
+    db_path = str(get_data_dir() / "test_mnemosyne.db")
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
     if os.path.exists(db_path):

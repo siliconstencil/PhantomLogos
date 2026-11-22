@@ -8,6 +8,7 @@ import lancedb
 import numpy as np
 
 from src.utils.logging_config import setup_logger
+from src.utils.project_path import get_data_dir
 from src.utils.run_async import run_async
 
 logger = setup_logger(__name__)
@@ -31,7 +32,8 @@ class SemanticStore:
         except Exception:
             return False
 
-    def __init__(self, db_path: str = "data/lancedb") -> None:
+    def __init__(self, db_path: str = "") -> None:
+        db_path = db_path or str(get_data_dir() / "lancedb")
         os.makedirs(db_path, exist_ok=True)
         self.db = lancedb.connect(db_path)
         self.table_name = "semantic_memory"

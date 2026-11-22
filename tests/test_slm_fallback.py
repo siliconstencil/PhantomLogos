@@ -31,7 +31,9 @@ class TestSLMFallback(unittest.IsolatedAsyncioTestCase):
         mock_get_client.return_value = mock_slm
 
         # Initialize SemanticStore
-        store = SemanticStore(db_path="data/lancedb_test_fallback")
+        from src.utils.project_path import get_data_dir
+
+        store = SemanticStore(db_path=str(get_data_dir() / "lancedb_test_fallback"))
 
         # Since SLM is down, _is_slm_active() should return False
         self.assertFalse(store._is_slm_active())
@@ -177,7 +179,9 @@ class TestSLMFallback(unittest.IsolatedAsyncioTestCase):
         mock_slm.ahealth = AsyncMock(return_value=True)
         mock_get_client.return_value = mock_slm
 
-        store = SemanticStore(db_path="data/lancedb_test_fallback")
+        from src.utils.project_path import get_data_dir
+
+        store = SemanticStore(db_path=str(get_data_dir() / "lancedb_test_fallback"))
         self.assertTrue(store._is_slm_active())
 
         test_vec = np.ones(256)

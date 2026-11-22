@@ -1,4 +1,7 @@
+import os
 from pathlib import Path
+
+DATA_DIR_ENV = "PHANTOM_DATA_DIR"
 
 
 def get_project_root() -> Path:
@@ -16,10 +19,29 @@ def get_project_root() -> Path:
     return current_file.parent.parent.parent
 
 
+def get_data_dir() -> Path:
+    """Returns the runtime data directory.
+
+    Defaults to <project_root>/data. Set PHANTOM_DATA_DIR to relocate every
+    database, LanceDB table and hypergraph store; the test suite uses this to
+    keep the real data/ directory untouched.
+    """
+    override = os.environ.get(DATA_DIR_ENV)
+    if override:
+        return Path(override)
+    return get_project_root() / "data"
+
+
 def to_absolute_path(relative_path: str) -> str:
-    """Converts a project-relative path to an absolute path."""
-    root = get_project_root()
-    return str(root / relative_path)
+    """Converts a project-relative path to an absolute path.
+
+    Paths under "data/" resolve inside get_data_dir(); every other path keeps
+    resolving against the project root.
+    """
+    candidate = Path(relative_path)
+    if candidate.parts and candidate.parts[0] == "data":
+        return str(get_data_dir() / Path(*candidate.parts[1:]))
+    return str(get_project_root() / relative_path)
 
 
 if __name__ == "__main__":

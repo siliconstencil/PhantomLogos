@@ -192,9 +192,9 @@ def log_system_event(level: str, message: str, extra: dict | None = None) -> Non
     Directly writes system-level events to the SQLite operational_logs_v2 table.
     Bypasses the standard logger chain for integrity and infrastructure events.
     """
-    from .project_path import get_project_root
+    from .project_path import to_absolute_path
 
-    db_path = os.path.join(get_project_root(), "data/mnemosyne.db")
+    db_path = to_absolute_path("data/mnemosyne.db")
     try:
         handler = SQLiteHandler(db_path)
         # Create a LogRecord manually

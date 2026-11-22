@@ -8,10 +8,10 @@ class TestProjectPath:
         assert (root / "cognition").is_dir()
 
     def test_to_absolute_path_resolves_correctly(self):
-        from src.utils.project_path import get_project_root, to_absolute_path
+        from src.utils.project_path import get_data_dir, to_absolute_path
 
         result = to_absolute_path("data/test.db")
-        expected = str(get_project_root() / "data/test.db")
+        expected = str(get_data_dir() / "test.db")
         assert result == expected
 
     def test_to_absolute_path_handles_subdirs(self):
