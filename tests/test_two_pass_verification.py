@@ -51,7 +51,8 @@ async def test_evaluator_zones(base_state):
 @pytest.mark.asyncio
 @patch("cognition.sophia.sophia.run_critique")
 @patch("cognition.morpheus.loader.ModelLoader.flush")
-async def test_critique_node_3_pass_flow(mock_flush, mock_run_critique, base_state):
+@patch("src.architrave.entity_extractor.EntityExtractor.harvest_knowledge")
+async def test_critique_node_3_pass_flow(mock_harvest, mock_flush, mock_run_critique, base_state):
     # Setup Pass 2 Mock
     from cognition.sophia.eidos import CritiqueResult
 
@@ -72,6 +73,10 @@ async def test_critique_node_3_pass_flow(mock_flush, mock_run_critique, base_sta
             "is_pass": False,
             "flaws": ["heuristic flaw"],
         }
+
+        # The knowledge scavenger loads GLiNER2 from the model hub; it is not part of
+        # the three-pass verification flow under test.
+        mock_harvest.return_value = []
 
         output = await critique_node(base_state)
 
