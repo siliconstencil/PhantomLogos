@@ -1,12 +1,17 @@
 # Python & Virtual Environment
 .venv*/
+.venv-slm/
 __pycache__/
 *.pyc
 *.pyo
 
 # Security & Credentials
 .env*
+!.env.example
 .keyring/
+
+# Harness run evidence (local only)
+.hordecode/
 
 # Runtime Data (Mnemosyne)
 data/
