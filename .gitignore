@@ -13,6 +13,9 @@ __pycache__/
 # Harness run evidence (local only)
 .hordecode/
 
+# Harness pipeline artefacts (local only)
+docs/harness/
+
 # Runtime Data (Mnemosyne)
 data/
 *.db
