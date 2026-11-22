@@ -54,6 +54,9 @@ Reason: Deterministic, concise, no social filler.
     try:
         res = await run_draft(sophia_state)
         draft, tool_calls = res if isinstance(res, tuple) else (res, [])
+        if not draft and state.get("draft"):
+            logger.warning("ergon: draft_node returned empty; retaining previous draft.")
+            draft = state["draft"]
 
         error_msg = None
         if draft.startswith("[SYSTEM GUARD]"):
@@ -83,6 +86,9 @@ async def expert_draft_node(state: Any):
     try:
         res = await run_draft(state, thinking=True)
         draft, tool_calls = res if isinstance(res, tuple) else (res, [])
+        if not draft and state.get("draft"):
+            logger.warning("ergon: expert_draft_node returned empty; retaining previous draft.")
+            draft = state["draft"]
 
         error_msg = None
         if draft.startswith("[SYSTEM GUARD]"):

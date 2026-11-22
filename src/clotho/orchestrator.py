@@ -289,6 +289,7 @@ def create_clotho_graph() -> Any:
             "critique": "critique",
             "draft": "draft",
             "expert_draft": "expert_draft",
+            "reflection": "reflection",
         },
     )
 
