@@ -29,6 +29,11 @@ FLAW_PATTERNS = [
     (r"\.\./", "relative path traversal"),
     (r"os\.system", "unsafe os.system call"),
 ]
+MATH_EXPR_PATTERN = re.compile(r"(\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+)")
+INEQUALITY_PATTERN = re.compile(r"([a-zA-Z]\s*[><]=?\s*\d+)")
+CODE_MARKER_PATTERN = re.compile(
+    r"(?m)^\s*(def|class|import|from|return|if|for|while|async|with|try)\b"
+)
 
 
 class AdversarialEvaluator:
@@ -255,8 +260,20 @@ class AdversarialEvaluator:
         matches = sum(1 for w in source_words if w in draft.lower())
         return min(1.0, 0.3 + (matches / len(source_words)) * 0.7)
 
+    def _has_verifiable_content(self, draft: str) -> bool:
+        """True when the draft carries code or math that the verification axis can judge."""
+        if MATH_EXPR_PATTERN.search(draft) or INEQUALITY_PATTERN.search(draft):
+            return True
+        return bool(CODE_MARKER_PATTERN.search(draft))
+
     async def _verification_score(self, draft: str) -> float:
         import asyncio
+
+        if not self._has_verifiable_content(draft):
+            # Nothing to refute: a prose draft carries no code logic and no equation,
+            # so the axis must not report a math failure (same rule as the OCR axis).
+            logger.info("evaluator: draft carries no code or math, verification axis stays neutral")
+            return 1.0
 
         # Phase 1.0.31: Parallel Neuro-Symbolic Verification
         inequality_exprs = re.findall(r"([a-zA-Z]\s*[><]=?\s*\d+)", draft)
