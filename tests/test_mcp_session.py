@@ -1,9 +1,25 @@
 import os
+import sys
 import time
 
 import pytest
 
 from src.architrave.mcp.mcp_session import MCPSession
+
+_TEST_SERVER_SOURCE = """
+from mcp.server.fastmcp import FastMCP
+
+server = FastMCP("phantom-test")
+
+
+@server.tool()
+def ping() -> str:
+    return "pong"
+
+
+if __name__ == "__main__":
+    server.run()
+"""
 
 
 def test_mcp_session_init():
@@ -20,16 +36,19 @@ def test_mcp_session_disabled():
 
 
 def test_mcp_session_shutdown_cleanup():
+    """A spawned MCP server process must be gone after the session is shut down."""
     import psutil
 
-    # 1. Start session
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    slm_path = os.path.join(project_root, ".venv", "Scripts", "slm.exe") if os.name == "nt" else os.path.join(project_root, ".venv", "bin", "slm")
+    from src.utils.project_path import get_data_dir
+
+    server_path = get_data_dir() / "phantom_test_mcp_server.py"
+    server_path.write_text(_TEST_SERVER_SOURCE, encoding="utf-8")
+
     session = MCPSession(
         name="test_srv",
-        command=slm_path,
-        args=["mcp"],
-        env={"PYTHONPATH": project_root},
+        command=sys.executable,
+        args=[str(server_path)],
+        env={"PYTHONPATH": os.getcwd()},
         timeout=30.0,
     )
 
@@ -40,14 +59,12 @@ def test_mcp_session_shutdown_cleanup():
 
         my_pid = os.getpid()
 
-        def get_child_slm_processes():
+        def get_child_server_processes():
             procs = []
             for p in psutil.process_iter(["pid", "name", "cmdline", "ppid"]):
                 try:
                     cmdline = p.info.get("cmdline")
-                    if cmdline and any(
-                        "slm" in arg or "superlocalmemory" in arg for arg in cmdline
-                    ):
+                    if cmdline and any(server_path.name in arg for arg in cmdline):
                         if p.info["ppid"] == my_pid:
                             procs.append(p)
                         else:
@@ -61,7 +78,7 @@ def test_mcp_session_shutdown_cleanup():
                     pass
             return procs
 
-        active_procs = get_child_slm_processes()
+        active_procs = get_child_server_processes()
         assert len(active_procs) > 0, "No child processes spawned by MCPSession"
         active_pids = {p.pid for p in active_procs}
         print(f"Spawned PIDs under test: {active_pids}")
