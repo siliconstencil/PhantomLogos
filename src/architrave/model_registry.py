@@ -64,7 +64,11 @@ def find_fitting_model(role: str, available_vram_gb: float) -> str:
 
         tuner = get_self_tuner()
         best_model = tuner.get_best_model_for_role(role)
-        if best_model and get_vram_requirement(best_model) <= available_vram_gb:
+        if (
+            best_model
+            and best_model in VRAM_CATALOG_GB
+            and get_vram_requirement(best_model) <= available_vram_gb
+        ):
             return best_model
     except ImportError:
         logger.warning(f"ModelRegistry: SelfTuner not available for role '{role}'")
