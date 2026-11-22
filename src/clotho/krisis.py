@@ -44,6 +44,10 @@ def is_tool_dispatch_task(task: str) -> bool:
 # Phase 11.18.4: Session-level model blacklist to handle Hallucination Penalties
 BLACKLISTED_MODELS = {}  # {session_id: [model_names]}
 
+# SOTA Guardrail: Hard limit for reasoning loops. Every router that can send the
+# graph back to draft has to respect it, otherwise the graph never terminates.
+MAX_ITERATIONS = 2
+
 
 def clear_session_blacklist(session_id: str) -> None:
     """[SRC:axis_12] Purges the model blacklist for a specific session to prevent memory leaks."""
@@ -247,7 +251,7 @@ def should_continue(state: Any):
         is_valid = critique.get("is_pass", critique.get("is_valid", False))
 
     iteration = state.get("iteration", 0)
-    max_iter = 2  # SOTA Guardrail: Hard limit for reasoning loops
+    max_iter = MAX_ITERATIONS  # SOTA Guardrail: Hard limit for reasoning loops
 
     # SOTA Guardrail: The iteration cap is checked before the zone, otherwise a
     # red zone keeps routing to the deadlock resolver and the graph never ends.
@@ -368,6 +372,16 @@ def should_after_reflection(state: Any) -> str:
             )
             return "end"
         return "refine"
+
+    # SOTA Guardrail: The iteration budget is spent, so an invalid critique must
+    # not send the graph back to draft. Routing to draft here loops forever:
+    # draft -> critique -> reflection -> draft.
+    iteration = state.get("iteration", 0)
+    if iteration >= MAX_ITERATIONS:
+        logger.warning(
+            f"krisis: Max iterations reached ({iteration}/{MAX_ITERATIONS}) after reflection. Ending the run."
+        )
+        return "end"
 
     tier = state.get("ru_flow_tier", 2)
     return "expert_draft" if tier == 3 else "draft"

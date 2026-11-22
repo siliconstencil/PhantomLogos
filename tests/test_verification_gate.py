@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.clotho.orchestrator import should_continue, verify_node
+from src.clotho.orchestrator import should_after_reflection, should_continue, verify_node
 from src.lachesis import AdversarialEvaluator, get_output_guard
 from src.muscle.reranker import JinaReranker
 
@@ -139,6 +139,94 @@ def test_red_zone_below_the_guardrail_still_routes_to_the_deadlock_resolver():
         "critique": {"is_valid": False, "zone": "red", "overall_score": 0.0},
     }
     assert should_continue(state) == "deadlock_resolver"
+
+
+def test_reflection_ends_the_loop_when_the_iteration_budget_is_spent():
+    """An invalid critique after the reflection must not send the graph back to draft.
+
+    The graph reaches reflection through two routes (a passing critique and the
+    iteration guardrail). Sending an invalid critique back to draft from there
+    loops forever, so the spent budget has to end the run instead.
+    """
+    state = {
+        "verification_retry": 0,
+        "iteration": 3,
+        "ru_flow_tier": 2,
+        "draft": "some draft",
+        "critique": {"is_valid": False, "is_pass": False, "zone": "red", "overall_score": 0.0},
+    }
+    assert should_after_reflection(state) == "end"
+
+
+def test_reflection_still_loops_back_while_the_budget_remains():
+    """Below the iteration budget the reflection keeps its re-draft route."""
+    state = {
+        "verification_retry": 0,
+        "iteration": 0,
+        "ru_flow_tier": 2,
+        "draft": "some draft",
+        "critique": {
+            "is_valid": False,
+            "is_pass": False,
+            "zone": "ambiguous",
+            "overall_score": 0.5,
+        },
+    }
+    assert should_after_reflection(state) == "draft"
+
+
+def test_the_red_zone_cycle_terminates():
+    """The full routing cycle of a permanently failing draft must end.
+
+    The cycle follows the graph edges: draft -> critique, critique routes
+    through should_continue, the deadlock resolver leads back to draft, and
+    the reflection used to send an invalid critique back to draft as well.
+    A permanently failing draft has to end at "end".
+    """
+    state = {
+        "critique": {"is_valid": False, "is_pass": False, "zone": "red", "overall_score": 0.0},
+        "iteration": 0,
+        "verification_retry": 0,
+        "ru_flow_tier": 2,
+        "draft": "some draft",
+    }
+
+    route = "draft"
+    steps = 0
+    while route != "end" and steps < 20:
+        if route in ("draft", "expert_draft"):
+            state["iteration"] += 1
+            route = should_continue(state)
+        elif route == "deadlock_resolver":
+            # aporia.deadlock_resolver_node relaxes the contract, resets the
+            # retry counter and increments the iteration.
+            state["verification_retry"] = 0
+            state["iteration"] += 1
+            route = "draft"
+        elif route == "reflection":
+            route = should_after_reflection(state)
+        else:
+            break
+        steps += 1
+
+    assert route == "end", f"the cycle did not terminate, it ended on {route!r}"
+    assert steps < 20, "the cycle ran more steps than the guardrail allows"
+
+
+def test_prose_with_an_assignment_is_not_treated_as_code():
+    """Prose that mentions an assignment is prose, not code, so the axis stays neutral."""
+    evaluator = AdversarialEvaluator("test_session")
+    draft = "Set threshold = 0.7 and then the critic compares the two candidates."
+
+    assert evaluator._has_verifiable_content(draft) is False
+
+
+def test_statements_are_treated_as_code():
+    """A draft made of statements is code and has to be judged."""
+    evaluator = AdversarialEvaluator("test_session")
+    draft = "print('hello world')\nexcept: pass\nx = 2+2"
+
+    assert evaluator._has_verifiable_content(draft) is True
 
 
 if __name__ == "__main__":
